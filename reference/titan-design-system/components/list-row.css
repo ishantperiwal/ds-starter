@@ -1,0 +1,96 @@
+/* List row — one entry in a vertical list of records, activities, notes or files.
+
+   The largest duplication block in the inventory: 84 rules across 6 prefixes, and the
+   worst kind, because the copies share a name. `.crm-activity-row` was defined three
+   separate times — crm.html, index.html and opportunity-view.html — and had already
+   drifted: 10px gap in two of them and var(--space-125) in the third, hover and linked
+   states in one only, and a #f5f5f5 separator typed by hand in all three.
+
+   The anatomy is a leading mark, a text column that takes the free width, an optional
+   action revealed on hover, and a trailing fact:
+
+     [ leading ] [ title            ] [ action ] [ trailing ]
+                 [ snippet          ]
+
+   Every part is optional except the row. What this component does NOT cover is the
+   grid-column form — dashboard.html and activities.html line their rows up into
+   columns, which is a table's job, not this one's. Those stay page-owned until Table
+   is built. */
+
+.ds-list-row {
+  display: flex; align-items: center;
+  gap: var(--list-row-gap);
+  padding: var(--list-row-pad-y) 0;
+  /* Rows inside one card are a weaker boundary than the card's own edge, so this is the
+     hairline. Space would be better still, but a dense log needs the line to scan. */
+  border-bottom: 1px solid var(--list-row-sep);
+}
+/* The last row's line would double with the card's own bottom inset. */
+.ds-list-row:last-child { border-bottom: none; }
+
+/* ── Interactive ─────────────────────────────────────────────────────────────
+   A row that opens something. The fill bleeds past the text on both sides, because a
+   hover that stops at the text reads as highlighting the words rather than picking the
+   row. Negative margin rather than padding on the base, so a static row and an
+   interactive one keep the same left edge. */
+.ds-list-row--interactive { cursor: pointer; }
+.ds-list-row--interactive:hover,
+.ds-list-row--interactive:focus-visible {
+  background: var(--list-row-hover-bg);
+  margin-inline: calc(-1 * var(--list-row-hover-bleed));
+  padding-inline: var(--list-row-hover-bleed);
+  border-radius: var(--list-row-hover-radius);
+}
+.ds-list-row--interactive:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* Flush: a row that is not in a separated list — a disclosure header, a row inside a
+   card that already has its own edges. Keeps the anatomy and drops the list furniture. */
+.ds-list-row--flush { padding: 0; border-bottom: none; }
+
+/* ── Leading ─────────────────────────────────────────────────────────────────
+   The round mark that says what kind of entry this is. The glyph inside is the
+   caller's — an activity type, a file type — and so is a checkbox that replaces it. */
+.ds-list-row__leading {
+  width: var(--list-row-leading-size); height: var(--list-row-leading-size);
+  border-radius: 50%; flex-shrink: 0;
+  background: var(--list-row-leading-bg); color: var(--list-row-leading-fg);
+  display: flex; align-items: center; justify-content: center;
+  /* Always at the top of the row, never centred against the text. On a one-line row it
+     is the tallest thing, so this changes nothing; on a row with a snippet it stays with
+     the title it labels instead of floating between the two lines. Holds for every
+     variant, which is why it is on the part and not on the row. */
+  align-self: flex-start;
+}
+
+/* ── Content ─────────────────────────────────────────────────────────────────
+   Takes the free width. min-width:0 is what lets a long title truncate or wrap instead
+   of pushing the trailing fact off the row. */
+.ds-list-row__content { flex: 1; min-width: 0; }
+.ds-list-row__title { font-size: var(--list-row-title-font); color: var(--text-primary); }
+.ds-list-row__snippet {
+  font-size: var(--list-row-title-font); line-height: 1.5; color: var(--text-secondary);
+  margin-top: var(--list-row-snippet-gap);
+}
+
+/* ── Trailing ────────────────────────────────────────────────────────────────
+   A timestamp, a size, a due date. Quiet by default; --danger when it needs to be read
+   as late rather than merely stated. */
+.ds-list-row__trailing {
+  font-size: var(--list-row-meta-font); color: var(--text-secondary);
+  flex-shrink: 0; white-space: nowrap;
+}
+.ds-list-row__trailing--danger { color: var(--status-danger); font-weight: var(--weight-semi); }
+
+/* ── Action ──────────────────────────────────────────────────────────────────
+   A control that belongs to this row and appears on the row you are pointing at, so a
+   long list is not a wall of buttons. It stays reachable by keyboard: focus reveals it
+   the same way hover does. */
+.ds-list-row__action {
+  opacity: 0; flex-shrink: 0;
+  transition: opacity var(--dur-fast, .12s) ease;
+}
+.ds-list-row:hover .ds-list-row__action,
+.ds-list-row__action:focus-visible { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .ds-list-row__action { transition: none; }
+}

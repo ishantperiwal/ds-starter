@@ -1,0 +1,17 @@
+{
+  "$schema": "/framework/catalog.schema.json",
+  "contractVersion": 1,
+  "name": "Your design system",
+  "version": "0.0.0",
+  "description": "Empty by design. Extract the first foundations and components from project/inbox/ screens.",
+  "components": [],
+  "compositions": [],
+  "patterns": [],
+  "visualizations": [],
+  "themes": [],
+  "screens": [],
+  "icons": [],
+  "tokenFiles": ["tokens/primitives.css", "tokens/semantics.css"],
+  "decisions": [],
+  "knownGaps": ["Supply screens and extract an initial catalog. Sandbox examples are not project defaults."]
+}

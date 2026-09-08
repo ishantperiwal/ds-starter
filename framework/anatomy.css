@@ -1,0 +1,330 @@
+/* Workbench inspection only; never imported by product component styles. */
+.wb-anatomy { border-top: 1px solid var(--border-subtle); color:var(--text-primary); }
+.wb-anatomy > summary { padding:var(--space-150) var(--space-200); }
+.wb-anatomy > summary span { float:right; margin-left:var(--space-100); color:var(--text-muted); font-weight:var(--weight-normal); font-size:var(--text-xs); }
+.wb-anatomy summary:focus-visible, .wb-anatomy button:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
+.wb-anatomy-content { padding:0 var(--space-200) var(--space-200); min-width:0; }
+.wb-anatomy-tools { display:flex; align-items:center; flex-wrap:wrap; gap:var(--space-150); padding-block:var(--space-100); }
+.wb-anatomy-tools label { display:flex; align-items:center; gap:var(--space-075); font-size:var(--text-xs); min-width:0; max-width:100%; }
+.wb-anatomy-tools label[hidden] { display:none; }
+.wb-anatomy-tools select { width:auto; max-width:240px; min-width:0; font-size:var(--text-xs); }
+.wb-anatomy-modes { display:flex; padding:var(--space-025); border:1px solid var(--border-subtle); border-radius:var(--radius-md); }
+.wb-anatomy-modes button { appearance:none; border:0; background:transparent; color:var(--text-secondary); font:inherit; font-size:var(--text-xs); padding:var(--space-075) var(--space-100); border-radius:var(--radius-sm); cursor:pointer; }
+.wb-anatomy-modes button[aria-pressed="true"] { background:var(--surface-inverse); color:var(--text-on-inverse); }
+.wb-anatomy-measure { font-family:var(--wb-mono); font-size:var(--text-2xs); line-height:1.7; color:var(--text-muted); margin-block:var(--space-100); overflow-wrap:anywhere; }
+.wb-anatomy-sheet { display:flex; justify-content:center; align-items:center; min-height:144px; max-height:480px; overflow:auto; border:1px solid var(--border-subtle); border-radius:var(--radius-md); background:var(--surface-recessed); }
+.wb-anatomy-sheet svg { display:block; max-width:100%; flex-shrink:0; height:auto; overflow:visible; }
+.wb-sheet-surface, .wb-sheet-interior { fill:var(--surface-primary); }
+.wb-sheet-grid { stroke:var(--border-default); stroke-width:.5; }
+.wb-sheet-grid-minor { stroke:var(--border-subtle); stroke-width:.25; fill:none; }
+.wb-sheet-grid-major { stroke:var(--text-muted); stroke-width:.5; fill:none; }
+.wb-sheet-padding { fill:var(--label-amber-bg); stroke:var(--label-amber-fg); stroke-width:.5; }
+.wb-sheet-area { stroke:var(--border-accent); stroke-width:.75; fill-opacity:.22; }
+.wb-sheet-area-0 { fill:var(--accent-primary); }
+.wb-sheet-area-1 { fill:var(--label-teal-fg); }
+.wb-sheet-area-2 { fill:var(--label-purple-fg); }
+.wb-sheet-structure { fill:var(--surface-primary); stroke:var(--border-default); stroke-width:1; }
+.wb-sheet-outline { fill:none; stroke:var(--border-default); stroke-width:.75; }
+.wb-sheet-text { fill:var(--text-secondary); font-family:var(--font-sans); }
+.wb-sheet-baseline { stroke:var(--text-muted); stroke-width:.75; fill:none; }
+.wb-sheet-number { fill:var(--text-primary); font:10px var(--wb-mono); paint-order:stroke; stroke:var(--surface-primary); stroke-width:3px; }
+.wb-sheet-highlight { fill:var(--label-amber-fg); fill-opacity:.5; stroke:var(--label-amber-fg); stroke-width:1; }
+.wb-anatomy-note { font-size:var(--text-xs); line-height:1.6; color:var(--text-secondary); margin-block:var(--space-100); }
+.wb-anatomy-key { display:flex; flex-wrap:wrap; gap:var(--space-075) var(--space-150); padding:0; margin:var(--space-150) 0; list-style:none; font-size:var(--text-xs); }
+.wb-anatomy-key b { font-family:var(--wb-mono); }
+.wb-anatomy-key .is-absent { color:var(--text-muted); text-decoration:line-through; }
+.wb-anatomy-table-wrap { overflow-x:auto; }
+.wb-anatomy-table { width:100%; border-collapse:collapse; font-size:var(--text-xs); }
+.wb-anatomy-table caption { text-align:left; color:var(--text-muted); padding-bottom:var(--space-100); }
+.wb-anatomy-table th { text-align:left; font-weight:var(--weight-medium); color:var(--text-muted); }
+.wb-anatomy-table th, .wb-anatomy-table td { padding:var(--space-100) var(--space-075); border-bottom:1px solid var(--border-subtle); vertical-align:top; }
+.wb-anatomy-table td:first-child { width:40%; }
+.wb-anatomy-table code { overflow-wrap:anywhere; white-space:normal; font-size:var(--text-2xs); }
+.wb-anatomy-table small { display:block; color:var(--text-muted); line-height:1.5; margin-top:var(--space-050); }
+.wb-anatomy-table button { appearance:none; border:0; background:transparent; color:var(--text-primary); font:inherit; text-align:left; padding:0; cursor:pointer; text-decoration:underline; text-decoration-color:var(--border-default); text-underline-offset:3px; }
+.wb-anatomy-table button[aria-pressed="true"] { color:var(--text-accent); font-weight:var(--weight-semi); }
+.wb-anatomy-rules { display:grid; gap:var(--space-150); margin:var(--space-200) 0 0; font-size:var(--text-xs); line-height:1.6; }
+.wb-anatomy-rules dt { font-weight:var(--weight-semi); }
+.wb-anatomy-rules dd { margin:var(--space-025) 0 0; color:var(--text-secondary); }
+.wb-spacing-roles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-400); }
+.wb-spacing-roles article { padding:var(--space-200); background:var(--surface-primary); border:1px solid var(--border-subtle); border-radius:var(--radius-md); min-width:0; }
+.wb-spacing-roles h3 { font-size:var(--text-sm); margin:0 0 var(--space-100); }
+.wb-spacing-roles output { float:right; color:var(--text-accent); }
+.wb-spacing-roles code { font-size:var(--text-xs); overflow-wrap:anywhere; }
+#wb-spacing-rules p, #wb-spacing-rules li, #wb-spacing-rules summary { font-size:var(--text-sm); line-height:1.6; }
+#wb-spacing-rules li + li { margin-top:var(--space-075); }
+.wb-spacing-ownership { margin-block:var(--space-200); font-size:var(--text-xs); }
+.wb-spacing-parent { padding:var(--layout-container-inset); border:1px dashed var(--border-default); border-radius:var(--radius-md); }
+.wb-spacing-containers { display:flex; flex-wrap:wrap; gap:var(--layout-item-gap); margin-top:var(--layout-section-gap); }
+.wb-spacing-containers > div { flex:1 1 180px; padding:var(--layout-container-inset); background:var(--accent-subtle); border:1px solid var(--border-accent); border-radius:var(--radius-sm); }
+.wb-spacing-containers > div > div { margin-top:var(--layout-related-gap); background:var(--surface-primary); }
+@media (max-width:600px) { .wb-spacing-roles { grid-template-columns:1fr; }  .wb-anatomy-tools select { max-width:200px; } }
+
+.wb-composition-intro { padding:var(--space-150) var(--space-200) 0; font-size:var(--text-sm); line-height:1.6; color:var(--text-secondary); }
+.wb-composition-example + .wb-composition-example { margin-top:var(--layout-section-gap); }
+.wb-composition-label { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-100); font-size:var(--text-xs); color:var(--text-secondary); margin-bottom:var(--space-150); }
+.wb-composition-example { max-width:640px; padding:var(--space-200); border:1px dashed var(--border-default); border-radius:var(--radius-sm); background:var(--surface-primary); }
+.wb-composition-code { border-top:1px solid var(--border-subtle); padding:var(--space-150) var(--space-200); font-size:var(--text-xs); }
+.wb-composition-code pre { white-space:pre-wrap; overflow-wrap:anywhere; padding:var(--space-150); background:var(--surface-recessed); border-radius:var(--radius-md); line-height:1.6; }
+.wb-composition-heading { margin:var(--space-300) 0 var(--space-100); font-size:var(--text-xl); }
+
+/* Reference prose stays available without competing with the specimens. */
+.wb-guidance { font-size:var(--text-sm); color:var(--text-secondary); line-height:1.6; }
+/* One typographic treatment for every workbench disclosure heading. */
+.wb-guidance > summary, .wb-anatomy > summary, .wb-composition-code > summary {
+  cursor:pointer;
+  font-family:var(--font-sans);
+  font-size:var(--text-sm);
+  font-weight:var(--weight-semi);
+  line-height:1.5;
+  letter-spacing:normal;
+  color:var(--text-primary);
+}
+.wb-guidance > summary:focus-visible { outline:2px solid var(--accent-primary); outline-offset:4px; }
+.wb-guidance > p { margin:var(--space-150) 0; max-width:80ch; }
+.wb-guidance--panel { border-top:1px solid var(--border-subtle); padding:var(--space-150) var(--space-200); }
+.wb-guidance--panel .wb-pattern-body, .wb-guidance--panel .wb-viz-meta { padding:var(--space-150) 0 0; }
+.wb-pattern-preview { padding:var(--space-200); }
+.wb-pattern-preview .wb-pattern-visual { max-width:640px; }
+.wb-pattern-preview .wb-pattern-frame, .wb-pattern-preview .wb-pattern-modalstage { margin-bottom:0; }
+
+/* Two independent catalog columns; cards stay whole as disclosures expand. */
+#wb-compositions, #wb-components, #wb-patterns, #wb-visualizations {
+  display:block;
+  columns:2 400px;
+  column-gap:var(--space-400);
+}
+#wb-compositions > .wb-spec, #wb-components > .wb-spec,
+#wb-patterns > .wb-pattern, #wb-visualizations > .wb-viz-card {
+  display:inline-block;
+  vertical-align:top;
+  width:100%;
+  min-width:0;
+  margin:0 0 var(--space-400);
+  break-inside:avoid;
+  container-type:inline-size;
+}
+@container (max-width:600px) {
+  .wb-spec-head { flex-wrap:wrap; }
+  .wb-spec-head span { width:100%; margin-left:0; }
+  
+  .wb-pattern-body, .wb-pattern-grid, .wb-viz-meta { grid-template-columns:minmax(0,1fr); }
+  .wb-pattern-grid > div:last-child { grid-column:auto; }
+}
+
+.wb-direction-controls { margin-bottom:var(--space-300); padding:var(--space-150); border:1px solid var(--border-default); border-radius:var(--radius-md); background:var(--surface-primary); }
+
+/* Specimen labels and wrapping content have separate layout ownership. */
+#wb-components .wb-row--labelled {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  align-items:start;
+  gap:var(--layout-related-gap);
+  margin-bottom:var(--layout-section-gap);
+}
+#wb-components .wb-row--labelled:last-child { margin-bottom:0; }
+.wb-row--labelled > .wb-key { width:auto; padding-top:0; overflow-wrap:anywhere; }
+.wb-row-content { display:flex; flex-wrap:wrap; align-items:center; gap:var(--layout-item-gap); min-width:0; }
+.wb-row-content > * { max-width:100%; }
+
+/* Separate catalog headings from white preview surfaces. */
+.wb-spec-head, .wb-pattern-head, .wb-viz-head {
+  background:var(--surface-sunken);
+  border-bottom:1px solid var(--border-subtle);
+}
+
+/* Inspect the real specimen in place; overlays never participate in its layout. */
+.wb-inline-specimen { position:relative; }
+.wb-inline-tools { display:flex; flex-wrap:wrap; align-items:center; gap:var(--layout-related-gap); margin-bottom:var(--layout-related-gap); flex-basis:100%; grid-column:1 / -1; }
+.wb-inline-toggle { display:inline-flex; gap:2px; padding:2px; border:1px solid var(--border-default); border-radius:var(--radius-control); background:var(--surface-primary); }
+.wb-inline-toggle button { appearance:none; cursor:pointer; border:0; padding:var(--space-050) var(--space-100); border-radius:var(--radius-sm); background:transparent; color:var(--text-secondary); font:inherit; font-size:var(--text-xs); }
+.wb-inline-toggle button[aria-pressed="true"] { background:var(--surface-sunken); color:var(--text-heading); font-weight:var(--weight-semi); }
+.wb-inline-toggle button:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
+.wb-inline-readout { font-size:var(--text-xs); color:var(--text-secondary); overflow-wrap:anywhere; }
+.wb-inline-overlay { position:absolute; inset:0; pointer-events:none; z-index:3; }
+.wb-inline-overlay[hidden] { display:none; }
+.wb-inline-overlay svg { display:block; overflow:visible; }
+.wb-inline-outline { fill:none; stroke:var(--accent-primary); stroke-width:1; stroke-dasharray:3 2; opacity:.65; }
+.wb-inline-band { fill:var(--label-amber-bg); fill-opacity:.8; stroke:var(--label-amber-fg); stroke-width:.5; }
+.wb-inline-overlay [data-measure] { pointer-events:auto; cursor:help; }
+.wb-inline-overlay [data-measure]:focus { outline:none; }
+.wb-inline-overlay [data-measure]:focus .wb-inline-band { stroke:var(--accent-primary); stroke-width:2; }
+.wb-inline-value { text-anchor:middle; dominant-baseline:central; fill:var(--text-primary); font:9px var(--font-sans); pointer-events:none; }
+
+.wb-inline-tools { position:relative; }
+.wb-inline-readout:not(:empty) { position:absolute; top:100%; left:0; z-index:5; max-width:100%; padding:var(--space-075); border:1px solid var(--border-default); border-radius:var(--radius-sm); background:var(--surface-primary); box-shadow:var(--elevation-card); }
+
+/* One view toggle controls every specimen in a component card. */
+.wb-component-toggle { margin:0; padding:var(--space-100) var(--space-200); border-bottom:1px solid var(--border-subtle); }
+
+/* Keep view controls with the specimen heading, not in a separate toolbar row. */
+.wb-spec-head, .wb-pattern-head, .wb-viz-head { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-100); }
+.wb-component-toggle { flex:0 0 auto; grid-column:auto; margin:0 0 0 auto; padding:0; border:0; }
+.wb-pattern-head > h2 { margin:0; }
+.wb-pattern-head > .wb-pattern-kicker { flex-basis:100%; }
+.wb-spec-head > span { order:2; flex-basis:100%; margin-left:0; }
+
+/* Give specimens breathing room without changing component-owned spacing. */
+.wb-spec > .wb-spec-body, .wb-pattern > .wb-pattern-preview, .wb-viz-card > .wb-viz-plot {
+  padding:var(--space-400);
+}
+.wb-composition-example {
+  padding:var(--layout-section-gap);
+}
+
+.wb-copy-token { display:block; margin-top:var(--space-075); padding:var(--space-050) var(--space-100); border:1px solid var(--border-default); border-radius:var(--radius-control); background:var(--surface-sunken); color:var(--text-primary); font:inherit; cursor:pointer; }
+.wb-copy-token:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
+
+/* Guidance sits within the specimen card rather than forming an edge-to-edge row. */
+.wb-spec > .wb-guidance--panel,
+.wb-spec > .wb-composition-code,
+.wb-pattern > .wb-guidance--panel,
+.wb-viz-card > .wb-guidance--panel {
+  margin:var(--space-100) var(--space-200) var(--space-200);
+  padding:var(--space-150) var(--space-200);
+  border:1px solid var(--border-subtle);
+  border-radius:var(--radius-md);
+  background:var(--surface-sunken);
+}
+.wb-spec > .wb-guidance--panel + .wb-composition-code {
+  margin-top:calc(-1 * var(--space-100));
+}
+
+/* Expanded reference prose needs readable lines inside the two-column catalog. */
+.wb-pattern > .wb-guidance--panel .wb-pattern-body,
+.wb-pattern > .wb-guidance--panel .wb-pattern-grid,
+.wb-viz-card > .wb-guidance--panel .wb-viz-meta {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:var(--layout-section-gap);
+  min-width:0;
+}
+.wb-pattern > .wb-guidance--panel .wb-pattern-grid > div:last-child { grid-column:auto; }
+.wb-guidance--panel, .wb-composition-code,
+.wb-guidance--panel p, .wb-guidance--panel li, .wb-guidance--panel code {
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.wb-guidance--panel .wb-pattern-body > div,
+.wb-guidance--panel .wb-pattern-grid > div { min-width:0; }
+.wb-guidance--panel .wb-pattern-list { font-size:var(--text-sm); line-height:1.6; }
+
+.wb-inline-overlay .is-selected .wb-inline-band { stroke:var(--accent-primary); stroke-width:2; fill:var(--accent-subtle); }
+
+.wb-example-link { color:var(--text-accent); text-decoration:underline; text-underline-offset:3px; }
+
+/* Foundations teach spacing through visible relationships before token metadata. */
+.wb-role-demo { display:flex; align-items:center; justify-content:center; min-height:132px; margin-block:var(--space-200) var(--space-100); padding:var(--space-200); background:var(--surface-recessed); border-radius:var(--radius-md); }
+.wb-role-stack, .wb-role-inset { width:100%; max-width:300px; font-size:var(--text-sm); }
+.wb-role-stack > div:not(.wb-role-gap) { padding:var(--space-100) var(--space-150); background:var(--surface-primary); border:1px solid var(--border-default); border-radius:var(--radius-sm); }
+.wb-role-gap { background:var(--label-amber-bg); border-inline:1px solid var(--label-amber-fg); }
+.wb-role-inset { background:var(--label-amber-bg); border:1px solid var(--label-amber-fg); border-radius:var(--radius-sm); }
+.wb-role-inset > div { padding:var(--space-150); border:1px solid var(--border-default); background:var(--surface-primary); }
+.wb-role-caption { font-size:var(--text-xs); color:var(--text-secondary); text-align:center; }
+.wb-role-details { margin-top:var(--space-200); padding-top:var(--space-100); border-top:1px solid var(--border-subtle); }
+.wb-role-details code { display:block; margin-top:var(--space-100); overflow-wrap:anywhere; }
+
+.wb-pattern-examples > .wb-pattern-list { margin-top:var(--space-150); }
+
+.wb-role-demo { position:relative; }
+[data-role-token] { cursor:pointer; }
+[data-role-token]:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
+.wb-role-demo > .wb-role-tooltip:not(:empty) { top:auto; bottom:var(--space-100); left:var(--space-100); right:var(--space-100); }
+
+/* Compact callouts and actual type hierarchy make the foundational example legible. */
+.wb-role-demo > .wb-role-tooltip:not(:empty) {
+  right:auto;
+  width:max-content;
+  max-width:calc(100% - var(--space-200));
+}
+.wb-role-stack--related > div:not(.wb-role-gap) {
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.wb-role-stack--related > div:first-child {
+  font-size:var(--text-lg);
+  font-weight:var(--weight-semi);
+  line-height:1.3;
+  color:var(--text-heading);
+}
+.wb-role-stack--related > div:last-child {
+  font-size:var(--text-sm);
+  font-weight:var(--weight-normal);
+  line-height:1.5;
+  color:var(--text-secondary);
+}
+
+[data-copy-token] { cursor:copy; border-radius:2px; }
+[data-copy-token]:hover { color:var(--text-accent); text-decoration:underline; text-underline-offset:3px; }
+[data-copy-token]:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
+.wb-copy-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:100; max-width:90vw; overflow-wrap:anywhere; padding:12px 16px; border-radius:var(--radius-md); background:var(--surface-inverse); color:var(--text-on-inverse); font-size:var(--text-sm); }
+
+.wb-source-example pre { margin:var(--space-150) 0 0; padding:var(--space-150); background:var(--surface-primary); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); white-space:pre-wrap; overflow-wrap:anywhere; font-family:var(--wb-mono); font-size:var(--text-xs); line-height:1.6; }
+.wb-source-example code { font:inherit; }
+
+.wb-example-modal { width:min(960px,calc(100vw - 48px)); max-height:90dvh; box-sizing:border-box; overflow:auto; padding:24px; border:1px solid var(--border-default); border-radius:var(--radius-lg); background:var(--surface-primary); color:var(--text-primary); }
+.wb-example-modal::backdrop { background:var(--modal-backdrop-bg); }
+.wb-example-heading { display:flex; justify-content:space-between; align-items:start; gap:16px; margin-bottom:24px; }
+.wb-example-heading h2 { margin:0; font-size:var(--text-xl); }
+.wb-example-heading p { margin:8px 0 0; color:var(--text-secondary); font-size:var(--text-xs); }
+.wb-example-inspection { border:1px solid var(--border-default); border-radius:var(--radius-md); overflow:hidden; }
+.wb-example-stage { padding:32px; background:var(--surface-page); }
+.wb-example-stage > .ds-card { max-width:640px; margin-inline:auto; }
+.wb-example-modal > details { margin-top:24px; }
+.wb-example-stage .wb-example-placeholder { height:auto; min-height:44px; padding:12px; font-style:normal; font-size:var(--text-sm); }
+.wb-example-stage .wb-example-action { width:auto; height:auto; padding:8px 16px; font-style:normal; }
+.wb-example-stage .wb-example-action:last-child { color:var(--text-on-inverse); }
+.wb-example-modal .wb-pattern-modal { width:min(100%,480px); }
+@media(max-width:600px) { .wb-example-modal { padding:16px; width:calc(100vw - 24px); } .wb-example-stage { padding:16px; } }
+
+/* Catalog reading order: visual example, identity/controls, then optional reference. */
+.wb-visual-first > .wb-spec-head,
+.wb-visual-first > .wb-pattern-head,
+.wb-visual-first > .wb-viz-head { border-top:1px solid var(--border-subtle); border-bottom:0; }
+.wb-spacing-roles .wb-role-demo { margin-top:0; margin-bottom:var(--space-200); }
+.wb-spacing-roles .wb-role-caption { text-align:left; }
+
+/* Designer-facing identity rows separate the visual without competing with it. */
+.wb-visual-first > .wb-spec-head,
+.wb-visual-first > .wb-pattern-head,
+.wb-visual-first > .wb-viz-head {
+  background:var(--surface-primary);
+  border-top:1px solid var(--border-default);
+  border-bottom:0;
+}
+
+.wb-example-launch { display:flex; align-items:center; justify-content:space-between; gap:16px; width:calc(100% - 32px); margin:16px; padding:16px; text-align:left; border:1px solid var(--border-default); border-radius:var(--radius-md); background:var(--surface-recessed); color:var(--text-primary); font:inherit; cursor:pointer; }
+.wb-example-launch small { display:block; margin-top:4px; color:var(--text-secondary); }
+.wb-example-launch > span[aria-hidden] { font-size:24px; }
+.wb-example-launch:focus-visible { outline:2px solid var(--border-focus); outline-offset:2px; }
+.wb-spacing-roles .wb-example-launch { width:100%; margin:16px 0 0; }
+.wb-live-example { position:relative; overflow:hidden; border:1px solid var(--border-default); border-radius:var(--radius-md); }
+.wb-live-example iframe { display:block; width:1280px; height:800px; border:0; transform-origin:top left; pointer-events:none; }
+.wb-sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+
+/* A quiet canvas identifies visual examples without styling the components themselves. */
+.wb-spec > .wb-spec-body,
+.wb-pattern > .wb-pattern-preview,
+.wb-viz-card > .wb-viz-plot,
+.wb-spacing-roles .wb-role-demo,
+.wb-example-stage {
+  background-color:var(--surface-recessed);
+  background-image:radial-gradient(circle, color-mix(in srgb, var(--text-muted) 18%, transparent) .65px, transparent .8px);
+  background-size:12px 12px;
+  background-position:6px 6px;
+}
+.wb-composition-example {
+  background:transparent;
+}
+
+.wb-example-focus-controls { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+.wb-focus-caption { border:0; background:var(--accent-subtle); color:var(--text-primary); padding:8px 12px; border-radius:var(--radius-sm); font:inherit; font-size:var(--text-sm); cursor:copy; }
+.wb-focus-caption:disabled { cursor:default; }
+.wb-example-spotlight { position:absolute; inset:0; pointer-events:none; }
+.wb-example-spotlight[hidden] { display:none; }
+.wb-example-spotlight svg { display:block; }
+.wb-focus-outline { fill:none; stroke:var(--accent-primary); stroke-width:3; }
+
+.wb-example-heading .wb-example-lesson { max-width:65ch; font-size:var(--text-sm); line-height:1.6; color:var(--text-primary); }

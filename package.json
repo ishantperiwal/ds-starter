@@ -1,0 +1,13 @@
+{
+  "name": "design-system-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A project-owned design system with independently updatable development tools",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.js",
+    "check": "node framework/validate.js",
+    "test": "node --test framework/tests/*.test.js",
+    "release:check": "node framework/release.js --check"
+  }
+}

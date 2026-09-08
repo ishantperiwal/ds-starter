@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Titan Design System</title>
+<!--
+  The workbench — an instrument for the system, not a gallery of it.
+
+  Two readers. A person, who needs to see what exists, try a direction across everything
+  at once, and know what is still hand-rolled. And an agent, which needs one URL that
+  renders the whole system so a change can be screenshotted and compared.
+
+  Three things about how it is built, because they are deliberate:
+
+  1. It is rendered in its own system. Every colour, radius, space and shadow here is a
+     token from tokens.css — including the dark rail, which is the product's real sidebar
+     colour. Switching direction restyles the tool itself. If the system is wrong, this
+     page looks wrong first.
+  2. Monospace is structural. Every identifier, count and token name is mono, because the
+     content is code. It is not a texture.
+  3. The overview is a ledger, not a card grid. Each block carries the duplication it
+     would absorb, sorted by it, because that number is the priority — a grid of cards
+     would flatten the one piece of information that matters.
+
+  No build step. `node dev-server.js` then /design-system/.
+-->
+<link rel="stylesheet" href="./tokens/primitives.css">
+<link rel="stylesheet" href="./tokens/semantics.css">
+<link rel="stylesheet" id="theme-link" href="./themes/default.css">
+<!-- The same single entry point every page uses, so the workbench cannot be showing a
+     component the product has no way to load. -->
+<link rel="stylesheet" href="./components.css">
+<link rel="stylesheet" href="./anatomy.css">
+<style>
+  /* ── Workbench chrome ──────────────────────────────────────────────────────
+     wb- prefixed so it can never be mistaken for a component, and built only from
+     tokens so a direction change moves it too. */
+  :root {
+    --wb-rail-w: 216px;
+    --wb-rail-bg: var(--gray-900);
+    --wb-rail-ink: rgba(255, 255, 255, 0.62);
+    --wb-rail-ink-strong: #fff;
+    --wb-rail-line: rgba(255, 255, 255, 0.09);
+    --wb-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+    --wb-measure: 1080px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; display: flex; min-height: 100vh;
+    font-family: var(--font-sans); font-size: var(--text-md);
+    color: var(--text-primary); background: var(--surface-sunken);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Rail ─────────────────────────────────────────────────────────────────
+     The product's own sidebar, borrowed on purpose: the workbench should read as
+     part of Titan rather than as a separate site about Titan. */
+  .wb-rail {
+    position: fixed; inset: 0 auto 0 0; width: var(--wb-rail-w);
+    background: var(--wb-rail-bg); display: flex; flex-direction: column;
+    padding: var(--space-200) 0; z-index: 5;
+  }
+  .wb-mark {
+    display: flex; align-items: baseline; gap: var(--space-075);
+    padding: 0 var(--space-200) var(--space-300);
+    color: var(--wb-rail-ink-strong);
+  }
+  .wb-mark b { font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: -0.015em; }
+  .wb-mark span {
+    font-family: var(--wb-mono); font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--wb-rail-ink);
+  }
+
+  .wb-nav { display: flex; flex-direction: column; gap: 1px; padding: 0 var(--space-100); }
+  .wb-nav a {
+    display: flex; align-items: center; gap: var(--space-100);
+    padding: 9px var(--space-100); border-radius: var(--radius-md);
+    color: var(--wb-rail-ink); text-decoration: none;
+    font-size: var(--text-sm); font-weight: var(--weight-medium);
+    transition: background var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
+  }
+  .wb-nav a:hover { background: rgba(255, 255, 255, 0.05); color: var(--wb-rail-ink-strong); }
+  .wb-nav a[aria-current="page"] { background: rgba(255, 255, 255, 0.1); color: var(--wb-rail-ink-strong); }
+  .wb-nav a .ds-icon { color: currentColor; opacity: 0.85; }
+  /* The count rides the nav item it belongs to — a tally, not a badge. */
+  .wb-nav a i {
+    margin-left: auto; font-family: var(--wb-mono); font-style: normal;
+    font-size: 10.5px; color: rgba(255, 255, 255, 0.4);
+  }
+
+  .wb-rail-foot {
+    margin-top: auto; padding: var(--space-200) var(--space-200) 0;
+    border-top: 1px solid var(--wb-rail-line);
+  }
+  .wb-rail-foot p {
+    margin: 0; font-family: var(--wb-mono); font-size: 10.5px; line-height: 1.7;
+    color: rgba(255, 255, 255, 0.38);
+  }
+  .wb-rail-foot b { color: rgba(255, 255, 255, 0.72); font-weight: var(--weight-semi); }
+
+  /* ── Main ─────────────────────────────────────────────────────────────────── */
+  .wb-main { flex: 1; min-width: 0; margin-left: var(--wb-rail-w); }
+  .wb-top {
+    position: sticky; top: 0; z-index: 4;
+    display: flex; align-items: center; gap: var(--space-150);
+    padding: var(--space-150) var(--space-300);
+    background: color-mix(in srgb, var(--surface-page) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .wb-crumb { font-size: var(--text-sm); font-weight: var(--weight-semi); color: var(--text-heading); }
+  .wb-crumb em {
+    font-style: normal; color: var(--text-muted); font-weight: var(--weight-normal);
+    margin-left: var(--space-075);
+  }
+  .wb-controls { margin-left: auto; display: flex; align-items: center; gap: var(--space-100); }
+  .wb-controls label {
+    font-family: var(--wb-mono); font-size: 10px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  .wb-controls select { width: auto; height: 30px; font-size: var(--text-xs); padding: 0 var(--space-100); }
+
+  .wb-view { display: none; padding: var(--space-300); max-width: var(--wb-measure); margin-inline: auto; }
+  .wb-view.is-on { display: block; animation: wb-in 200ms var(--ease-decel) both; }
+  @keyframes wb-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .wb-lede { max-width: 62ch; margin: 0 0 var(--space-300); }
+  .wb-lede h1 {
+    font-size: 26px; font-weight: 780; letter-spacing: -0.02em; line-height: 1.2;
+    color: var(--text-heading); margin: 0 0 var(--space-100);
+  }
+  .wb-lede p { margin: 0; font-size: var(--text-lg); line-height: 1.55; color: var(--text-secondary); }
+  .wb-lede code { font-family: var(--wb-mono); font-size: 13px; color: var(--text-primary); }
+
+  .wb-sec { margin-bottom: var(--space-400); }
+  .wb-sec:last-child { margin-bottom: 0; }
+  .wb-sec > h2 {
+    font-family: var(--wb-mono); font-size: 10.5px; font-weight: var(--weight-semi);
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-muted);
+    margin: 0 0 var(--space-150); padding-bottom: var(--space-075);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .wb-note { font-size: var(--text-xs); color: var(--text-muted); margin: 0 0 var(--space-150); line-height: 1.55; max-width: 74ch; }
+  .wb-note code { font-family: var(--wb-mono); }
+  .wb-row { display: flex; align-items: center; gap: var(--space-150); flex-wrap: wrap; margin-bottom: var(--space-150); }
+  .wb-row:last-child { margin-bottom: 0; }
+  .wb-key {
+    font-family: var(--wb-mono); font-size: 10.5px; color: var(--text-muted);
+    width: 96px; flex-shrink: 0; letter-spacing: 0.04em;
+  }
+
+  /* ── The stat band ─────────────────────────────────────────────────────────
+     Tabular numerals doing the talking. Three figures, because three is what the
+     content supports: what is covered, what is not, and the size of the mess. */
+  /* Per-cell hairlines, not a gap-coloured backdrop: three stats in a two-column grid
+     would otherwise leave a grey stub where the row runs out. */
+  .wb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(184px, 1fr)); background: var(--surface-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-300); }
+  .wb-stat { padding: var(--space-150) var(--space-200) var(--space-200); border-right: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); }
+  .wb-stat b {
+    display: block; font-family: var(--wb-mono); font-size: 30px; font-weight: var(--weight-medium);
+    letter-spacing: -0.03em; color: var(--text-heading); font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  /* Denominator on the baseline, not raised — it reads as a fraction, not a footnote. */
+  .wb-stat b sup { font-size: 15px; font-weight: var(--weight-normal); color: var(--text-muted); letter-spacing: 0; vertical-align: baseline; }
+  .wb-stat span {
+    display: block; margin-top: var(--space-075); font-size: var(--text-xs);
+    color: var(--text-muted); line-height: 1.45;
+  }
+
+  /* ── The ledger: the signature ─────────────────────────────────────────────
+     One row per block. The bar is the duplication that block would absorb, to the
+     same scale across all rows, so the eye ranks the work without reading a number. */
+  .wb-ledger { border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface-primary); }
+  .wb-lrow {
+    display: grid; grid-template-columns: 14px minmax(150px, 1.2fr) minmax(120px, 0.9fr) minmax(110px, 1fr) 56px;
+    gap: var(--space-150); align-items: center;
+    padding: 9px var(--space-200); text-align: left; width: 100%;
+    background: none; border: none; border-top: 1px solid var(--gray-050);
+    font: inherit; color: inherit; cursor: pointer;
+    transition: background var(--dur-base) var(--ease-standard);
+  }
+  .wb-lrow:first-of-type { border-top: none; }
+  .wb-lrow:hover { background: var(--surface-hover); }
+  .wb-lrow.is-open { background: var(--surface-hover); }
+  .wb-lhead {
+    display: grid; grid-template-columns: 14px minmax(150px, 1.2fr) minmax(120px, 0.9fr) minmax(110px, 1fr) 56px;
+    gap: var(--space-150); padding: 9px var(--space-200);
+    background: var(--surface-recessed); border-bottom: 1px solid var(--border-subtle);
+    font-family: var(--wb-mono); font-size: 9.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  .wb-lhead button {
+    background: none; border: none; padding: 0; font: inherit; color: inherit;
+    cursor: pointer; text-align: left; letter-spacing: inherit;
+  }
+  .wb-lhead button:hover { color: var(--text-primary); }
+  .wb-lhead button[data-on] { color: var(--text-accent); }
+
+  /* Four states, because migration is a progression: hand-rolled → tokenised (a direction
+     reaches it) → a real component. Grey / accent / green reads as that order. */
+  .wb-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .wb-dot--built { background: var(--status-success); }
+  .wb-dot--tokenised { background: var(--accent-primary); }
+  .wb-dot--planned { background: var(--gray-300); }
+  .wb-dot--excluded { background: transparent; border: 1px solid var(--gray-300); }
+
+  .wb-lname { font-size: var(--text-sm); font-weight: var(--weight-semi); color: var(--text-heading); }
+  /* Lowercase, not caps: the subline now carries numbers, and caps make figures shout. */
+  .wb-lname small { display: block; font-family: var(--wb-mono); font-size: 10px; font-weight: var(--weight-normal); color: var(--text-muted); letter-spacing: 0.02em; margin-top: 2px; }
+  .wb-lcomp { font-family: var(--wb-mono); font-size: 10.5px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wb-lcomp.is-none { color: var(--text-disabled); }
+
+  .wb-bar { height: 5px; border-radius: 3px; background: var(--gray-050); overflow: hidden; position: relative; }
+  .wb-bar i { display: block; height: 100%; border-radius: 3px; width: 0; transition: width 620ms var(--ease-decel); }
+  /* A built block's bar carries a second, darker segment: the share of its call sites the
+     product actually routes through the component. Without it, "built" painted a full bar
+     while the pages still hand-rolled 97% of the work. */
+  .wb-bar u {
+    display: block; position: absolute; inset: 0 auto 0 0; height: 100%;
+    border-radius: 3px; width: 0; background: var(--green-600);
+    box-shadow: 0 0 0 1px var(--surface-primary);
+    transition: width 620ms var(--ease-decel);
+  }
+  .wb-bar--built i { opacity: 0.28; }
+  .wb-bar--built i { background: var(--status-success); }
+  .wb-bar--tokenised i { background: var(--accent-primary); }
+  .wb-bar--planned i { background: var(--gray-300); }
+  .wb-bar--excluded i { background: var(--gray-100); }
+  .wb-lnum {
+    font-family: var(--wb-mono); font-size: var(--text-xs); color: var(--text-primary);
+    font-variant-numeric: tabular-nums; text-align: right;
+  }
+  .wb-lnum s { text-decoration: none; color: var(--text-disabled); }
+  /* The adoption share sits above the pile size: the number that should be moving, over
+     the number it is moving against. */
+  .wb-lnum b { display: block; font-weight: var(--weight-semi); color: var(--status-success); }
+  .wb-lnum b:only-child { color: var(--text-primary); }
+
+  /* Detail drawer: the evidence, only when asked for. */
+  .wb-ldetail { display: none; padding: 0 var(--space-200) var(--space-200) 44px; background: var(--surface-hover); border-top: 1px solid var(--gray-050); }
+  .wb-ldetail.is-on { display: block; }
+  .wb-ldetail p { margin: var(--space-100) 0 0; font-size: var(--text-xs); line-height: 1.6; color: var(--text-secondary); max-width: 74ch; }
+  .wb-ldetail .where { font-family: var(--wb-mono); font-size: 10.5px; color: var(--text-muted); word-break: break-word; }
+
+  /* The dots meant nothing without this. */
+  .wb-legend { display: flex; flex-wrap: wrap; gap: var(--space-200); margin: var(--space-150) 0; }
+  .wb-legend div { display: flex; align-items: center; gap: var(--space-075); font-size: var(--text-xs); color: var(--text-secondary); }
+  .wb-legend b { font-weight: var(--weight-semi); color: var(--text-primary); }
+  .wb-legend em { font-style: normal; font-family: var(--wb-mono); font-size: 10px; color: var(--text-muted); }
+
+  /* ── Foundations ──────────────────────────────────────────────────────────── */
+  .wb-ramp { display: grid; grid-template-columns: repeat(auto-fit, minmax(58px, 1fr)); gap: 2px; margin-bottom: var(--space-150); }
+  .wb-step { border-radius: var(--radius-xs); overflow: hidden; }
+  .wb-step i { display: block; height: 46px; }
+  .wb-step code { display: block; font-family: var(--wb-mono); font-size: 9px; color: var(--text-muted); padding-top: 4px; letter-spacing: 0.02em; }
+  /* Hairlines drawn per row rather than by a 1px grid gap: 18 tokens never fill the last
+     grid line exactly, and a gap-coloured background leaves a grey stub where they stop. */
+  .wb-sem { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); background: var(--surface-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; }
+  .wb-semrow { display: flex; align-items: center; gap: var(--space-100); padding: 8px var(--space-100); border-right: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); }
+  .wb-semrow i { width: 22px; height: 22px; border-radius: var(--radius-xs); border: 1px solid var(--border-subtle); flex-shrink: 0; }
+  .wb-semrow div { min-width: 0; }
+  .wb-semrow b { display: block; font-size: 11.5px; font-weight: var(--weight-semi); color: var(--text-primary); }
+  .wb-semrow code { font-family: var(--wb-mono); font-size: 9.5px; color: var(--text-muted); }
+  .wb-scale { display: flex; flex-direction: column; gap: var(--space-100); }
+  .wb-scale-row { display: flex; align-items: baseline; gap: var(--space-200); }
+  .wb-scale-row code { font-family: var(--wb-mono); font-size: 10px; color: var(--text-muted); width: 104px; flex-shrink: 0; }
+  .wb-shapes { display: flex; gap: var(--space-100); flex-wrap: wrap; }
+  .wb-shapes div {
+    width: 68px; height: 52px; background: var(--accent-subtle); border: 1px solid var(--blue-200);
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 3px;
+    font-family: var(--wb-mono); font-size: 9px; color: var(--text-accent);
+  }
+  .wb-elev { display: flex; gap: var(--space-200); flex-wrap: wrap; }
+  .wb-elev div {
+    width: 148px; height: 74px; border-radius: var(--radius-lg); background: var(--surface-primary);
+    display: flex; align-items: flex-end; padding: var(--space-100);
+    font-family: var(--wb-mono); font-size: 9.5px; color: var(--text-muted);
+  }
+
+  /* The complete token index, read from the CSS rather than restated here. */
+  .wb-tokgroup { margin-bottom: var(--space-200); }
+  .wb-tokgroup > h3 {
+    font-family: var(--wb-mono); font-size: 10px; letter-spacing: 0.05em; font-weight: var(--weight-semi);
+    color: var(--text-secondary); margin: 0 0 var(--space-075);
+  }
+  .wb-tokgroup > h3 em { font-style: normal; color: var(--text-disabled); font-weight: var(--weight-normal); }
+  .wb-toks { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); background: var(--surface-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; }
+  .wb-tok {
+    display: flex; align-items: center; gap: var(--space-100); padding: 6px var(--space-100);
+    border-right: 1px solid var(--border-hairline); border-bottom: 1px solid var(--border-hairline);
+    min-width: 0;
+  }
+  .wb-tok i {
+    width: 16px; height: 16px; border-radius: var(--radius-xs); flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px var(--border-subtle);
+  }
+  .wb-tok i.is-flat { box-shadow: none; background: none; }
+  .wb-tok code { font-family: var(--wb-mono); font-size: 10px; color: var(--text-primary); white-space: nowrap; }
+  .wb-tok small {
+    font-family: var(--wb-mono); font-size: 9.5px; color: var(--text-muted); margin-left: auto;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 46%; text-align: right;
+  }
+  /* Marks a token the current direction has changed out from under the base files. */
+  .wb-tok small.is-themed { color: var(--text-accent); }
+  #wb-tok-count { font-family: var(--wb-mono); color: var(--text-disabled); text-transform: none; letter-spacing: 0; }
+
+  /* ── Icons ────────────────────────────────────────────────────────────────── */
+  .wb-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 2px; }
+  .wb-ico {
+    display: flex; flex-direction: column; align-items: center; gap: var(--space-075);
+    padding: var(--space-150) var(--space-050); border-radius: var(--radius-md);
+    cursor: pointer; color: var(--text-primary); border: 1px solid transparent; background: none;
+    font: inherit; transition: background var(--dur-base) var(--ease-standard);
+  }
+  .wb-ico:hover { background: var(--surface-hover); }
+  .wb-ico.is-copied { background: var(--accent-subtle); border-color: var(--accent-muted); }
+  .wb-ico code { font-family: var(--wb-mono); font-size: 9px; color: var(--text-muted); text-align: center; line-height: 1.35; word-break: break-word; }
+  .wb-ico.is-copied code { color: var(--text-accent); }
+  .wb-filter { max-width: 260px; margin-bottom: var(--space-150); }
+  .wb-ilab { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; margin-right: var(--space-200); }
+  .wb-ilab code { font-family: var(--wb-mono); font-size: 9px; color: var(--text-muted); }
+
+  /* ── Components view ──────────────────────────────────────────────────────── */
+  .wb-spec { border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-primary); overflow: hidden; margin-bottom: var(--space-200); }
+  .wb-spec-head { display: flex; align-items: baseline; gap: var(--space-100); padding: var(--space-150) var(--space-200); border-bottom: 1px solid var(--border-subtle); }
+  .wb-spec-head b { font-size: var(--text-lg); font-weight: var(--weight-semi); color: var(--text-heading); }
+  .wb-spec-head code { font-family: var(--wb-mono); font-size: 10.5px; color: var(--text-muted); }
+  .wb-spec-head span { margin-left: auto; font-family: var(--wb-mono); font-size: 10px; color: var(--text-muted); }
+  .wb-spec-body { padding: var(--space-200); }
+
+  /* ── Patterns view ──────────────────────────────────────────────────────────
+     Patterns document how screens and routes compose; wb-* keeps this explanatory
+     wireframe from masquerading as a product component. */
+  .wb-patterns { display: grid; gap: var(--space-200); }
+  .wb-pattern { border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-primary); overflow: hidden; }
+  .wb-pattern-head { padding: var(--space-200); border-bottom: 1px solid var(--border-subtle); }
+  .wb-pattern-kicker { font-family: var(--wb-mono); font-size: 10px; color: var(--text-accent); letter-spacing: 0.06em; text-transform: uppercase; }
+  .wb-pattern-head h2 { margin: var(--space-050) 0 var(--space-075); font-size: var(--text-xl); color: var(--text-heading); }
+  .wb-pattern-head p { margin: 0; max-width: 76ch; color: var(--text-secondary); line-height: 1.55; }
+  .wb-pattern-body { display: grid; grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.2fr); gap: var(--space-300); padding: var(--space-200); }
+  .wb-pattern-route { display: block; margin-bottom: var(--space-150); padding: var(--space-100); font-family: var(--wb-mono); font-size: var(--text-xs); color: var(--text-accent); background: var(--surface-recessed); border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+  .wb-pattern-use { margin: 0 0 var(--space-200); font-size: var(--text-sm); color: var(--text-primary); line-height: 1.55; }
+  .wb-pattern h3 { margin: 0 0 var(--space-100); font-family: var(--wb-mono); font-size: 10px; font-weight: var(--weight-semi); color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; }
+  .wb-pattern-list { margin: 0; padding-left: var(--space-200); color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.55; }
+  .wb-pattern-list li + li { margin-top: var(--space-075); }
+  .wb-pattern-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-200); }
+  .wb-pattern-grid > div:last-child { grid-column: 1 / -1; }
+  .wb-pattern-frame { container-type:inline-size; display: flex; flex-direction: column; min-height: 176px; margin-bottom: var(--space-200); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; background: var(--surface-page); }
+  .wb-pattern-sidebar { display: flex; align-items: center; justify-content: center; padding: var(--pattern-content-inset-y) var(--pattern-content-inset-x); background: var(--surface-primary); color: var(--text-secondary); border-right: 1px solid var(--border-subtle); font-family: var(--wb-mono); font-size: 10px; text-align: center; }
+  .wb-pattern-workspace { display: grid; grid-template-columns: minmax(72px, 0.28fr) 1fr; flex: 1; min-width: 0; }
+  .wb-pattern-twopane {
+    --wb-two-editor: 60%;
+    display: grid;
+    grid-template-columns: minmax(0, var(--wb-two-editor)) minmax(0, calc(100% - var(--wb-two-editor)));
+    position: relative; width: 100%; height:240px; min-width: 0;
+  }
+  .wb-pattern-pane { min-width: 0; display: flex; flex-direction: column; }
+  .wb-pattern-pane:first-child { grid-column: 1; }
+  .wb-pattern-pane:nth-child(2) { grid-column: 2; }
+  .wb-pattern-pane + .wb-pattern-pane { border-left: var(--btn-border-width) solid var(--border-default); background: var(--surface-recessed); }
+  .wb-pattern-panehead { padding: var(--pattern-content-inset-y) var(--pattern-content-inset-x); color: var(--text-heading); font-size: var(--text-xs); font-weight: var(--weight-semi); background: var(--surface-primary); border-bottom: 1px solid var(--border-subtle); }
+  .wb-pattern-panecontent { overflow:auto; min-height:0; box-sizing: border-box; flex: 1; display: grid; align-content: start; gap: var(--pattern-item-gap); padding: var(--pattern-content-inset-y) var(--pattern-content-inset-x); }
+  .wb-pattern-pane:first-child .wb-pattern-panecontent { width: 100%; margin-left: auto; }
+  .wb-pattern-pane:nth-child(2) .wb-pattern-panecontent { width: 100%; margin-right: auto; }
+  .wb-pattern-panecontent i { display: block; height: var(--space-300); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--surface-primary); }
+  .wb-pattern-panecontent--preview { place-items: start center; }
+  .wb-pattern-panecontent--preview i { width: min(76%, calc(var(--space-400) * 4)); height: calc(var(--space-400) * 2); }
+  .wb-pattern-pagehead { display: flex; align-items: center; justify-content: space-between; gap: var(--pattern-item-gap); padding: var(--pattern-content-inset-y) var(--pattern-content-inset-x); border-bottom: 1px solid var(--border-subtle); font-size: var(--text-xs); font-weight: var(--weight-semi); color: var(--text-heading); background: var(--surface-primary); }
+  .wb-pattern-pagehead span { color: var(--text-muted); font-family: var(--wb-mono); font-size: 10px; font-weight: var(--weight-normal); }
+  .wb-pattern-resizer {
+    position: absolute; z-index: 2; inset: 0 auto 0 var(--wb-two-editor); width: var(--space-200);
+    padding: 0; border: 0; transform: translateX(-50%); cursor: col-resize;
+    touch-action: none; background: transparent;
+  }
+  .wb-pattern-resizer::after {
+    content: ''; position: absolute; inset: 0 auto 0 50%; width: var(--btn-border-width);
+    transform: translateX(-50%); background: var(--border-default);
+  }
+  .wb-pattern-resizer:hover::after,
+  .wb-pattern-resizer:focus-visible::after { width: var(--space-025); background: var(--accent-primary); }
+  .wb-pattern-resizer:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+  .wb-pattern-sections { display: grid; gap: var(--pattern-section-gap); padding: var(--pattern-content-inset-y) var(--pattern-content-inset-x); }
+  .wb-pattern-section { height: var(--space-300); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--surface-primary); }
+  .wb-pattern-modalstage { display: flex; align-items: center; justify-content: center; min-height: 176px; margin-bottom: var(--space-200); padding: var(--space-200); border-radius: var(--radius-md); background: var(--modal-backdrop-bg); }
+  .wb-pattern-modal { width: min(76%, 420px); overflow: hidden; border-radius: var(--radius-lg); background: var(--surface-primary); box-shadow: var(--elevation-modal); }
+  .wb-pattern-modalhead, .wb-pattern-modalfoot { padding: var(--pattern-content-inset-y) var(--pattern-content-inset-x); font-size: var(--text-xs); font-weight: var(--weight-semi); color: var(--text-heading); }
+  .wb-pattern-modalhead { border-bottom: 1px solid var(--border-subtle); }
+  .wb-pattern-modalbody { max-height:160px; overflow:auto; display: grid; gap: var(--pattern-item-gap); padding: var(--pattern-content-inset-y) var(--pattern-content-inset-x); background: var(--surface-page); }
+  .wb-pattern-modalbody i { display: block; height: var(--space-150); border-radius: var(--radius-sm); background: var(--surface-primary); border: 1px solid var(--border-subtle); }
+  .wb-pattern-modalfoot { display: flex; justify-content: flex-end; gap: var(--pattern-action-gap); border-top: 1px solid var(--border-subtle); }
+  .wb-pattern-modalfoot i { display: block; width: var(--space-400); height: var(--space-200); border-radius: var(--radius-control); background: var(--surface-hover); }
+  .wb-pattern-modalfoot i:last-child { background: var(--accent-primary); }
+
+  .wb-pattern-nav-toggle { display:flex; align-items:center; gap:var(--layout-related-gap); margin-bottom:var(--space-100); font-size:var(--text-xs); }
+  .wb-pattern-sidebar[hidden] { display:none; }
+  .wb-pattern-workspace--without-nav { grid-template-columns:1fr; }
+  @container (max-width:18rem) {
+    .wb-pattern-twopane { grid-template-columns:1fr; height:auto; }
+    .wb-pattern-twopane > .wb-pattern-pane { grid-column:1; min-height:120px; }
+    .wb-pattern-pane + .wb-pattern-pane { border-left:0; border-top:var(--btn-border-width) solid var(--border-default); }
+    .wb-pattern-resizer, [data-wb-two-help] { display:none; }
+    .wb-pattern-workspace { grid-template-columns:1fr; }
+    .wb-pattern-sidebar { border-right:0; border-bottom:var(--btn-border-width) solid var(--border-subtle); }
+  }
+  /* ── Data visualization view ───────────────────────────────────────────────
+     These are the engine-neutral design-system components for chart language;
+     product renderers reproduce these contracts without inheriting library defaults. */
+  .wb-viz-principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-100); margin-bottom: var(--space-200); }
+  .wb-viz-principle { padding: var(--space-150); border-radius: var(--radius-md); background: var(--surface-recessed); }
+  .wb-viz-principle b { display: block; margin-bottom: var(--space-050); color: var(--text-heading); font-size: var(--text-sm); }
+  .wb-viz-principle span { color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.5; }
+  .wb-viz-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-200); align-items: start; }
+  .wb-viz-card { overflow: hidden; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-primary); }
+  .wb-viz-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-150); padding: var(--space-200) var(--space-200) var(--space-150); }
+  .wb-viz-family { display: block; margin-bottom: var(--space-050); color: var(--text-muted); font-family: var(--wb-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .wb-viz-head h2 { margin: 0; color: var(--text-heading); font-size: var(--text-xl); }
+  .wb-viz-size-control { display: flex; align-items: center; gap: var(--space-075); color: var(--text-muted); font-size: var(--text-2xs); }
+  .wb-viz-size { width: auto; min-width: 92px; height: var(--btn-height-sm); padding-block: 0; font-size: var(--text-xs); }
+  .wb-viz-plot { min-height: 252px; padding: var(--space-100) var(--space-200) var(--space-150); background: var(--surface-primary); }
+  .wb-viz-svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .wb-viz-svg text { font-family: var(--font-sans); }
+  .wb-viz-gridline { stroke: var(--viz-gridline); stroke-width: var(--ds-viz-line-width); }
+  .wb-viz-axis { fill: var(--viz-axis-label); font-size: var(--ds-viz-axis-font); }
+  .wb-viz-label { fill: var(--text-secondary); font-size: var(--ds-viz-label-font); font-weight: var(--weight-medium); }
+  .wb-viz-value { fill: var(--text-heading); font-size: var(--ds-viz-value-font); font-weight: var(--weight-semi); font-variant-numeric: tabular-nums; }
+  .wb-viz-primary { fill: var(--viz-primary); }
+  .wb-viz-primary-stroke { fill: none; stroke: var(--viz-primary); stroke-width: var(--ds-viz-line-width); stroke-linecap: round; stroke-linejoin: round; }
+  .wb-viz-primary-soft { fill: var(--viz-primary-soft); }
+  .wb-viz-track { fill: var(--surface-sunken); }
+  .wb-viz-series-2 { fill: var(--viz-categorical-2); stroke: var(--viz-categorical-2); }
+  .wb-viz-series-3 { fill: var(--viz-categorical-3); stroke: var(--viz-categorical-3); }
+  .wb-viz-series-4 { fill: var(--viz-categorical-4); stroke: var(--viz-categorical-4); }
+  .wb-viz-series-5 { fill: var(--viz-categorical-5); stroke: var(--viz-categorical-5); }
+  .wb-viz-tooltip rect { fill: var(--viz-tooltip-bg); }
+  .wb-viz-tooltip text { fill: var(--viz-tooltip-text); font-size: var(--ds-viz-axis-font); }
+  .wb-viz-tooltip text:last-child { font-weight: var(--weight-semi); }
+  .wb-viz-tooltip { pointer-events: none; }
+  .wb-viz-trend-guide { stroke: var(--viz-gridline); stroke-width: var(--ds-viz-line-width); stroke-dasharray: 3 4; }
+  .wb-viz-trend-active { fill: var(--surface-primary); stroke: var(--viz-primary); stroke-width: var(--ds-viz-line-width); pointer-events: none; }
+  .wb-viz-trend-hit { fill: transparent; cursor: crosshair; }
+  .wb-viz-trend-hit:focus { outline: none; }
+  .wb-viz-legend { display: flex; flex-wrap: wrap; gap: var(--space-100) var(--space-150); margin: var(--space-050) 0 0; color: var(--text-secondary); font-size: var(--viz-legend-font-md); }
+  .wb-viz-legend span { display: inline-flex; align-items: center; gap: var(--space-050); }
+  .wb-viz-legend i { width: var(--space-100); height: var(--space-100); border-radius: var(--radius-xs); }
+  .wb-viz-meta { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-150) var(--space-200); padding: var(--space-200); border-top: 1px solid var(--border-hairline); background: var(--surface-recessed); }
+  .wb-viz-meta div:last-child { grid-column: 1 / -1; }
+  .wb-viz-meta h3 { margin: 0 0 var(--space-050); color: var(--text-muted); font-family: var(--wb-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .wb-viz-meta p { margin: 0; color: var(--text-secondary); font-size: var(--text-xs); line-height: 1.55; }
+  .wb-viz-variant-list { display: grid; gap: var(--space-200); }
+  .wb-viz-variant-label { margin-bottom: var(--space-075); color: var(--text-muted); font-family: var(--wb-mono); font-size: var(--text-2xs); letter-spacing: 0.05em; text-transform: uppercase; }
+
+  /* ── Directions view ──────────────────────────────────────────────────────── */
+  .wb-dirs { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-200); align-items: start; }
+  .wb-dir { border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); background: var(--surface-primary); padding: var(--space-200); }
+  .wb-dir h3 { margin: 0 0 var(--space-050); font-size: var(--text-lg); font-weight: var(--weight-semi); color: var(--text-heading); }
+  .wb-dir p { margin: 0 0 var(--space-200); font-size: var(--text-xs); color: var(--text-muted); line-height: 1.55; }
+  .wb-dir p b { color: var(--text-primary); font-weight: var(--weight-semi); }
+  /* The preview sits on the page ground, not the card's, so the direction's own surface
+     tokens are visible rather than being masked by the card behind them. */
+  .wb-dir-preview {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-100);
+    padding: var(--space-200); margin-bottom: var(--space-150);
+    background: var(--surface-page); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+  }
+  .wb-dir-preview .ds-input { width: 132px; }
+  .wb-dir-preview .ds-card { width: 100%; }
+  .wb-dir pre { margin: 0; font-family: var(--wb-mono); font-size: 10px; line-height: 1.65; color: var(--text-secondary); background: var(--surface-recessed); padding: var(--space-150); border-radius: var(--radius-sm); overflow-x: auto; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .wb-view.is-on { animation: none; }
+    .wb-bar i { transition: none; }
+  }
+  @media (max-width: 860px) {
+    :root { --wb-rail-w: 0px; }
+    .wb-rail { position: static; width: 100%; flex-direction: row; align-items: center; padding: var(--space-100); overflow-x: auto; }
+    .wb-mark { padding: 0 var(--space-150) 0 var(--space-100); }
+    .wb-mark span { display: none; }
+    .wb-nav { flex-direction: row; }
+    .wb-nav a i { display: none; }
+    .wb-rail-foot { display: none; }
+    body { flex-direction: column; }
+    .wb-main { margin-left: 0; }
+    /* Drop the component name and the bar; the dot, the name and the count still rank. */
+    .wb-lrow, .wb-lhead { grid-template-columns: 14px 1fr 56px; }
+    .wb-lrow > :nth-child(3), .wb-lhead > :nth-child(3),
+    .wb-lrow > :nth-child(4), .wb-lhead > :nth-child(4) { display: none; }
+    .wb-ldetail { padding-left: var(--space-200); }
+    .wb-pattern-body { grid-template-columns: 1fr; }
+    .wb-pattern-grid { grid-template-columns: 1fr; }
+    .wb-pattern-grid > div:last-child { grid-column: auto; }
+    .wb-viz-principles, .wb-viz-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="wb-rail">
+  <div class="wb-mark"><b>Titan</b><span>design system</span></div>
+  <div class="wb-nav" id="wb-nav"></div>
+  <div class="wb-rail-foot">
+    <p id="wb-foot">…</p>
+  </div>
+</nav>
+
+<div class="wb-main">
+
+
+  <!-- ── Overview ─────────────────────────────────────────────────────────── -->
+  <section class="wb-view is-on" id="view-overview">
+    <div class="wb-lede">
+      <!-- The headline is the tally, rendered from registry.json, so it can't go stale
+           the way a hand-typed claim about coverage would. -->
+      <h1 id="wb-h1">Counting what this system covers…</h1>
+      <p>Every recurring element in the CRM, found by reading all 756 CSS class rules in
+         it. A block being <em>built</em> is not the same as the product using it, so the
+         green segment on each bar is measured from the pages by
+         <code>measure-adoption.js</code> — rerun it and these numbers move.</p>
+    </div>
+    <div class="wb-stats" id="wb-stats"></div>
+    <div class="wb-ledger" id="wb-ledger"></div>
+    <div class="wb-legend" id="wb-legend"></div>
+    <p class="wb-note">
+      The bar is how big the pile is, not how much of it is gone — colour is the progress.
+      Click a row for the evidence. Sorted by duplication, so the top of the list is the
+      most work saved per component built.
+    </p>
+  </section>
+
+  <!-- ── Foundations ──────────────────────────────────────────────────────── -->
+  <section class="wb-view" id="view-foundations">
+    <div class="wb-lede">
+      <h1>Foundations</h1>
+      <p>Primitives are raw values. Semantics say what a value is <em>for</em>. Components
+         read semantics only, which is what makes a direction a one-file change.</p>
+    </div>
+    <div class="wb-sec"><h2>Neutral ramp — primitives</h2><div class="wb-ramp" id="wb-ramp-gray"></div></div>
+    <div class="wb-sec"><h2>Accent &amp; status — primitives</h2><div class="wb-ramp" id="wb-ramp-accent"></div></div>
+    <div class="wb-sec"><h2>Semantics — what components actually read</h2><div class="wb-sem" id="wb-sem"></div></div>
+    <div class="wb-sec"><h2>Type</h2><div class="wb-scale" id="wb-type"></div></div>
+    <div class="wb-sec"><h2>Radius</h2><div class="wb-shapes" id="wb-radius"></div></div>
+    <div class="wb-sec"><h2>Space</h2><div id="wb-space"></div></div>
+    <div class="wb-sec"><h2>Spacing roles &amp; ownership</h2><div id="wb-spacing-rules"></div></div>
+    <div class="wb-sec"><h2>Elevation</h2><div class="wb-elev" id="wb-elev"></div></div>
+    <div class="wb-sec">
+      <h2>Every token <span id="wb-tok-count"></span></h2>
+      <p class="wb-note">Parsed from <code>primitives.css</code> and <code>semantics.css</code>
+         at load, grouped by the section comments in those files. Add a token and it appears
+         here — the specimens above are curated, this is complete.</p>
+      <div id="wb-tokens"></div>
+    </div>
+  </section>
+
+  <!-- ── Icons ────────────────────────────────────────────────────────────── -->
+  <section class="wb-view" id="view-icons">
+    <div class="wb-lede">
+      <h1>Icons</h1>
+      <p>Phosphor, real upstream geometry, three weights. Colour comes from
+         <code>currentColor</code>, so an icon takes the ink of whatever it sits in.</p>
+    </div>
+    <input class="ds-input wb-filter" id="wb-icon-filter" placeholder="Filter icons…" autocomplete="off">
+    <div class="wb-sec">
+      <h2>Sizes &amp; states</h2>
+      <div class="wb-row"><span class="wb-key">size</span><span id="wb-icon-sizes"></span></div>
+      <div class="wb-row"><span class="wb-key">state</span><span id="wb-icon-states"></span></div>
+    </div>
+    <div class="wb-sec">
+      <h2>The set</h2>
+      <p class="wb-note">Click to copy the call. To change one, edit the <code>ICONS</code> map in
+         <code>icon.js</code>, or override it anywhere with <code>dsIcon.register()</code>.</p>
+      <div class="wb-icons" id="wb-icons"></div>
+      <p class="wb-note" id="wb-icon-alias" style="margin-top:var(--space-150)"></p>
+    </div>
+  </section>
+
+  <!-- ── Components ───────────────────────────────────────────────────────── -->
+  <section class="wb-view" id="view-components">
+    <div class="wb-lede">
+      <h1>Components</h1>
+      <p>Every variant in every state. If a state is missing here, it is missing in the
+         product too — this page is how you find out.</p>
+    </div>
+    <h2 class="wb-composition-heading">Composition defaults</h2>
+    <p class="wb-note">Start new content with these layouts. Shared defaults apply unless a documented component or variant overrides them. Existing layouts change only when they adopt a composition.</p>
+    <div id="wb-compositions"></div>
+    <h2 class="wb-composition-heading">Controls &amp; surfaces</h2>
+    <div id="wb-components"></div>
+  </section>
+
+  <!-- ── Patterns ─────────────────────────────────────────────────────────── -->
+  <section class="wb-view" id="view-patterns">
+    <div class="wb-lede">
+      <h1>Patterns</h1>
+      <p>Patterns coordinate routes, page ownership and component composition. They
+         describe how a task behaves across a whole screen; they do not add a new
+         <code>ds-*</code> class.</p>
+    </div>
+    <div class="wb-patterns" id="wb-patterns"></div>
+  </section>
+
+  <!-- ── Data visualization ──────────────────────────────────────────────── -->
+  <section class="wb-view" id="view-visualizations">
+    <div class="wb-lede">
+      <h1>Data visualization</h1>
+      <p>The design-system catalog for charts. These components define reading order,
+         colour, density and accessibility independently of the rendering library and
+         are the source of truth for implementations in ECharts or another renderer.</p>
+    </div>
+    <div class="wb-viz-principles" aria-label="Data visualization principles">
+      <div class="wb-viz-principle"><b>Answer one question</b><span>Each chart earns its space by making one comparison or pattern faster to understand.</span></div>
+      <div class="wb-viz-principle"><b>Label the evidence</b><span>Keep decisive values visible; tooltips provide detail rather than rescuing an unreadable chart.</span></div>
+      <div class="wb-viz-principle"><b>Meaning before decoration</b><span>Motion, colour and geometry clarify data. They never add spectacle without information.</span></div>
+    </div>
+    <div class="wb-viz-grid" id="wb-visualizations"></div>
+  </section>
+
+  <section class="wb-view" id="view-moodboard"><iframe id="moodboard-frame" title="Mood board infinite canvas" allow="clipboard-read; clipboard-write"></iframe></section>
+
+  <!-- ── Directions ───────────────────────────────────────────────────────── -->
+  <section class="wb-view" id="view-directions">
+    <div class="wb-lede">
+      <h1>Directions</h1>
+      <p>A direction is one file that remaps semantic tokens. It may not add component
+         rules or invent raw values — that constraint is what makes trying one cheap and
+         abandoning one free.</p>
+    </div>
+    <p class="wb-note">
+      Each column below is a live direction, side by side. The theme file is fetched and
+      re-scoped to its column, so these are the real overrides rather than a copy of them —
+      edit <code>themes/soft.css</code>, reload, and the difference moves. The
+      <b>Direction</b> control below applies one across the workbench.
+    </p>
+  <div class="wb-direction-controls">
+    <span id="wb-crumb" hidden></span>
+    <div class="wb-controls">
+      <label for="wb-weight">Icons</label>
+      <select class="ds-input" id="wb-weight"></select>
+      <label for="wb-theme">Direction</label>
+      <select class="ds-input" id="wb-theme"></select>
+    </div>
+  </div>
+    <div class="wb-dirs" id="wb-dirs"></div>
+    <style id="wb-theme-scoped"></style>
+  </section>
+</div>
+
+<style>#view-moodboard{padding:0;max-width:none;height:calc(100vh - 65px)}body.wb-moodboard-active .wb-top{display:none}body.wb-moodboard-active #view-moodboard{height:100dvh;animation:none}#view-moodboard iframe{width:100%;height:100%;border:0;display:block}</style>
+<script src="./components/icon.js"></script>
+<script src="./components/button.js"></script>
+<script src="./components/menu.js"></script>
+<script src="./components/pipeline-tag.js"></script>
+<script src="./components/visualization.js"></script>
+<script src="./anatomy.js"></script>
+<script>
+  const css = getComputedStyle(document.documentElement);
+  const val = (t) => css.getPropertyValue(t).trim();
+  const esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  };
+
+  // ── Views ────────────────────────────────────────────────────────────────
+  // Hash routing, so a view is linkable and the back button works. Nav is generated
+  // from one list rather than duplicated in markup and JS.
+  // Icons chosen for what the view *is*, not for a generic nav vocabulary: the overview is
+  // a list, foundations are named values (tag), icons are a grid, components are a parts
+  // bin, patterns are screen-level recipes, and a direction is an experiment you can
+  // throw away.
+  const VIEWS = [
+    { id: 'overview', label: 'Overview', icon: 'list-bullets' },
+    { id: 'foundations', label: 'Foundations', icon: 'tag' },
+    { id: 'icons', label: 'Icons', icon: 'squares-four' },
+    { id: 'components', label: 'Components', icon: 'archive-box' },
+    { id: 'patterns', label: 'Patterns', icon: 'gear' },
+    { id: 'visualizations', label: 'Data viz', icon: 'chart-line' },
+    { id: 'directions', label: 'Directions', icon: 'flask' },
+    { id: 'moodboard', label: 'Mood board', icon: 'squares-four' },
+  ];
+  const counts = {};
+  function renderNav() {
+    document.getElementById('wb-nav').innerHTML = VIEWS.map(function (v) {
+      return '<a href="#' + v.id + '" data-view="' + v.id + '">' +
+        dsIcon(v.icon, { size: 15 }) + v.label +
+        (counts[v.id] ? '<i>' + counts[v.id] + '</i>' : '') + '</a>';
+    }).join('');
+  }
+  function show(id) {
+    const view = VIEWS.some(function (v) { return v.id === id; }) ? id : 'overview';
+    VIEWS.forEach(function (v) {
+      document.getElementById('view-' + v.id).classList.toggle('is-on', v.id === view);
+      const a = document.querySelector('.wb-nav a[data-view="' + v.id + '"]');
+      if (a) { if (v.id === view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }
+    });
+    document.body.classList.toggle('wb-moodboard-active', view === 'moodboard');
+    const meta = VIEWS.filter(function (v) { return v.id === view; })[0];
+    document.getElementById('wb-crumb').innerHTML = meta.label +
+      (counts[view] ? '<em>' + counts[view] + '</em>' : '');
+    if (view === 'overview') growBars();
+    if (view === 'moodboard') {
+      const frame = document.getElementById('moodboard-frame');
+      if (!frame.src && !frame.dataset.loading) {
+        frame.dataset.loading = 'true';
+        fetch('/api/board').then(function(r) { if (!r.ok) throw Error(); return r.json(); }).then(function(data) {
+          if (!Array.isArray(data.buckets)) throw Error();
+          frame.src = '/moodboard?embedded=1';
+        }).catch(function() { frame.src = location.protocol + '//' + location.hostname + ':8015/?embedded=1'; });
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+
+  // ── Overview: stats + ledger ─────────────────────────────────────────────
+  let BLOCKS = [];
+  let sortKey = 'variants';
+  function growBars() {
+    // Width is set after paint so the bars measure themselves in, once per view entry.
+    requestAnimationFrame(function () {
+      document.querySelectorAll('.wb-bar i').forEach(function (el) { el.style.width = el.dataset.w; });
+    });
+  }
+  function renderLedger() {
+    const max = Math.max.apply(null, BLOCKS.map(function (b) { return b.variants || 0; })) || 1;
+    const order = { built: 0, tokenised: 1, planned: 2, excluded: 3 };
+    const rows = BLOCKS.slice().sort(function (a, b) {
+      if (sortKey === 'name') return a.name.localeCompare(b.name);
+      if (sortKey === 'status') return (order[a.status] - order[b.status]) || (b.variants - a.variants);
+      return (b.variants - a.variants) || a.name.localeCompare(b.name);
+    });
+    const col = function (key, label, extra) {
+      const on = sortKey === key;
+      return '<button data-sort="' + key + '" aria-pressed="' + on + '"' +
+        (on ? ' data-on' : '') + (extra || '') + '>' + label + '</button>';
+    };
+    // "Absorbed" was wrong: the bar is the size of the pile, and colour is how far the
+    // migration has got. Two different facts, so the header must not claim only one.
+    const head = '<div class="wb-lhead">' +
+      '<span></span>' + col('name', 'Block') + col('status', 'Today') +
+      '<span>Duplication at stake</span>' +
+      col('variants', 'Variants', ' style="text-align:right"') +
+      '</div>';
+    document.getElementById('wb-ledger').innerHTML = head + rows.map(function (b, i) {
+      const w = Math.round((b.variants || 0) / max * 100);
+      // For a built block this is the component's own class; for a planned one it's a
+      // representative legacy class, which is what you'd still be writing today.
+      const comp = (b.component && b.component !== '—') ? b.component : b.whereToday.split(',')[0];
+      // Adoption is only meaningful where a component exists to adopt.
+      const measured = typeof b.adopted === 'number' && (b.adopted + b.legacy) > 0;
+      const share = measured ? Math.round(b.adopted / (b.adopted + b.legacy) * 100) : null;
+      const sub = b.status === 'excluded' ? b.category + ' · not a component'
+        : b.status === 'tokenised' ? b.category + ' · themeable, no component'
+        : measured ? b.category + ' · ' + b.adopted + ' of ' + (b.adopted + b.legacy) + ' call sites moved'
+        : b.prefixes ? b.category + ' · ' + b.prefixes + ' prefixes'
+        : b.category;
+      return '<button class="wb-lrow" data-i="' + i + '" aria-expanded="false" aria-controls="wb-d' + i + '">' +
+          '<span class="wb-dot wb-dot--' + b.status + '"></span>' +
+          '<span class="wb-lname">' + esc(b.name) + '<small>' + esc(sub) + '</small></span>' +
+          '<span class="wb-lcomp' + (b.component === '—' ? ' is-none' : '') + '">' + esc(comp) + '</span>' +
+          // No bar where there is no count: an empty track would read as a measured
+          // zero, and these blocks were never prefix-surveyed at all.
+          (b.variants
+            ? '<span class="wb-bar wb-bar--' + b.status + '"><i data-w="' + w + '%"></i>' +
+                (share === null ? '' : '<u data-w="' + Math.round(w * share / 100) + '%"></u>') +
+              '</span>'
+            : '<span></span>') +
+          '<span class="wb-lnum">' +
+            (share === null ? '' : '<b>' + share + '%</b>') +
+            (b.variants ? b.variants : '<s>—</s>') +
+          '</span>' +
+        '</button>' +
+        '<div class="wb-ldetail" id="wb-d' + i + '" data-d="' + i + '">' +
+          '<p>' + esc(b.evidence) + (b.note ? ' ' + esc(b.note) : '') + '</p>' +
+          '<p class="where">' + esc(b.whereToday) + '</p>' +
+        '</div>';
+    }).join('');
+    growBars();
+  }
+  // Legend counts come from the data, so a state with no blocks in it doesn't get listed
+  // as if it were a category the product uses.
+  const STATES = [
+    ['built', 'Component exists', 'ds-* class or render module'],
+    ['tokenised', 'Themeable only', 'reads component tokens, still hand-rolled'],
+    ['planned', 'Hand-rolled', 'literals, per page'],
+    ['excluded', 'Not a component', 'derived data or brand art'],
+  ];
+  function renderLegend() {
+    document.getElementById('wb-legend').innerHTML = STATES.map(function (s) {
+      const n = BLOCKS.filter(function (b) { return b.status === s[0]; }).length;
+      if (!n) return '';
+      return '<div><span class="wb-dot wb-dot--' + s[0] + '"></span>' +
+        '<b>' + n + ' ' + s[1] + '</b><em>' + s[2] + '</em></div>';
+    }).join('');
+  }
+
+  document.getElementById('wb-ledger').addEventListener('click', function (e) {
+    const sortBtn = e.target.closest('[data-sort]');
+    if (sortBtn) { sortKey = sortBtn.dataset.sort; renderLedger(); return; }
+    const row = e.target.closest('.wb-lrow');
+    if (!row) return;
+    const d = document.querySelector('.wb-ldetail[data-d="' + row.dataset.i + '"]');
+    const open = d.classList.toggle('is-on');
+    row.classList.toggle('is-open', open);
+    row.setAttribute('aria-expanded', String(open));
+  });
+
+  fetch('./registry.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (reg) {
+      BLOCKS = (reg.inventory && reg.inventory.blocks) || [];
+      const built = BLOCKS.filter(function (b) { return b.status === 'built'; });
+      const tokenised = BLOCKS.filter(function (b) { return b.status === 'tokenised'; });
+      // Tokenised counts as hand-rolled here on purpose: a direction can restyle it, but
+      // every page still writes its own copy, so the duplication is all still at stake.
+      const handRolled = BLOCKS.filter(function (b) {
+        return b.status === 'tokenised' || b.status === 'planned';
+      }).sort(function (a, b) { return (b.variants || 0) - (a.variants || 0); });
+      const dup = handRolled.reduce(function (a, b) { return a + (b.variants || 0); }, 0);
+      const top = handRolled[0];
+
+      // Adoption across every block that has a component to adopt. This is the number the
+      // headline leads with, because "5 built" was true while the product used almost none
+      // of it — and a ledger that flatters itself is worse than no ledger.
+      const adopted = BLOCKS.reduce(function (n, b) { return n + (b.adopted || 0); }, 0);
+      const legacy  = BLOCKS.reduce(function (n, b) { return n + (b.legacy || 0); }, 0);
+      const share   = (adopted + legacy) ? Math.round(adopted / (adopted + legacy) * 100) : 0;
+
+      document.getElementById('wb-h1').innerHTML =
+        share + '% of the product goes through the system.';
+
+      document.getElementById('wb-stats').innerHTML =
+        '<div class="wb-stat"><b>' + adopted + '<sup>/' + (adopted + legacy) + '</sup></b>' +
+          '<span>call sites moved onto a component. The rest still hand-roll it.</span></div>' +
+        '<div class="wb-stat"><b>' + built.length + '<sup>/' + BLOCKS.length + '</sup></b>' +
+          '<span>blocks have a component at all' +
+          (tokenised.length ? '; ' + tokenised.length + ' more are themeable only' : '') + '.</span></div>' +
+        '<div class="wb-stat"><b>' + (top ? top.variants : 0) + '</b>' +
+          '<span>CRM rules in the biggest unbuilt block: ' + (top ? esc(top.name).toLowerCase() : '—') +
+          ', under ' + (top ? top.prefixes : 0) + ' different class prefixes.</span></div>';
+
+      counts.overview = built.length + '/' + BLOCKS.length;
+      counts.components = String((reg.components || []).length);
+      counts.patterns = String((reg.patterns || []).length);
+      counts.visualizations = String((reg.visualizations || []).length);
+      counts.directions = String((reg.themes || []).length);
+      renderNav();
+      renderLedger();
+      renderLegend();
+      wbAnatomy.foundations(reg.spacing);
+      wbAnatomy.compositions(reg.compositions || []);
+      renderComponents(reg.components || []);
+      renderPatterns(reg.patterns || []);
+      renderVisualizations(reg.visualizations || []);
+      renderDirections(reg.themes || []);
+      document.getElementById('wb-foot').innerHTML =
+        '<b>' + built.length + '/' + BLOCKS.length + '</b> blocks built<br>' +
+        '<b>' + dsIcon.builtins().length + '</b> icons · <b>' + (reg.components || []).length + '</b> components<br>' +
+        '<b>' + (reg.compositions || []).length + '</b> composition defaults<br>v' + (reg.version || '0');
+      show(location.hash.slice(1));
+    })
+    .catch(function () {
+      document.getElementById('wb-stats').innerHTML =
+        '<div class="wb-stat"><b>—</b><span>registry.json needs to be served over HTTP. ' +
+        'Run <code>node dev-server.js</code> and open /design-system/.</span></div>';
+      renderNav(); show(location.hash.slice(1));
+    });
+
+  // ── Foundations ──────────────────────────────────────────────────────────
+  const GRAYS = ['--gray-000','--gray-025','--gray-050','--gray-100','--gray-150','--gray-200',
+                 '--gray-300','--gray-400','--gray-450','--gray-500','--gray-600','--gray-700','--gray-800','--gray-900'];
+  const ACCENTS = ['--blue-050','--blue-100','--blue-200','--blue-300','--blue-600','--blue-700',
+                   '--green-050','--green-600','--amber-050','--amber-600','--red-050','--red-600'];
+  const SEM = ['--surface-page','--surface-primary','--surface-recessed','--surface-hover','--surface-selected',
+               '--text-heading','--text-primary','--text-secondary','--text-muted','--text-disabled',
+               '--border-subtle','--border-default','--accent-primary','--accent-hover','--accent-subtle',
+               '--status-success','--status-warning','--status-danger'];
+
+  // Foundations print their own resolved values, so this has to be re-read whenever the
+  // direction changes — otherwise the swatches keep showing the values of the old theme.
+  function paintFoundations() {
+    const ramp = function (host, toks) {
+      document.getElementById(host).innerHTML = toks.map(function (t) {
+        return '<div class="wb-step"><i style="background:' + val(t) +
+          '; box-shadow: inset 0 0 0 1px ' + val('--border-subtle') + '"></i>' +
+          '<code data-copy-token="' + esc(t) + '">' + t.replace('--', '') + '</code></div>';
+      }).join('');
+    };
+    ramp('wb-ramp-gray', GRAYS); ramp('wb-ramp-accent', ACCENTS);
+
+    document.getElementById('wb-sem').innerHTML = SEM.map(function (t) {
+      return '<div class="wb-semrow"><i style="background:' + val(t) + '"></i>' +
+        '<div><b>' + t.replace('--', '').replace(/-/g, ' ') + '</b><code>' + val(t) + '</code></div></div>';
+    }).join('');
+
+    document.getElementById('wb-type').innerHTML =
+      ['--text-3xl','--text-2xl','--text-xl','--text-lg','--text-md','--text-sm','--text-xs','--text-2xs']
+      .map(function (t) {
+        return '<div class="wb-scale-row"><code>' + t.replace('--','') + ' · ' + val(t) + '</code>' +
+          '<span style="font-size:' + val(t) + '">Pipeline, record, contact</span></div>';
+      }).join('');
+
+    document.getElementById('wb-radius').innerHTML =
+      ['--radius-xs','--radius-sm','--radius-md','--radius-lg','--radius-xl','--radius-full'].map(function (r) {
+        return '<div style="border-radius:' + val(r) + '">' + r.replace('--radius-','') + '</div>';
+      }).join('');
+
+    document.getElementById('wb-space').innerHTML =
+      ['--space-025','--space-050','--space-075','--space-100','--space-125','--space-150','--space-200','--space-300','--space-400']
+      .map(function (s) {
+        return '<div class="wb-scale-row"><code>' + s.replace('--','') + ' · ' + val(s) + '</code>' +
+          '<i style="display:block; height:10px; width:' + val(s) + '; background:var(--accent-primary); border-radius:2px"></i></div>';
+      }).join('');
+
+    document.getElementById('wb-elev').innerHTML =
+      [['--elevation-card','card'],['--elevation-menu','menu'],['--elevation-modal','modal']]
+      .map(function (e) { return '<div style="box-shadow:' + val(e[0]) + '">' + e[1] + '</div>'; }).join('');
+  }
+  paintFoundations();
+
+  // ── The complete token index ───────────────────────────────────────────────
+  // The specimens above are a curated list, which meant every token added since this page
+  // was written — --checkbox-size, --border-hairline, --surface-sunken, --kanban-*, and
+  // every component token — was invisible here. So this reads the CSS instead: sections come
+  // from the files' own comment headers, rows from their declarations. Nothing to keep in
+  // sync, which is the same reason the ledger reads registry.json.
+  function paintTokenIndex() {
+    Promise.all(['./tokens/primitives.css', './tokens/semantics.css'].map(function (f) {
+      return fetch(f, { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; })
+        .catch(function () { return ''; });
+    })).then(function (texts) {
+      const groups = [];
+      texts.forEach(function (text, fileIdx) {
+        let current = null;
+        text.split('\n').forEach(function (line) {
+          // Section headers look like `/* ── Neutral ramp ───` or `/* ═══ Component tokens ═══`.
+          const head = line.match(/\/\*\s*[─═-]{2,}\s*(.+?)\s*[─═-]{2,}/);
+          if (head) {
+            current = { name: head[1], file: fileIdx ? 'semantics' : 'primitives', toks: [] };
+            groups.push(current);
+            return;
+          }
+          const decl = line.match(/^\s*(--[\w-]+)\s*:\s*([^;]+);/);
+          if (!decl) return;
+          if (!current) { current = { name: 'Ungrouped', file: fileIdx ? 'semantics' : 'primitives', toks: [] }; groups.push(current); }
+          current.toks.push({ name: decl[1], raw: decl[2].trim() });
+        });
+      });
+
+      const live = groups.filter(function (g) { return g.toks.length; });
+      const total = live.reduce(function (n, g) { return n + g.toks.length; }, 0);
+      document.getElementById('wb-tok-count').textContent = '· ' + total;
+      counts.foundations = String(total);
+      // Re-render the rail so the count lands, then re-assert the current view: renderNav
+      // rebuilds the markup and would otherwise drop aria-current.
+      renderNav();
+      show(location.hash.slice(1));
+
+      document.getElementById('wb-tokens').innerHTML = live.map(function (g) {
+        return '<div class="wb-tokgroup"><h3>' + esc(g.name) +
+          ' <em>' + g.file + ' · ' + g.toks.length + '</em></h3><div class="wb-toks">' +
+          g.toks.map(function (t) {
+            const v = val(t.name);
+            // A swatch only where the value is actually a colour; shadows, sizes and
+            // easings get their value printed instead of a misleading empty square.
+            const isColour = /^(#|rgb|hsl|oklch|color)/i.test(v);
+            // For a semantic, the mapping is the useful thing to read — except when a
+            // direction has overridden it, where printing the file's mapping would describe
+            // something that isn't on screen. So compare what the authored `var()` resolves
+            // to against what the token actually resolves to now, and show the live value
+            // when they disagree.
+            const ref = t.raw.match(/^var\(\s*(--[\w-]+)/);
+            // Literal-valued tokens (--btn-height: 32px) can be overridden too, and comparing
+            // the authored text against the resolved value catches them. Restricted to
+            // single-word values: a shadow or cubic-bezier gets re-serialised by the browser,
+            // so a text comparison there would flag every one of them as themed.
+            const simple = /^[\w.%#-]+$/.test(t.raw);
+            const overridden = ref ? val(ref[1]) !== v
+                             : simple ? t.raw !== v
+                             : false;
+            const shown = (ref && !overridden) ? t.raw : (v || t.raw);
+            return '<div class="wb-tok">' +
+              '<i class="' + (isColour ? '' : 'is-flat') + '"' +
+                (isColour ? ' style="background:' + v + '"' : '') + '></i>' +
+              '<code data-copy-token="' + esc(t.name) + '">' + t.name.replace('--', '') + '</code>' +
+              '<small' + (overridden ? ' class="is-themed"' : '') +
+                ' title="' + esc(t.raw + (overridden ? ' — overridden by the current direction' : '')) + '">' +
+                esc(shown) + (overridden ? ' ●' : '') + '</small>' +
+            '</div>';
+          }).join('') + '</div></div>';
+      }).join('');
+    });
+  }
+  paintTokenIndex();
+
+  // ── Icons ────────────────────────────────────────────────────────────────
+  const labelled = function (label, html) {
+    return '<span class="wb-ilab">' + html + '<code>' + label + '</code></span>';
+  };
+  function paintIconRows() {
+    document.getElementById('wb-icon-sizes').innerHTML =
+      [13, 16, 20, 28].map(function (n) {
+        return labelled(n + 'px', dsIcon('mail', { size: n }));
+      }).join('');
+    document.getElementById('wb-icon-states').innerHTML =
+      labelled('default', dsIcon('mail')) +
+      labelled('muted', dsIcon('mail', { className: 'ds-icon--muted' })) +
+      labelled('accent', dsIcon('mail', { className: 'ds-icon--accent' })) +
+      labelled('danger', dsIcon('delete', { className: 'ds-icon--danger' })) +
+      labelled('spin', dsIcon('loading', { className: 'ds-icon--spin' }));
+  }
+  function paintIconGrid(filter) {
+    const q = (filter || '').trim().toLowerCase();
+    const al = dsIcon.aliases();
+    const names = dsIcon.builtins().filter(function (n) {
+      if (!q) return true;
+      const alias = Object.keys(al).filter(function (k) { return al[k] === n; }).join(' ');
+      return (n + ' ' + alias).indexOf(q) !== -1;
+    });
+    document.getElementById('wb-icons').innerHTML = names.length
+      ? names.map(function (n) {
+          return '<button class="wb-ico" data-name="' + n + '" title="dsIcon(\'' + n + '\')">' +
+            dsIcon(n, { size: 21 }) + '<code>' + n + '</code></button>';
+        }).join('')
+      : '<p class="wb-note">No icon matches that. ' + dsIcon.builtins().length + ' in the set.</p>';
+    counts.icons = String(dsIcon.builtins().length);
+  }
+  document.getElementById('wb-icons').addEventListener('click', function (e) {
+    const el = e.target.closest('.wb-ico');
+    if (!el) return;
+    navigator.clipboard.writeText("dsIcon('" + el.dataset.name + "')").then(function () {
+      el.classList.add('is-copied');
+      setTimeout(function () { el.classList.remove('is-copied'); }, 900);
+    });
+  });
+  document.getElementById('wb-icon-filter').addEventListener('input', function (e) { paintIconGrid(e.target.value); });
+  const AL = dsIcon.aliases();
+  document.getElementById('wb-icon-alias').innerHTML =
+    dsIcon.builtins().length + ' icons, plus ' + Object.keys(AL).length +
+    ' aliases so call sites read in our words rather than Phosphor’s — ' +
+    Object.keys(AL).slice(0, 6).map(function (k) { return '<code>' + k + ' → ' + AL[k] + '</code>'; }).join(', ') + ', …';
+  paintIconRows(); paintIconGrid('');
+
+  // Options and selection both come from the module, so the control can never claim a
+  // weight the icons aren't actually rendering.
+  const weightSel = document.getElementById('wb-weight');
+  weightSel.innerHTML = dsIcon.weights().map(function (w) {
+    return '<option value="' + w + '"' + (w === dsIcon.weight() ? ' selected' : '') + '>' +
+      w.charAt(0).toUpperCase() + w.slice(1) + '</option>';
+  }).join('');
+  weightSel.addEventListener('change', function (e) {
+    dsIcon.setWeight(e.target.value);
+    // Icons are baked into strings at render time, so everything holding one repaints.
+    paintIconRows();
+    paintIconGrid(document.getElementById('wb-icon-filter').value);
+    renderComponents(SPECS);
+    renderNav();
+    show(location.hash.slice(1) || 'overview');
+  });
+  const themeLink = document.getElementById('theme-link');
+  // Both read resolved values, so both have to re-read when the direction changes.
+  themeLink.addEventListener('load', function () { paintFoundations(); paintTokenIndex(); });
+  document.getElementById('wb-theme').addEventListener('change', function (e) {
+    themeLink.href = './themes/' + e.target.value + '.css';
+  });
+
+  // ── Components ───────────────────────────────────────────────────────────
+  let SPECS = [];
+  function renderComponents(specs) {
+    SPECS = specs || SPECS;
+    const ICON_PLUS = dsIcon('plus', { size: 15 });
+    const spec = function (name, cls, meta, body) {
+      const contract = SPECS.find(function (s) { return s.class === cls; });
+      return '<div class="wb-spec" data-anatomy-component="' + cls + '"><div class="wb-spec-head"><b>' + name + '</b><code>.' + cls + '</code>' +
+        '<span>' + meta + '</span></div><div class="wb-spec-body">' + body + '</div>' + (contract ? wbAnatomy.render(contract) : '') + '</div>';
+    };
+    let out = '';
+
+    out += spec('Note', 'ds-note', 'metadata · body · optional metadata',
+      '<div class="ds-stack"><div class="ds-note"><div class="ds-note__meta"><span class="ds-note__icon" aria-hidden="true">' + dsIcon('drafts', {size:16}) + '</span><span class="ds-note__meta-text">Last note added by Usha on 14 Aug at 4:31 pm</span></div><div class="ds-note__body">They did not seem interested the last time</div></div>' +
+      '<div class="ds-note"><div class="ds-note__body">A note without metadata.\nLine breaks are preserved and long content wraps within the available width.</div></div></div>');
+
+    let btn = '';
+    dsButton.variants.forEach(function (v) {
+      const states = [
+        dsButton({ label: 'Default', variant: v }),
+        dsButton({ label: 'Small', variant: v, size: 'sm' }),
+        dsButton({ label: 'Large', variant: v, size: 'lg' }),
+        dsButton({ label: 'Loading', variant: v, loading: true }),
+        dsButton({ label: 'Disabled', variant: v, disabled: true }),
+      ];
+      if (v !== 'add') states.push(dsButton({ icon: ICON_PLUS, variant: v, title: 'Add' }));
+      // `add` is a full-width control, so it stacks — but at the width of the kanban
+      // column it actually lives in, not the width of this page.
+      btn += '<div class="wb-row"' + (v === 'add' ? ' style="align-items:flex-start"' : '') + '>' +
+        '<span class="wb-key">' + v + '</span>' +
+        (v === 'add' ? '<div style="width:288px; display:grid; gap:8px;">' + states.join('') + '</div>' : states.join('')) +
+        '</div>';
+    });
+    out += spec('Button', 'ds-btn', dsButton.variants.length + ' variants · 3 sizes · 6 states', btn);
+
+    out += spec('Input', 'ds-input', 'boxed · large · inline · textarea · select',
+      '<div class="wb-row"><span class="wb-key">default</span>' +
+        '<div style="width:230px"><input class="ds-input" placeholder="Search contacts…"></div>' +
+        '<div style="width:230px"><input class="ds-input" value="Filled"></div></div>' +
+      '<div class="wb-row"><span class="wb-key">large</span>' +
+        '<div style="width:230px"><input class="ds-input ds-input--lg" value="Field name"></div>' +
+        '<span class="wb-note" style="margin:0">More room for editable rows; same states.</span></div>' +
+      '<div class="wb-row"><span class="wb-key">invalid</span>' +
+        '<div style="width:230px"><input class="ds-input ds-input--invalid" value="ada@"></div>' +
+        '<div style="width:230px"><input class="ds-input" value="Disabled" disabled></div></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">field</span>' +
+        '<div class="ds-field" style="width:280px"><label class="ds-field-label" for="wb-f1">Full name</label>' +
+        '<input class="ds-input" id="wb-f1" placeholder="Ada Lovelace"><span class="ds-field-hint">Shown on every list.</span></div>' +
+        '<div class="ds-field" style="width:280px"><label class="ds-field-label" for="wb-f2">Email</label>' +
+        '<input class="ds-input ds-input--invalid" id="wb-f2" value="ada@"><span class="ds-field-error">That doesn’t look like an email.</span></div></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">textarea</span>' +
+        '<div style="width:380px"><textarea class="ds-input" placeholder="A sentence or two…"></textarea></div></div>' +
+      // Shown on a text line, because that is the only place it makes sense: the point of the
+      // inline variant is that it disappears into copy until you hover it.
+      '<div class="wb-row"><span class="wb-key">inline</span>' +
+        '<span style="font-size:15px; color:var(--text-heading)">Total value ' +
+        '<input class="ds-input ds-input--inline" value="3000" style="width:70px"> at ' +
+        '<input class="ds-input ds-input--inline" value="BrightPath Co" style="width:130px"></span></div>');
+
+    out += spec('Floating field', 'ds-floating-field', 'empty · filled · counted · invalid · disabled',
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">empty / focus</span>' +
+        '<div class="ds-floating-field" style="width:300px">' +
+          '<input class="ds-input" id="wb-floating-empty" placeholder=" ">' +
+          '<label class="ds-floating-field__label" for="wb-floating-empty">Form title</label>' +
+        '</div><span class="wb-note" style="margin:0">Focus the field to see the label move.</span></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">filled / counted</span>' +
+        '<div class="ds-floating-field ds-floating-field--counted" style="width:300px">' +
+          '<input class="ds-input" id="wb-floating-filled" value="Partner enquiry" placeholder=" " maxlength="80">' +
+          '<label class="ds-floating-field__label" for="wb-floating-filled">Form title</label>' +
+          '<span class="ds-floating-field__counter" aria-hidden="true">15/80</span>' +
+        '</div></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">invalid / disabled</span>' +
+        '<div class="ds-floating-field" style="width:300px">' +
+          '<input class="ds-input ds-input--invalid" id="wb-floating-invalid" value="Untitled" placeholder=" ">' +
+          '<label class="ds-floating-field__label" for="wb-floating-invalid">Form title</label>' +
+        '</div>' +
+        '<div class="ds-floating-field" style="width:300px">' +
+          '<input class="ds-input" id="wb-floating-disabled" value="Published form" placeholder=" " disabled>' +
+          '<label class="ds-floating-field__label" for="wb-floating-disabled">Form title</label>' +
+        '</div></div>');
+
+    out += spec('Badge', 'ds-badge', '4 semantic · 5 category · pill',
+      '<div class="wb-row"><span class="wb-key">semantic</span>' +
+        '<span class="ds-badge">Neutral</span><span class="ds-badge ds-badge--accent">Accent</span>' +
+        '<span class="ds-badge ds-badge--success ds-badge--dot">Live</span>' +
+        '<span class="ds-badge ds-badge--warning">Paused</span>' +
+        '<span class="ds-badge ds-badge--danger">Overdue</span></div>' +
+      '<div class="wb-row"><span class="wb-key">category</span>' +
+        ['teal','green','amber','pink','purple'].map(function (c) {
+          return '<span class="ds-badge ds-badge--' + c + '">' + c + '</span>';
+        }).join('') + '</div>' +
+      '<div class="wb-row"><span class="wb-key">pill</span>' +
+        '<span class="ds-badge ds-badge--pill">Neutral</span>' +
+        '<span class="ds-badge ds-badge--accent ds-badge--pill">Contact person</span>' +
+        '<span class="ds-badge ds-badge--success ds-badge--pill ds-badge--dot">Won</span></div>');
+
+    out += spec('Card', 'ds-card', '5 variants',
+      '<div class="wb-row" style="align-items:stretch">' +
+        '<div class="ds-card" style="width:240px"><div class="ds-card-title">Elevated</div>' +
+          '<div class="ds-card-sub">Shadow separates it, not a border.</div></div>' +
+        '<div class="ds-card ds-card--flat" style="width:240px"><div class="ds-card-title">Flat</div>' +
+          '<div class="ds-card-sub">Inside another elevated surface.</div></div>' +
+        '<div class="ds-card ds-card--interactive" style="width:240px"><div class="ds-card-title">Interactive</div>' +
+          '<div class="ds-card-sub">Lifts on hover.</div></div></div>' +
+      '<div class="wb-row" style="align-items:stretch">' +
+        '<div class="ds-card ds-card--section" style="width:100%"><div class="ds-card-title">Section</div>' +
+          '<div class="ds-card-sub">A page content panel, not a tile — rounder and roomier. ' +
+          'The record screen stacks seven of these.</div></div></div>');
+
+    out += spec('Stat tile', 'ds-stat', 'label · value · context · accent',
+      '<div class="wb-row" style="align-items:stretch">' +
+        '<div class="ds-card ds-stat" style="width:220px;--ds-stat-accent:var(--viz-primary)">' +
+          '<div class="ds-stat__head"><span class="ds-stat__dot" aria-hidden="true"></span><span class="ds-stat__label">Open amount</span></div>' +
+          '<strong class="ds-stat__value">$89,070</strong><span class="ds-stat__context">18 open</span></div>' +
+        '<div class="ds-card ds-stat" style="width:220px;--ds-stat-accent:var(--viz-categorical-2)">' +
+          '<div class="ds-stat__head"><span class="ds-stat__dot" aria-hidden="true"></span><span class="ds-stat__label">Won amount</span></div>' +
+          '<strong class="ds-stat__value">$9,800</strong><span class="ds-stat__context">1 won</span></div>' +
+        '<div class="ds-card ds-stat" style="width:220px;--ds-stat-accent:var(--viz-categorical-4)">' +
+          '<div class="ds-stat__head"><span class="ds-stat__dot" aria-hidden="true"></span><span class="ds-stat__label">Win rate</span></div>' +
+          '<strong class="ds-stat__value">100%</strong><span class="ds-stat__context">1 of 1 settled</span></div></div>');
+
+    out += spec('Icon', 'ds-icon', dsIcon.builtins().length + ' icons · 3 weights',
+      '<div class="wb-row"><span class="wb-key">in context</span>' +
+        dsButton({ label: 'Add candidate', variant: 'primary', icon: ICON_PLUS }) +
+        dsButton({ icon: dsIcon('menu', { size: 15 }), variant: 'ghost', title: 'More' }) +
+        '<span class="ds-badge ds-badge--success ds-badge--dot">Live</span>' +
+        '<a href="#icons" class="ds-btn ds-btn--secondary ds-btn--sm">See all ' + dsIcon.builtins().length + '</a></div>');
+
+    // Stage chevron — shape only, so the demo supplies its own fills the way the board does.
+    const STAGES_DEMO = ['Lead', 'Qualified', 'Proposal', 'Closed'];
+    out += spec('Stage chevron', 'ds-stage', '2 sizes · first / last',
+      '<div class="wb-row"><span class="wb-key">board</span>' +
+        '<div style="display:flex; flex:1">' +
+        STAGES_DEMO.map(function (n, i) {
+          const t = 0.18 + i * 0.2;
+          return '<div class="ds-stage' + (i ? '' : ' ds-stage--first') +
+            (i === STAGES_DEMO.length - 1 ? ' ds-stage--last' : '') +
+            '" style="flex:1; background:rgba(83,63,148,' + t + ')">' +
+            '<div style="font-size:var(--text-md); font-weight:var(--weight-bold); color:#2c2450">' + n + '</div>' +
+            '<div style="font-size:var(--text-xs); color:#5b527f">3 &middot; $5,400</div></div>';
+        }).join('') + '</div></div>' +
+      '<div class="wb-row"><span class="wb-key">sm</span>' +
+        '<div style="display:flex; flex:1; gap:6px">' +
+        STAGES_DEMO.map(function (n, i) {
+          return '<div class="ds-stage ds-stage--sm' + (i ? '' : ' ds-stage--first') +
+            (i === STAGES_DEMO.length - 1 ? ' ds-stage--last' : '') +
+            '" style="flex:1; text-align:center; background:rgba(83,63,148,' + (0.18 + i * 0.2) + ');' +
+            ' font-size:var(--text-xs); font-weight:var(--weight-bold); color:#2c2450">' + n + '</div>';
+        }).join('') + '</div></div>' +
+      '<p class="wb-note" style="margin:var(--space-150) 0 0">Shape only. The fill is derived from ' +
+        'the pipeline&rsquo;s own colour at runtime, so it stays an inline style &mdash; the same ' +
+        'reason the stage ink is not a token.</p>');
+
+    out += spec('Segmented control', 'ds-segmented', 'mode picker &middot; aria-pressed',
+      '<div class="wb-row"><span class="wb-key">default</span>' +
+        '<div class="ds-segmented" role="group" aria-label="View">' +
+          '<button type="button" aria-pressed="true">' + dsIcon('board', { size: 17 }) + '</button>' +
+          '<button type="button" aria-pressed="false">' + dsIcon('list', { size: 17 }) + '</button>' +
+        '</div>' +
+        '<div class="ds-segmented" role="group" aria-label="Scope">' +
+          '<button type="button" aria-pressed="true">Sales</button>' +
+          '<button type="button" aria-pressed="false">Hiring</button>' +
+        '</div></div>');
+
+    // Menu and Split button are one demo each but two components: the split's caret opens
+    // a real .ds-menu, so showing them apart would hide the only thing worth checking —
+    // that the seam, the caret rotation and the panel line up.
+    const menuItem = function (icon, label, meta, cls) {
+      return '<button type="button" class="ds-menu__item' + (cls ? ' ' + cls : '') + '" role="menuitem">' +
+        dsIcon(icon, { size: 15 }) + '<span>' + label + '</span>' +
+        (meta ? '<span class="ds-menu__meta">' + meta + '</span>' : '') + '</button>';
+    };
+    out += spec('Menu', 'ds-menu', 'item &middot; meta &middot; separator &middot; label &middot; danger',
+      '<div class="wb-row" style="align-items:flex-start">' +
+        '<span class="wb-key">panel</span>' +
+        // Shown open and in place rather than behind a trigger — a menu you have to click
+        // to inspect is a menu whose states nobody checks.
+        '<div class="ds-menu is-open" style="position:relative; top:0; left:0">' +
+          '<div class="ds-menu__label">Record</div>' +
+          menuItem('edit', 'Rename') +
+          menuItem('upload', 'Import from sources', '3') +
+          '<div class="ds-menu__sep"></div>' +
+          menuItem('trash', 'Delete pipeline', '', 'ds-menu__item--danger') +
+        '</div>' +
+        '<p class="wb-note" style="flex:1; margin:0">Anchoring is the caller&rsquo;s: ' +
+          '<code>--below</code> / <code>--below-end</code> against a relatively-positioned ' +
+          'wrapper, or <code>--fixed</code> with viewport coordinates when an overflow ' +
+          'ancestor would clip it. <code>dsMenu</code> handles one-open-at-a-time, ' +
+          'outside-click, Escape and arrow keys.</p></div>');
+
+    out += spec('Split button', 'ds-split', 'any button variant &middot; caret opens a Menu',
+      ['primary', 'secondary', 'soft'].map(function (v, i) {
+        return '<div class="wb-row"><span class="wb-key">' + v + '</span>' +
+          '<div class="ds-split">' +
+            '<button type="button" class="ds-btn ds-btn--' + v + '">' +
+              dsIcon('plus', { size: 14 }) + 'Add opportunity</button>' +
+            '<button type="button" class="ds-btn ds-btn--' + v + '" data-ds-menu="wb-split-' + i + '"' +
+              ' aria-haspopup="menu" aria-expanded="false" title="More ways to add">' +
+              '<span class="ds-menu-caret">' + dsIcon('caret-down', { size: 12 }) + '</span></button>' +
+            '<div class="ds-menu ds-menu--below-end" id="wb-split-' + i + '" role="menu">' +
+              menuItem('upload', 'Import records from a source') +
+            '</div>' +
+          '</div>' +
+          '<span class="wb-note" style="margin:0">click the caret &mdash; the seam and the ' +
+            'panel both adapt to the variant</span></div>';
+      }).join('') +
+      '<p class="wb-note" style="margin:var(--space-150) 0 0">Both halves are real ' +
+        '<code>.ds-btn</code>. Only the seam is this component&rsquo;s &mdash; squared inner ' +
+        'corners, a divider mixed from the button&rsquo;s own ink, and pressing as one control.</p>');
+
+    // Shown against real pipeline colours, because the whole point of this one is that its
+    // colour is data: the same markup has to hold up whatever someone picked, which a
+    // single swatch would not show.
+    out += spec('Pipeline tag', 'ds-pipeline-tag', 'md &middot; sm &middot; --pipe carries the pipeline&rsquo;s colour',
+      [['Neo partnerships', '#2170f4'], ['Tee orders', '#e0873f'], ['Hiring Pipeline', '#7b5ea7']]
+        .map(function (p) {
+          return '<div class="wb-row"><span class="wb-key">' + esc(p[1]) + '</span>' +
+            dsPipelineTag({ name: p[0], color: p[1] }) +
+            dsPipelineTag({ name: p[0], color: p[1], size: 'sm' }) + '</div>';
+        }).join('') +
+      '<div class="wb-row"><span class="wb-key">no colour</span>' +
+        dsPipelineTag({ name: 'Untitled pipeline' }) +
+        '<span class="wb-note" style="margin:0">falls back to <code>--accent-primary</code>, ' +
+        'never colourless</span></div>' +
+      '<div class="wb-row"><span class="wb-key">long name</span>' +
+        '<span style="max-width:200px; display:inline-flex">' +
+        dsPipelineTag({ name: 'Partnerships, EMEA and rest of world', color: '#2f9e7d' }) +
+        '</span><span class="wb-note" style="margin:0">truncates rather than widening what ' +
+        'holds it</span></div>' +
+      // Shown on a box, because the whole point of the variant is the seam: a tab rendered
+      // on its own looks like a tag with two odd corners.
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">tab</span>' +
+        '<div style="position:relative; padding-top:var(--space-300)">' +
+          '<span style="position:absolute; top:calc(var(--space-300) + 1px); left:0;' +
+            ' transform:translateY(-100%); display:flex">' +
+            dsPipelineTag({ name: 'Tee orders', color: '#e0873f', variant: 'tab' }) +
+          '</span>' +
+          '<div style="width:260px; height:64px; background:var(--surface-primary);' +
+            ' border:1px solid var(--border-subtle);' +
+            ' border-radius:0 var(--radius-lg) var(--radius-lg) var(--radius-lg)"></div>' +
+        '</div>' +
+        '<span class="wb-note" style="margin:0">bottom border dropped and that corner of the ' +
+          'container squared, so the two are one shape. Placement is the caller&rsquo;s.</span></div>' +
+      '<p class="wb-note" style="margin:var(--space-150) 0 0">Names a pipeline; does not ' +
+        'navigate to one &mdash; the sidebar&rsquo;s rows stay <code>titan-sidebar.css</code>. ' +
+        'Not a Badge variant: badge colours are fixed palette entries and a pipeline&rsquo;s ' +
+        'is whatever the person chose.</p>');
+
+    // Shown on the lane's own surface, because the card has no border: what separates it
+    // from its column is elevation, and on a white page that reads as nothing at all.
+    const kbCard = function (title, meta, identity, trailing) {
+      return '<div class="ds-kanban-card">' +
+        '<div class="ds-kanban-card__header">' +
+          '<div class="ds-kanban-card__title">' + title + '</div>' +
+          '<div class="ds-kanban-card__action" title="Actions">' +
+            '<svg class="ds-kanban-card__status" viewBox="0 0 18 18" aria-hidden="true">' +
+            '<circle cx="9" cy="9" r="9" fill="#e5e7eb"/><path d="M7.5 5.5l4 3.5-4 3.5" ' +
+            'stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" ' +
+            'fill="none"/></svg>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ds-kanban-card__meta">' + meta +
+          '<span class="ds-kanban-card__avatar" style="background:#8a9099">A</span>' +
+        '</div>' +
+        '<div class="ds-kanban-card__footer">' +
+          '<div class="ds-kanban-card__identity">' +
+            '<span class="company-logo" style="width:16px;height:16px;border-radius:4px;' +
+            'display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;' +
+            'background:#8a9099;color:#fff;font-size:9px;font-weight:700">' + identity.charAt(0) + '</span>' +
+            '<span>' + identity + '</span></div>' +
+          trailing +
+        '</div></div>';
+    };
+    const kbMoney = '<span class="ds-kanban-card__value">$12,000</span>' +
+      '<span class="ds-kanban-card__sep" aria-hidden="true">&middot;</span>';
+    const kbLane = function (body) {
+      return '<div style="width:240px; padding:var(--kanban-lane-pad); display:flex;' +
+        ' flex-direction:column; gap:var(--kanban-card-gap); background:var(--kanban-lane-bg);' +
+        ' border-radius:var(--kanban-lane-radius)">' + body + '</div>';
+    };
+    out += spec('Kanban card', 'ds-kanban-card', 'running &middot; settled &middot; no amount &middot; long name',
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">running</span>' +
+        kbLane(kbCard('Q3 partnership renewal', kbMoney, 'BrightPath Co',
+          '<span class="ds-kanban-card__note ds-kanban-card__trailing">6d ago</span>')) +
+        '<span class="wb-note" style="margin:0">A record still in progress shows its last ' +
+        'activity in the trailing slot.</span></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">settled</span>' +
+        kbLane(kbCard('Northwind rollout', kbMoney, 'Northwind',
+          '<span class="ds-badge ds-badge--success ds-badge--pill ds-kanban-card__trailing">Won</span>')) +
+        '<span class="wb-note" style="margin:0">Same slot, now an outcome badge in the ' +
+        'pipeline&rsquo;s own words &mdash; Won here, Hired on a hiring board.</span></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">no amount</span>' +
+        kbLane(kbCard('Senior product designer', '', 'Ada Lovelace',
+          '<span class="ds-kanban-card__note ds-kanban-card__trailing">2d ago</span>')) +
+        '<span class="wb-note" style="margin:0">A hiring pipeline carries no money, so the ' +
+        'figure and its separator both go and the contact leads the line.</span></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">long content</span>' +
+        kbLane(kbCard('renewal-emea-and-rest-of-world-2026', kbMoney,
+          'A company with a very long registered name',
+          '<span class="ds-kanban-card__note ds-kanban-card__trailing">11mo ago</span>')) +
+        '<span class="wb-note" style="margin:0">The title breaks inside an unbroken name ' +
+        'rather than clipping; the identity truncates rather than pushing the trailing ' +
+        'slot out.</span></div>' +
+      '<p class="wb-note" style="margin:var(--space-150) 0 0">Shape and internal spacing ' +
+      'only. Drag, click and the card menu stay with the board, as do the avatar colour ' +
+      'and the status glyph&rsquo;s fill &mdash; those are data, the same reason the stage ' +
+      'header&rsquo;s ink is not a token.</p>');
+
+    // Shown inside a bounded card, because the separator and the hover bleed only make
+    // sense against the container that owns the horizontal inset.
+    const lrIcon = '<span class="ds-list-row__leading">' + dsIcon('mail', { size: 14 }) + '</span>';
+    const lrList = function (rows) {
+      return '<div class="ds-card ds-card--section" style="width:420px">' + rows + '</div>';
+    };
+    out += spec('List row', 'ds-list-row', 'static &middot; interactive &middot; snippet &middot; action &middot; flush',
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">list</span>' +
+        lrList(
+          '<div class="ds-list-row">' + lrIcon +
+            '<div class="ds-list-row__content ds-list-row__title">Intro call with Ryan</div>' +
+            '<div class="ds-list-row__trailing">Jun 8</div></div>' +
+          '<div class="ds-list-row">' + lrIcon +
+            '<div class="ds-list-row__content"><div class="ds-list-row__title">Note added by Usha</div>' +
+            '<div class="ds-list-row__snippet">They did not seem interested the last time.</div></div>' +
+            '<div class="ds-list-row__trailing">14 Aug at 4:31 pm</div></div>' +
+          '<div class="ds-list-row">' + lrIcon +
+            '<div class="ds-list-row__content ds-list-row__title">Send updated proposal deck</div>' +
+            '<div class="ds-list-row__trailing ds-list-row__trailing--danger">Overdue &middot; Yesterday</div></div>') +
+        '<span class="wb-note" style="margin:0">Separator between rows, none after the ' +
+        'last. A snippet under the title is the same size as the title and quieter; the ' +
+        'trailing fact turns <code>--danger</code> only when being late is the point.</span></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">interactive</span>' +
+        lrList(
+          '<div class="ds-list-row ds-list-row--interactive" tabindex="0">' + lrIcon +
+            '<div class="ds-list-row__content ds-list-row__title">Point at this row</div>' +
+            '<button class="ds-list-row__action ds-btn ds-btn--ghost ds-btn--sm" type="button">Done</button>' +
+            '<div class="ds-list-row__trailing">Just now</div></div>' +
+          '<div class="ds-list-row ds-list-row--interactive" tabindex="0">' + lrIcon +
+            '<div class="ds-list-row__content ds-list-row__title">Or tab to it</div>' +
+            '<button class="ds-list-row__action ds-btn ds-btn--ghost ds-btn--sm" type="button">Done</button>' +
+            '<div class="ds-list-row__trailing">5 Aug</div></div>') +
+        '<span class="wb-note" style="margin:0">The fill bleeds past the text so it reads ' +
+        'as the row, not a highlight inside it &mdash; and the row does not shift when it ' +
+        'fills. The action is hidden until hover, and until focus for the keyboard.</span></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">flush</span>' +
+        lrList(
+          '<div class="ds-list-row ds-list-row--flush">' + lrIcon +
+            '<div class="ds-list-row__content ds-list-row__title">A disclosure header</div>' +
+            '<div class="ds-list-row__trailing">3 fields</div></div>') +
+        '<span class="wb-note" style="margin:0">Separator and vertical inset dropped, for ' +
+        'a row inside a card that already has its own edges.</span></div>' +
+      '<p class="wb-note" style="margin:var(--space-150) 0 0">Not a table: rows whose ' +
+      'values must line up into columns down the page &mdash; the dashboard and ' +
+      '<code>/crm/activities</code> &mdash; keep their own grid until Table is built. The ' +
+      'largest block in the inventory, and the one where the copies had already drifted ' +
+      'under a shared class name.</p>');
+
+    // Shown on both surfaces side by side, because the whole claim of this component is
+    // that they are one row: the dark column is the same markup with the --nav-item-*
+    // colour tokens overridden, exactly as titan-sidebar.css does it.
+    const niRow = function (icon, label, on, action) {
+      return '<div class="ds-nav-item' + (on ? ' is-active' : '') + '"' +
+        (on ? ' aria-current="page"' : '') + '>' +
+        '<span class="ds-nav-item__icon">' + dsIcon(icon, { size: 16 }) + '</span>' +
+        '<span class="ds-nav-item__label">' + esc(label) + '</span>' +
+        (action ? '<span class="ds-nav-item__action">' + dsIcon('dots-three-vertical', { size: 14 }) + '</span>' : '') +
+        '</div>';
+    };
+    const niRail = function (rows, dark) {
+      return '<div style="width:230px; padding:var(--space-100) 0; border-radius:var(--radius-lg);' +
+        (dark
+          ? ' background:#1c1c1c;' +
+            ' --nav-item-fg:#fff; --nav-item-fg-active:#fff;' +
+            ' --nav-item-bg-hover:rgba(255,255,255,0.05); --nav-item-bg-active:#333333;' +
+            ' --nav-item-pad-y:var(--space-075);' +
+            ' --nav-item-icon-fg:rgba(255,255,255,0.86); --nav-item-icon-fg-active:#fff;' +
+            ' --nav-item-action-fg:#9aa1a9; --nav-item-action-bg-hover:rgba(255,255,255,0.14);' +
+            ' --nav-item-action-fg-hover:#fff;'
+          : ' background:var(--surface-primary); border:1px solid var(--border-subtle);') +
+        '">' + rows + '</div>';
+    };
+    out += spec('Nav item', 'ds-nav-item', 'default &middot; selected &middot; trailing action &middot; light / dark surface',
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">light rail</span>' +
+        niRail(
+          niRow('gear', 'Main details', true, false) +
+          niRow('kanban', 'Pipeline stages', false, false) +
+          niRow('flask', 'Stage actions', false, false), false) +
+        '<span class="wb-note" style="margin:0">Fill, ink and weight together on the ' +
+        'selected row. Weight alone is too quiet in a rail of ten; fill alone leaves the ' +
+        'current row the same colour as the rest.</span></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">dark rail</span>' +
+        niRail(
+          niRow('dashboard', 'Dashboard', false, false) +
+          niRow('kanban', 'Neo partnerships', true, true) +
+          niRow('contacts', 'Contacts', false, false), true) +
+        '<span class="wb-note" style="margin:0">The same markup. Only the ' +
+        '<code>--nav-item-*</code> colour tokens are overridden on the rail, which is how ' +
+        '<code>titan-sidebar.css</code> keeps the app sidebar dark without a second ' +
+        'component or a dark literal in the system.</span></div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">long label</span>' +
+        niRail(niRow('kanban', 'Partnerships, EMEA and rest of world', false, true), false) +
+        '<span class="wb-note" style="margin:0">Truncates rather than widening the rail. ' +
+        'The names here are user-supplied, so this is the normal case.</span></div>' +
+      '<p class="wb-note" style="margin:var(--space-150) 0 0">Not a tab: a nav item ' +
+      'changes what the rail points at, a tab switches a content region on a baseline. ' +
+      'The rail owns the space between rows, its indent and any &ldquo;you are ' +
+      'here&rdquo; caret. The trailing action is pointer-only, unchanged from the ' +
+      'sidebar &mdash; see the registry note.</p>');
+
+    // Shown at two widths side by side, because the only thing you cannot see in one
+    // specimen is the thing this component actually does: measure its own container.
+    const AI_SPARK = '<svg class="ds-ai-summary__spark" width="12" height="12" ' +
+      'viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1L8.2 5.2L12 6.5' +
+      'L8.2 7.8L7 12L5.8 7.8L2 6.5L5.8 5.2Z" fill="currentColor"/></svg>';
+    const aiCard = function (body, next) {
+      return '<div class="ds-ai-summary">' +
+        '<div class="ds-ai-summary__header">' + AI_SPARK +
+          '<span class="ds-ai-summary__title">AI summary</span></div>' +
+        '<div class="ds-ai-summary__body">' + body +
+          (next ? '<span class="ds-ai-summary__next"><strong>Next activity:</strong> ' + next + '</span>' : '') +
+        '</div></div>';
+    };
+    const AI_TEXT = 'Ryan confirmed the Jun 12 timeline and asked whether multi-theme ' +
+      'support lands in the same release. Pricing has not come up since the intro call.';
+    out += spec('AI summary', 'ds-ai-summary', 'record section &middot; side panel &middot; sizes from its own width',
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">wide</span>' +
+        '<div style="width:420px">' + aiCard(AI_TEXT, 'Confirm theming scope on Monday&rsquo;s call.') + '</div>' +
+        '</div>' +
+      '<div class="wb-row" style="align-items:flex-start"><span class="wb-key">narrow</span>' +
+        '<div style="width:280px">' + aiCard(AI_TEXT, 'Confirm theming scope on Monday&rsquo;s call.') + '</div>' +
+        '<span class="wb-note" style="margin:0">Identical markup. Below a 22rem container ' +
+        'the card gives back inset and one step of body type &mdash; a container query, ' +
+        'so nothing tells it which size it is.</span></div>' +
+      '<p class="wb-note" style="margin:var(--space-150) 0 0">The tint is provenance, not ' +
+      'decoration: it says a machine wrote this, and it is spent by the time the prose ' +
+      'starts so the card announces itself once rather than colouring everything it ' +
+      'holds. The label strip keeps its size when the card narrows &mdash; it is already ' +
+      'the smallest thing here, and it is the part doing that job.</p>');
+
+    // A registered component with no demo here is a hole in the instrument, so say so
+    // rather than quietly rendering four of five.
+    const shown = ['Button', 'Input', 'Floating field', 'Badge', 'Card', 'Stat tile', 'Icon', 'Stage chevron', 'Segmented control',
+                   'Menu', 'Split button', 'Pipeline tag', 'Kanban card', 'List row', 'Nav item', 'AI summary'];
+    const missing = (SPECS || []).map(function (c) { return c.name; })
+      .filter(function (n) { return shown.indexOf(n) === -1; });
+    if (missing.length) {
+      out += '<p class="wb-note">In <code>registry.json</code> but not rendered here: ' +
+        esc(missing.join(', ')) + '. Add a demo to <code>renderComponents()</code>.</p>';
+    }
+    document.getElementById('wb-components').innerHTML = out;
+    // Labels sit above the specimen content, which wraps independently.
+    document.querySelectorAll('#wb-components .wb-row').forEach(function (row) {
+      const label = row.querySelector(':scope > .wb-key');
+      if (!label) return;
+      const content = document.createElement('div');
+      content.className = 'wb-row-content';
+      Array.from(row.childNodes).forEach(function (node) {
+        if (node !== label) content.appendChild(node);
+      });
+      row.appendChild(content);
+      row.classList.add('wb-row--labelled');
+    });
+    document.querySelectorAll('[data-anatomy-component]').forEach(function (host) {
+      const contract = SPECS.find(function (s) { return s.class === host.dataset.anatomyComponent; });
+      if (contract) wbAnatomy.mount(host, contract, '.wb-spec-body');
+    });
+  }
+
+  // ── Patterns ─────────────────────────────────────────────────────────────
+  // Registry-driven like components: the workbench is a view of the contract, not a
+  // second place where the contract is rewritten by hand.
+  function renderPatterns(patterns) {
+    const list = function (items) {
+      return '<ul class="wb-pattern-list">' + items.map(function (item) {
+        return '<li>' + esc(item) + '</li>';
+      }).join('') + '</ul>';
+    };
+    const visual = function (pattern) {
+      if (pattern.visual === 'modal-overlay') {
+        return '<div class="wb-pattern-modalstage" aria-label="Modal dialog over a dimmed page">' +
+          '<div class="wb-pattern-modal"><div class="wb-pattern-modalhead">Focused task</div>' +
+            '<div class="wb-pattern-modalbody"><i></i><i></i></div>' +
+            '<div class="wb-pattern-modalfoot"><i></i><i></i></div></div></div>';
+      }
+      if (pattern.visual === 'two-pane-workspace') {
+        return '<div class="wb-pattern-frame" aria-label="Two adjacent work panes separated across their full height">' +
+          '<div class="wb-pattern-pagehead">Shared page header <span data-wb-two-help>Drag divider · <b data-wb-two-value>60/40</b></span></div>' +
+          '<div class="wb-pattern-twopane" data-wb-two-pane>' +
+            '<div class="wb-pattern-pane"><div class="wb-pattern-panehead">Edit or select</div>' +
+              '<div class="wb-pattern-panecontent"><i></i><i></i><i></i></div></div>' +
+            '<div class="wb-pattern-pane"><div class="wb-pattern-panehead">Detail or preview</div>' +
+              '<div class="wb-pattern-panecontent wb-pattern-panecontent--preview"><i></i></div></div>' +
+            '<div class="wb-pattern-resizer" role="separator" tabindex="0" aria-label="Resize example panes"' +
+              ' aria-orientation="vertical" aria-valuemin="50" aria-valuemax="68" aria-valuenow="60"></div>' +
+          '</div></div>';
+      }
+      return '<label class="wb-pattern-nav-toggle"><input type="checkbox" data-wb-settings-nav checked> Show section navigation</label>' +
+        '<div class="wb-pattern-frame" aria-label="Full-page settings workspace without the global CRM sidebar">' +
+        '<div class="wb-pattern-pagehead">Back · settings scope · page actions</div>' +
+        '<div class="wb-pattern-workspace"><div class="wb-pattern-sidebar">Optional<br>section nav</div>' +
+          '<div class="wb-pattern-sections"><div class="wb-pattern-section"></div>' +
+            '<div class="wb-pattern-section"></div><div class="wb-pattern-section"></div></div></div></div>';
+    };
+    document.getElementById('wb-patterns').innerHTML = patterns.length
+      ? patterns.map(function (pattern) {
+          return '<article class="wb-pattern" id="pattern-' + esc(pattern.id) + '">' +
+            '<header class="wb-pattern-head"><span class="wb-pattern-kicker">' + esc(pattern.category) + '</span>' +
+              '<h2>' + esc(pattern.name) + '</h2></header>' +
+            '<div class="wb-pattern-preview"><div class="wb-pattern-visual">' + visual(pattern) + '</div></div>' +
+            '<details class="wb-guidance wb-guidance--panel"><summary>Usage &amp; guidelines</summary><p>' + esc(pattern.summary) + '</p>' +
+            '<div class="wb-pattern-body">' +
+              '<div><code class="wb-pattern-route">' + esc(pattern.route) + '</code>' +
+                '<h3>Use when</h3><p class="wb-pattern-use">' + esc(pattern.useWhen) + '</p>' +
+                (pattern.variations ? '<h3>Variations</h3>' + list(pattern.variations) : '') +
+                '</div>' +
+              '<div><div class="wb-pattern-grid">' +
+                  '<div><h3>Structure</h3>' + list(pattern.structure) + '</div>' +
+                  '<div><h3>Requirements</h3>' + list(pattern.requirements) + '</div>' +
+                  '<div><h3>Avoid</h3>' + list(pattern.avoid) + '</div>' +
+                '</div></div>' +
+            '</div></details>' +
+            wbAnatomy.exampleCode(pattern.name) + wbAnatomy.render(pattern) + '</article>';
+        }).join('')
+      : '<p class="wb-note">No patterns registered.</p>';
+    patterns.forEach(function (pattern) {
+      const host = document.getElementById('pattern-' + pattern.id);
+      if (host) wbAnatomy.mount(host, pattern, '.wb-pattern-visual');
+    });
+    wirePatternPreviews();
+  }
+
+  // Pattern specimens are working examples, not screenshots. The bounds intentionally
+  // mirror the form editor example registered above; another adopting page may own
+  // different usable limits while keeping the same keyboard and separator contract.
+  function wirePatternPreviews() {
+    document.querySelectorAll('[data-wb-settings-nav]').forEach(function (toggle) {
+      toggle.addEventListener('change', function () {
+        const workspace = toggle.closest('.wb-pattern-visual').querySelector('.wb-pattern-workspace');
+        workspace.querySelector('.wb-pattern-sidebar').hidden = !toggle.checked;
+        workspace.classList.toggle('wb-pattern-workspace--without-nav', !toggle.checked);
+        wbAnatomy.refresh();
+      });
+    });
+    document.querySelectorAll('[data-wb-two-pane]').forEach(function (host) {
+      const separator = host.querySelector('[role="separator"]');
+      const output = host.parentElement.querySelector('[data-wb-two-value]');
+      let value = 60;
+      const clamp = function (next) { return Math.min(68, Math.max(50, next)); };
+      const setValue = function (next) {
+        value = Math.round(clamp(next));
+        host.style.setProperty('--wb-two-editor', value + '%');
+        separator.setAttribute('aria-valuenow', String(value));
+        separator.setAttribute('aria-valuetext', value + '% editor, ' + (100 - value) + '% preview');
+        output.textContent = value + '/' + (100 - value);
+        wbAnatomy.refresh();
+      };
+      const move = function (event) {
+        if (!separator.hasPointerCapture(event.pointerId)) return;
+        const rect = host.getBoundingClientRect();
+        setValue((event.clientX - rect.left) / rect.width * 100);
+      };
+      separator.addEventListener('pointerdown', function (event) {
+        separator.setPointerCapture(event.pointerId);
+        move(event);
+        event.preventDefault();
+      });
+      separator.addEventListener('pointermove', move);
+      separator.addEventListener('keydown', function (event) {
+        let next = value;
+        if (event.key === 'ArrowLeft') next -= 2;
+        else if (event.key === 'ArrowRight') next += 2;
+        else if (event.key === 'Home') next = 50;
+        else if (event.key === 'End') next = 68;
+        else return;
+        setValue(next);
+        event.preventDefault();
+      });
+      setValue(value);
+    });
+  }
+
+  // ── Data visualization ──────────────────────────────────────────────────
+  // The specimens use plain SVG on purpose. This is where visual grammar is agreed;
+  // ECharts is an eventual renderer, not the source of the design decision.
+  function vizSize(value) { return ['sm', 'md', 'lg'].indexOf(value) === -1 ? 'md' : value; }
+  function vizWorkbenchWrap(size, markup) { return '<div class="ds-viz ds-viz--' + vizSize(size) + '">' + markup + '</div>'; }
+
+  function vizTrendLine(size) {
+    const points = [
+      ['March', 18, 44, 167], ['April', 22, 128, 154], ['May', 27, 212, 134],
+      ['June', 31, 296, 116], ['July', 37, 380, 87], ['August', 42, 500, 55]
+    ];
+    return vizWorkbenchWrap(size, '<svg class="wb-viz-svg" data-wb-trend viewBox="0 0 520 240" role="img" aria-labelledby="viz-line-title">' +
+      '<title id="viz-line-title">Qualified opportunities rise from 18 to 42 over six months</title>' +
+      [40, 88, 136, 184].map(function (y) {
+        return '<line class="wb-viz-gridline" x1="44" x2="500" y1="' + y + '" y2="' + y + '"></line>';
+      }).join('') +
+      '<text class="wb-viz-axis" x="8" y="44">45</text><text class="wb-viz-axis" x="8" y="92">30</text>' +
+      '<text class="wb-viz-axis" x="8" y="140">15</text><text class="wb-viz-axis" x="16" y="188">0</text>' +
+      '<path class="wb-viz-primary-soft" opacity=".54" d="M44 167 C79 162 95 151 128 154 S182 127 212 134 S267 110 296 116 S350 75 380 87 S443 48 500 55 L500 184 L44 184 Z"></path>' +
+      '<path class="wb-viz-primary-stroke" d="M44 167 C79 162 95 151 128 154 S182 127 212 134 S267 110 296 116 S350 75 380 87 S443 48 500 55"></path>' +
+      '<line class="wb-viz-trend-guide" data-wb-trend-guide x1="500" x2="500" y1="40" y2="184"></line>' +
+      '<circle class="wb-viz-trend-active" data-wb-trend-active cx="500" cy="55" r="5"></circle>' +
+      '<g class="wb-viz-tooltip" data-wb-trend-tooltip transform="translate(387 8)"><rect width="112" height="38" rx="7"></rect>' +
+        '<text data-wb-trend-month x="10" y="15">August</text><text data-wb-trend-value x="10" y="29">42 qualified</text></g>' +
+      points.map(function (point) {
+        return '<circle class="wb-viz-trend-hit" tabindex="0" role="button" aria-label="' + point[0] + ', ' + point[1] + ' qualified"' +
+          ' data-month="' + point[0] + '" data-value="' + point[1] + '" data-x="' + point[2] + '" data-y="' + point[3] + '"' +
+          ' cx="' + point[2] + '" cy="' + point[3] + '" r="26"></circle>';
+      }).join('') +
+      '<text class="wb-viz-axis" x="44" y="214">Mar</text><text class="wb-viz-axis" x="130" y="214">Apr</text>' +
+      '<text class="wb-viz-axis" x="218" y="214">May</text><text class="wb-viz-axis" x="304" y="214">Jun</text>' +
+      '<text class="wb-viz-axis" x="392" y="214">Jul</text><text class="wb-viz-axis" x="480" y="214">Aug</text></svg>');
+  }
+
+  function vizRankedBars(size) {
+    const rows = [
+      { label: 'Website', width: 92, value: '184' }, { label: 'Referral', width: 68, value: '136' },
+      { label: 'Partner', width: 51, value: '102' }, { label: 'Outbound', width: 37, value: '74' },
+      { label: 'Events', width: 24, value: '48' }
+    ];
+    return window.dsVisualization.rankedBars({ rows: rows, size: size, idPrefix: 'viz-ranked', summary: 'Lead sources ranked from Website at 184 to Events at 48' });
+  }
+
+  function vizBinnedDistribution(size) {
+    const bins = [
+      { label: '$<5k', value: 11 }, { label: '$5–10k', value: 3 },
+      { label: '$10–25k', value: 4 }, { label: '$25k+', value: 0 }
+    ];
+    return window.dsVisualization.binnedDistribution({
+      bins: bins,
+      size: size,
+      idPrefix: 'viz-distribution',
+      axisLabel: 'Deal amount range',
+      meta: '18 open opportunities',
+      summary: 'Amount distribution: 11 below five thousand, 3 from five to ten thousand, 4 from ten to twenty-five thousand and none above twenty-five thousand'
+    });
+  }
+
+  function vizStackedComposition(size) {
+    const groups = [
+      { label: 'May', values: [180, 94, 54] },
+      { label: 'Jun', values: [214, 112, 70] },
+      { label: 'Jul', values: [244, 126, 56] },
+      { label: 'Aug', values: [268, 138, 72] }
+    ];
+    const series = [{ label: 'Email' }, { label: 'Calls' }, { label: 'Tasks' }];
+    return window.dsVisualization.stackedComposition({ groups: groups, series: series, size: size, idPrefix: 'viz-stack', summary: 'Monthly activity totals split into email, calls and tasks' });
+  }
+
+  function vizConversionFunnel(size) {
+    const rows = [
+      { label: 'Visitors', value: '8,420', width: 100, percentage: '100%' },
+      { label: 'Started form', value: '3,536', width: 72, percentage: '42%' },
+      { label: 'Submitted', value: '2,610', width: 54, percentage: '74%' },
+      { label: 'Qualified', value: '1,436', width: 34, percentage: '55%' }
+    ];
+    const summary = 'Conversion from 8,420 visitors to 1,436 qualified leads';
+    const stacked = window.dsVisualization.conversionSteps({
+      rows: rows,
+      size: size,
+      idPrefix: 'viz-funnel-stacked',
+      summary: summary
+    });
+    const inline = window.dsVisualization.conversionSteps({
+      rows: rows,
+      size: size,
+      layout: 'inline',
+      density: 'comfortable',
+      idPrefix: 'viz-funnel-inline',
+      summary: summary
+    });
+    return '<div class="wb-viz-variant-list"><div><div class="wb-viz-variant-label">Stacked rows</div>' + stacked +
+      '</div><div><div class="wb-viz-variant-label">Inline rows · comfortable</div>' + inline + '</div></div>';
+  }
+
+  function vizPartToWhole(size) {
+    const parts = [
+      { label: 'Website', value: 184 }, { label: 'Referral', value: 102 },
+      { label: 'Partner', value: 72 }, { label: 'Other', value: 49 }
+    ];
+    const summary = '407 sourced leads: Website 45%, Referral 25%, Partner 18%, Other 12%';
+    const centered = window.dsVisualization.partToWhole({
+      parts: parts,
+      size: size,
+      idPrefix: 'viz-donut-centered',
+      centerValue: '407',
+      centerLabel: 'TOTAL LEADS',
+      legendTitle: 'SOURCE',
+      valueTitle: 'LEADS',
+      summary: summary
+    });
+    const centerless = window.dsVisualization.partToWhole({
+      parts: parts,
+      size: size,
+      idPrefix: 'viz-donut-centerless',
+      center: false,
+      legendLayout: 'compact',
+      legendTitle: 'SOURCE',
+      valueTitle: 'LEADS',
+      summary: summary
+    });
+    return '<div class="wb-viz-variant-list"><div><div class="wb-viz-variant-label">Centered total</div>' + centered +
+      '</div><div><div class="wb-viz-variant-label">Centerless · compact legend</div>' + centerless + '</div></div>';
+  }
+
+  function vizActivityHeatmap(size) {
+    const values = [
+      [1,1,2,3,2,1,0,0], [0,2,3,4,3,2,1,0], [1,2,4,5,4,3,1,0],
+      [0,1,3,4,5,4,2,1], [0,1,2,3,4,3,1,0]
+    ];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    let cells = '';
+    values.forEach(function (row, r) {
+      row.forEach(function (value, c) {
+        cells += '<rect class="wb-viz-primary" x="' + (76 + c * 51) + '" y="' + (24 + r * 37) + '" width="39" height="27" rx="5" opacity="' + (.08 + value * .17) + '"></rect>';
+      });
+    });
+    return vizWorkbenchWrap(size, '<svg class="wb-viz-svg" viewBox="0 0 520 230" role="img" aria-labelledby="viz-heat-title">' +
+      '<title id="viz-heat-title">Activity is strongest from late morning to mid-afternoon Tuesday through Thursday</title>' +
+      days.map(function (day, i) { return '<text class="wb-viz-label" x="0" y="' + (43 + i * 37) + '">' + day + '</text>'; }).join('') +
+      ['8am','10','12','2pm','4','6','8','10'].map(function (hour, i) { return '<text class="wb-viz-axis" x="' + (86 + i * 51) + '" y="224" text-anchor="middle">' + hour + '</text>'; }).join('') +
+      cells + '<text class="wb-viz-axis" x="392" y="10">Less</text>' +
+      [1,2,3,4].map(function (n, i) { return '<rect class="wb-viz-primary" x="' + (424 + i * 17) + '" y="1" width="12" height="12" rx="3" opacity="' + (n * .22) + '"></rect>'; }).join('') +
+      '<text class="wb-viz-axis" x="496" y="10">More</text></svg>');
+  }
+
+  function visualizationSpecimen(type, size) {
+    if (type === 'trend-line') return vizTrendLine(size);
+    if (type === 'ranked-bars') return vizRankedBars(size);
+    if (type === 'binned-distribution') return vizBinnedDistribution(size);
+    if (type === 'stacked-composition') return vizStackedComposition(size);
+    if (type === 'conversion-funnel') return vizConversionFunnel(size);
+    if (type === 'part-to-whole') return vizPartToWhole(size);
+    if (type === 'activity-heatmap') return vizActivityHeatmap(size);
+    return '<p class="wb-note">No specimen renderer for ' + esc(type) + '.</p>';
+  }
+
+  function renderVisualizations(visualizations) {
+    document.getElementById('wb-visualizations').innerHTML = visualizations.length
+      ? visualizations.map(function (viz) {
+          const sizeNames = { sm: 'Small', md: 'Medium', lg: 'Large' };
+          const sizeOptions = viz.sizes.map(function (size) {
+            return '<option value="' + esc(size) + '"' + (size === 'md' ? ' selected' : '') + '>' + esc(sizeNames[size]) + '</option>';
+          }).join('');
+          return '<article class="wb-viz-card" id="visualization-' + esc(viz.id) + '" data-wb-viz-card data-viz-type="' + esc(viz.visual) + '">' +
+            '<header class="wb-viz-head"><div><span class="wb-viz-family">' + esc(viz.family) + '</span>' +
+              '<h2>' + esc(viz.name) + '</h2></div><label class="wb-viz-size-control">Size <select class="ds-input wb-viz-size" data-wb-viz-size>' +
+                sizeOptions + '</select></label></header>' +
+            '<div class="wb-viz-plot" data-wb-viz-plot>' + visualizationSpecimen(viz.visual, 'md') + '</div>' +
+            '<details class="wb-guidance wb-guidance--panel"><summary>Usage &amp; guidelines</summary><div class="wb-viz-meta"><div><h3>Use when</h3><p>' + esc(viz.useWhen) + '</p></div>' +
+              '<div><h3>Reading priority</h3><p>' + esc(viz.reading) + '</p></div>' +
+              '<div><h3>Avoid</h3><p>' + esc(viz.avoid) + '</p></div>' +
+              '<div><h3>Accessibility</h3><p>' + esc(viz.accessibility) + '</p></div>' +
+              (viz.variants ? '<div><h3>Variants</h3><p>' + viz.variants.map(esc).join('<br>') + '</p></div>' : '') + '</div></details>' + wbAnatomy.render(viz) + '</article>';
+        }).join('')
+      : '<p class="wb-note">No data-visualization contracts registered.</p>';
+    visualizations.forEach(function (viz) {
+      const host = document.getElementById('visualization-' + viz.id);
+      if (host) wbAnatomy.mount(host, viz, '.wb-viz-plot');
+    });
+    wireVisualizationPreviews();
+  }
+
+  function wireVisualizationPreviews() {
+    const wireTrend = function (svg) {
+      const hits = Array.prototype.slice.call(svg.querySelectorAll('.wb-viz-trend-hit'));
+      const guide = svg.querySelector('[data-wb-trend-guide]');
+      const active = svg.querySelector('[data-wb-trend-active]');
+      const tooltip = svg.querySelector('[data-wb-trend-tooltip]');
+      const month = svg.querySelector('[data-wb-trend-month]');
+      const value = svg.querySelector('[data-wb-trend-value]');
+      const points = hits.map(function (hit) {
+        return { hit: hit, x: Number(hit.dataset.x), y: Number(hit.dataset.y), month: hit.dataset.month, value: hit.dataset.value };
+      });
+      const show = function (point) {
+        guide.setAttribute('x1', point.x); guide.setAttribute('x2', point.x);
+        active.setAttribute('cx', point.x); active.setAttribute('cy', point.y);
+        month.textContent = point.month; value.textContent = point.value + ' qualified';
+        const tipX = point.x > 390 ? point.x - 113 : point.x + 10;
+        const tipY = Math.max(4, point.y - 48);
+        tooltip.setAttribute('transform', 'translate(' + tipX + ' ' + tipY + ')');
+      };
+      svg.addEventListener('pointermove', function (event) {
+        const rect = svg.getBoundingClientRect();
+        const x = (event.clientX - rect.left) * 520 / rect.width;
+        const nearest = points.reduce(function (best, point) {
+          return Math.abs(point.x - x) < Math.abs(best.x - x) ? point : best;
+        }, points[0]);
+        show(nearest);
+      });
+      svg.addEventListener('pointerleave', function () {
+        if (hits.indexOf(document.activeElement) === -1) show(points[points.length - 1]);
+      });
+      points.forEach(function (point, index) {
+        point.hit.addEventListener('focus', function () { show(point); });
+        point.hit.addEventListener('keydown', function (event) {
+          if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+          const next = Math.max(0, Math.min(points.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1)));
+          points[next].hit.focus(); event.preventDefault();
+        });
+      });
+      show(points[points.length - 1]);
+    };
+    document.querySelectorAll('[data-wb-trend]').forEach(wireTrend);
+    document.querySelectorAll('[data-wb-viz-card]').forEach(function (card) {
+      const select = card.querySelector('[data-wb-viz-size]');
+      const plot = card.querySelector('[data-wb-viz-plot]');
+      select.addEventListener('change', function () {
+        plot.querySelectorAll('.ds-viz').forEach(function (specimen) {
+          ['sm', 'md', 'lg'].forEach(function (size) { specimen.classList.remove('ds-viz--' + size); });
+          specimen.classList.add('ds-viz--' + vizSize(select.value));
+        });
+      });
+    });
+  }
+
+  // ── Directions ───────────────────────────────────────────────────────────
+  // Two halves. The header control swaps the live <link>, which restyles the whole
+  // workbench. This view instead fetches each theme file and rewrites its `:root` to a
+  // wrapper class, so every direction can be shown at once without the file being
+  // duplicated here — the theme stays the only place its values are written down.
+  function previewStrip() {
+    return '<div class="wb-dir-preview">' +
+      dsButton({ label: 'Add candidate', variant: 'primary', icon: dsIcon('plus', { size: 15 }) }) +
+      dsButton({ label: 'Cancel', variant: 'secondary' }) +
+      '<input class="ds-input" placeholder="Search…">' +
+      '<span class="ds-badge ds-badge--success ds-badge--dot">Live</span>' +
+      '<div class="ds-card"><div class="ds-card-title">Senior designer</div>' +
+        '<div class="ds-card-sub">Delta Retail · ₹18L</div></div>' +
+      '</div>';
+  }
+  function renderDirections(themes) {
+    const host = document.getElementById('wb-dirs');
+    // Options mirror the registry, so adding a theme there is the only step.
+    document.getElementById('wb-theme').innerHTML = themes.map(function (t) {
+      return '<option value="' + t.id + '">' + esc(t.name) + '</option>';
+    }).join('');
+    host.innerHTML = themes.map(function (t) {
+      return '<div class="wb-dir" id="wb-dir-' + t.id + '">' +
+        '<h3>' + esc(t.name) + '</h3><p>' + esc(t.description) + '</p>' +
+        '<div class="wb-theme-' + t.id + '">' + previewStrip() + '</div>' +
+        '<pre data-overrides>reading ' + esc(t.file) + '…</pre></div>';
+    }).join('');
+
+    const sheet = document.getElementById('wb-theme-scoped');
+    Promise.all(themes.map(function (t) {
+      return fetch('./' + t.file, { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.text() : ''; })
+        .catch(function () { return ''; });
+    })).then(function (texts) {
+      let scoped = '';
+      texts.forEach(function (text, i) {
+        const t = themes[i];
+        // Strip comments first so a `:root` mentioned in prose can't be rewritten.
+        const body = text.replace(/\/\*[\s\S]*?\*\//g, '');
+        scoped += body.replace(/:root/g, '.wb-theme-' + t.id) + '\n';
+        const decls = (body.match(/--[\w-]+\s*:[^;}]+/g) || [])
+          .map(function (d) { return d.replace(/\s+/g, ' ').trim() + ';'; });
+        const pre = document.querySelector('#wb-dir-' + t.id + ' [data-overrides]');
+        pre.textContent = decls.length
+          ? decls.join('\n')
+          : t.file + '\n/* no overrides — the semantics exactly as authored */';
+        const p = document.querySelector('#wb-dir-' + t.id + ' p');
+        p.innerHTML = esc(t.description) + ' <b>' + decls.length + ' token' +
+          (decls.length === 1 ? '' : 's') + '</b> overridden.';
+      });
+      sheet.textContent = scoped;
+    });
+  }
+</script>
+</body>
+</html>

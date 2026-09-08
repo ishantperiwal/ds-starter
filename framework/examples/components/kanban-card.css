@@ -1,0 +1,91 @@
+/* Kanban card — the record tile on /crm/pipeline/:id.
+
+   It was already fully tokenised (--kanban-card-*) and still had no component: the rules
+   lived in crm.html and renderCard() built the markup as an innerHTML string, so the one
+   surface a direction could restyle was also the one nothing else could reuse. This file
+   is the shape and the parts; the board keeps the behaviour (drag, click, the action
+   menu) and the data-derived colour it writes inline on the avatar.
+
+   Not a --card-*: the kanban card is tighter than a content card, lifts rather than
+   outlines, and has its own token family for exactly that reason (see semantics.css).
+   The lane owns the space *between* cards (--kanban-card-gap on .kanban-col-body) and
+   the card's flex sizing within it; everything inside the card is here. */
+
+.ds-kanban-card {
+  background: var(--kanban-card-bg);
+  /* No border. A transparent 1px border still insets the padding box, which pushed the
+     content 1px right and 1px down from the card's visual edge — a step at exactly the
+     junction being smoothed. Elevation separates the card from the lane instead. */
+  border-radius: var(--kanban-card-radius);
+  padding: var(--kanban-card-pad);
+  box-shadow: var(--kanban-card-shadow);
+  cursor: grab;
+  position: relative;
+}
+.ds-kanban-card:active { cursor: grabbing; }
+
+/* ── Header: record name, and the action control that opens the card menu ────── */
+.ds-kanban-card__header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--space-100);   /* keeps a long title off the action control */
+}
+.ds-kanban-card__title {
+  font-size: var(--text-sm); font-weight: var(--weight-bold);
+  color: var(--text-heading);
+  /* The action control in the same row provides the right-hand inset, so the title needs
+     no gutter of its own — having both reserved ~60px and wrapped names that used to fit.
+     Line height is set here because two lines need it; one line doesn't notice. */
+  line-height: 1.35; min-width: 0;
+  /* A record name with no spaces in it (a domain, a slug) has no break opportunity and
+     would run past the card edge. Break inside the word rather than clip it. */
+  overflow-wrap: anywhere;
+}
+.ds-kanban-card__action {
+  margin-left: var(--space-075); flex-shrink: 0; cursor: pointer; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.ds-kanban-card__action:hover { box-shadow: var(--ring-neutral); }
+/* The glyph inside it is data — its fill says overdue / next / done — so the component
+   sizes the slot and the caller supplies the mark. */
+.ds-kanban-card__status {
+  width: var(--kanban-status-size); height: var(--kanban-status-size);
+  flex-shrink: 0; display: block;
+}
+
+/* ── Meta: amount and contact, one line under the title ──────────────────────── */
+/* Amount leads so the figures sit at the same x on every card and the eye can run down
+   one column. On a pipeline with no money the whole line is the contact alone. */
+.ds-kanban-card__meta {
+  display: flex; align-items: center; gap: var(--space-075);
+  margin-top: var(--space-050);
+}
+.ds-kanban-card__value {
+  font-size: var(--text-xs); font-weight: var(--weight-semi); color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ds-kanban-card__sep { color: var(--text-disabled); }
+.ds-kanban-card__avatar {
+  width: var(--kanban-avatar-size); height: var(--kanban-avatar-size);
+  border-radius: 50%; color: var(--text-on-accent);
+  font-size: var(--kanban-avatar-font); font-weight: var(--weight-bold);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden;
+}
+.ds-kanban-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Footer: who the record is for, and one trailing fact ────────────────────── */
+.ds-kanban-card__footer {
+  display: flex; align-items: center; gap: var(--space-075);
+  margin-top: var(--space-200); min-width: 0;
+}
+.ds-kanban-card__identity {
+  font-size: var(--text-md); color: var(--text-heading);
+  display: flex; align-items: center; gap: var(--space-075);
+  flex: 1 1 auto;
+  min-width: 0;   /* long names ellipsis rather than pushing out the trailing slot */
+}
+.ds-kanban-card__identity > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* One slot, two occupants: a settled record shows its outcome badge here, a running one
+   shows last activity. Whichever it is, it sits hard right and never wraps. */
+.ds-kanban-card__trailing { margin-left: auto; flex-shrink: 0; white-space: nowrap; }
+.ds-kanban-card__note { font-size: var(--text-2xs); color: var(--text-placeholder); }

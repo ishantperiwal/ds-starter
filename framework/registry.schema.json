@@ -1,0 +1,578 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Titan Design System Registry",
+  "description": "Shape of registry.json. Kept beside it so a validator \u2014 or an agent \u2014 can check the manifest is still well-formed after an edit.",
+  "type": "object",
+  "required": [
+    "name",
+    "version",
+    "visualizations",
+    "components",
+    "spacing",
+    "compositions"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "conventions": {
+      "type": "object"
+    },
+    "tokens": {
+      "type": "object"
+    },
+    "themes": {
+      "type": "array",
+      "description": "Design directions. A theme file may only redefine semantic tokens; the workbench reads this list to render every direction side by side.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "file",
+          "description"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Basename of the file in themes/, without .css."
+          },
+          "name": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "patterns": {
+      "type": "array",
+      "description": "Cross-page interaction and layout conventions. Patterns compose components and application structure; they do not ship a ds-* class.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "visual",
+          "summary",
+          "useWhen",
+          "route",
+          "structure",
+          "requirements",
+          "avoid",
+          "examples",
+          "anatomy"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "visual": {
+            "type": "string",
+            "enum": [
+              "modal-overlay",
+              "sidebar-workspace",
+              "two-pane-workspace"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "useWhen": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "structure": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "variations": {
+            "type": "array",
+            "description": "Optional registered forms of the same pattern contract.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "avoid": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "examples": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "anatomy": {
+            "$ref": "#/definitions/anatomy"
+          }
+        }
+      }
+    },
+    "visualizations": {
+      "type": "array",
+      "description": "Canonical data-visualization components and usage contracts rendered in the workbench.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "family",
+          "visual",
+          "sizes",
+          "useWhen",
+          "reading",
+          "avoid",
+          "accessibility",
+          "anatomy"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string"
+          },
+          "visual": {
+            "type": "string",
+            "enum": [
+              "trend-line",
+              "ranked-bars",
+              "binned-distribution",
+              "stacked-composition",
+              "conversion-funnel",
+              "part-to-whole",
+              "activity-heatmap"
+            ]
+          },
+          "sizes": {
+            "type": "array",
+            "description": "Supported internal typography, mark and spacing sizes; md is the default and outer width remains fluid.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "sm",
+                "md",
+                "lg"
+              ]
+            },
+            "minItems": 3,
+            "maxItems": 3,
+            "uniqueItems": true
+          },
+          "variants": {
+            "type": "array",
+            "description": "Optional registered renderer variations and the props that select them.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "useWhen": {
+            "type": "string"
+          },
+          "reading": {
+            "type": "string"
+          },
+          "avoid": {
+            "type": "string"
+          },
+          "accessibility": {
+            "type": "string"
+          },
+          "anatomy": {
+            "$ref": "#/definitions/anatomy"
+          }
+        }
+      }
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "css",
+          "class",
+          "props",
+          "states",
+          "usage",
+          "anatomy"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "primitives",
+              "layout",
+              "composite",
+              "pattern",
+              "composites"
+            ]
+          },
+          "css": {
+            "type": "string",
+            "description": "Path to the component stylesheet."
+          },
+          "module": {
+            "type": "string",
+            "description": "Optional JS render module."
+          },
+          "render": {
+            "type": "string",
+            "description": "Signature of the render function, if there is one."
+          },
+          "class": {
+            "type": "string",
+            "pattern": "^ds-"
+          },
+          "props": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "shapeTokens": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^--"
+            }
+          },
+          "states": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "usage": {
+            "type": "string"
+          },
+          "avoid": {
+            "type": "string"
+          },
+          "anatomy": {
+            "$ref": "#/definitions/anatomy"
+          }
+        }
+      }
+    },
+    "inventory": {
+      "type": "object",
+      "description": "The building-block inventory: every recurring UI role in the product and whether the system covers it yet.",
+      "required": [
+        "blocks"
+      ],
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "surveyed": {
+          "type": "string"
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "category",
+              "status",
+              "evidence",
+              "whereToday"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string",
+                "enum": [
+                  "primitives",
+                  "layout",
+                  "composites",
+                  "patterns",
+                  "data visualization"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "built",
+                  "tokenised",
+                  "planned",
+                  "excluded"
+                ],
+                "description": "built = consumable component exists; tokenised = still hand-rolled per page, but its CSS reads component tokens so a direction can restyle it; planned = recurring block each page still hand-rolls with literals; excluded = deliberately not a component."
+              },
+              "adopted": {
+                "type": "integer",
+                "description": "Call sites in the shipped pages that go through the design system. Measured by design-system/measure-adoption.js \u2014 never hand-edited."
+              },
+              "legacy": {
+                "type": "integer",
+                "description": "Call sites that still hand-roll the same block. Same measurement run."
+              },
+              "component": {
+                "type": "string"
+              },
+              "evidence": {
+                "type": "string",
+                "description": "The duplication this block would absorb \u2014 also the priority signal."
+              },
+              "whereToday": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "adoptionMeasuredBy": {
+          "type": "string",
+          "description": "The script that produced every adopted/legacy figure, so the numbers can be regenerated rather than trusted."
+        }
+      }
+    },
+    "spacing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "principles",
+        "roles",
+        "examples",
+        "note"
+      ],
+      "properties": {
+        "principles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "note": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "token",
+              "description"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "token": {
+                "type": "string",
+                "pattern": "^--"
+              },
+              "description": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "compositions": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "#/properties/components/items"
+          },
+          {
+            "type": "object",
+            "required": [
+              "examples"
+            ],
+            "properties": {
+              "examples": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "label",
+                    "markup"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "markup": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "anatomy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parts",
+        "spacing",
+        "alignment",
+        "behavior",
+        "ownership",
+        "implementation",
+        "specimen"
+      ],
+      "properties": {
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "selector"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "selector": {
+                "type": "string"
+              },
+              "pseudo": {
+                "type": "string",
+                "enum": [
+                  "::before"
+                ]
+              }
+            }
+          }
+        },
+        "spacing": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "token",
+              "selector",
+              "property",
+              "note"
+            ],
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "token": {
+                "type": "string",
+                "pattern": "^--"
+              },
+              "selector": {
+                "type": "string"
+              },
+              "property": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              },
+              "narrowToken": {
+                "type": "string",
+                "pattern": "^--"
+              }
+            }
+          }
+        },
+        "alignment": {
+          "type": "string"
+        },
+        "behavior": {
+          "type": "string"
+        },
+        "ownership": {
+          "type": "string"
+        },
+        "implementation": {
+          "type": "string",
+          "enum": [
+            "shared-css",
+            "workbench-svg",
+            "pattern-specimen"
+          ]
+        },
+        "specimen": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

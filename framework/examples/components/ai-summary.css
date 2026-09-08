@@ -1,0 +1,72 @@
+/* AI summary — generated context about the record you are looking at.
+
+   The whole point of its appearance is provenance: a tint fading out under a small
+   labelled strip, so it cannot be read as a note a colleague typed. Everything else
+   about it is ordinary prose.
+
+   Written twice today. The record screen's `.ov-ai-*` was already on tokens; the mail
+   client's CRM panel `.crm-ai-summary-*` is the same card with #2170f4, #1257c9, 10px,
+   13px and 12px 14px 14px typed in by hand. Only the record screen adopts this — the
+   mailbox is deliberately outside the design system's scope.
+
+   It sizes from its own width, not the page's, because those two homes are a full-width
+   record section and a narrow side panel. That is a container query rather than a size
+   prop: the card is never asked which size it is, it measures the space it was put in.
+   Same mechanism visualization.css uses. */
+
+.ds-ai-summary {
+  /* Establishes the query container. Everything below reads this element's width. */
+  container-type: inline-size;
+  border: 1px solid var(--ai-summary-border);
+  border-radius: var(--ai-summary-radius);
+  /* Clips the tint to the rounded corners, so the gradient does not square them off. */
+  overflow: hidden;
+  /* Strongest at the label, gone by the time the prose starts — the card announces
+     itself once at the top rather than tinting everything it contains. */
+  background: linear-gradient(180deg, var(--ai-summary-tint), var(--ai-summary-surface) 70%);
+}
+
+.ds-ai-summary__header {
+  display: flex; align-items: center;
+  gap: var(--ai-summary-head-gap);
+  padding: var(--ai-summary-head-pad-y) var(--ai-summary-pad-x);
+  border-bottom: 1px solid var(--ai-summary-border);
+}
+/* The mark is the caller's — the product's own sparkle, which is brand art rather than
+   an icon from the set. The component only colours and holds it. */
+.ds-ai-summary__spark { color: var(--ai-summary-spark-fg); flex-shrink: 0; }
+.ds-ai-summary__title {
+  font-size: var(--ai-summary-title-font);
+  font-weight: var(--weight-semi);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ai-summary-title-fg);
+}
+
+.ds-ai-summary__body {
+  padding: var(--ai-summary-body-pad-y) var(--ai-summary-pad-x);
+  font-size: var(--ai-summary-body-font);
+  line-height: var(--ai-summary-body-line);
+  color: var(--ai-summary-body-fg);
+}
+/* A trailing "Next activity:" line reads as a separate statement, not a last sentence. */
+.ds-ai-summary__next { display: block; margin-top: var(--ai-summary-next-gap); }
+
+/* ── Narrow ──────────────────────────────────────────────────────────────────
+   Not a variant the caller selects. In a side panel the card keeps its structure and
+   gives back inset and one step of type; the label strip stays the same size, because
+   it is already the smallest thing on the card and shrinking it would make the one part
+   that carries the provenance the hardest part to read. */
+/* 22rem, not 20: the mail client's CRM panel lands its card at 319px, and a 20rem
+   (320px) threshold left one pixel of margin — a panel two pixels wider, or one less
+   pixel of its padding, and the narrow treatment would silently stop applying. The
+   threshold sits above the real consumer rather than on top of it. */
+@container (max-width: 22rem) {
+  .ds-ai-summary__header {
+    padding: var(--ai-summary-head-pad-y-narrow) var(--ai-summary-pad-x-narrow);
+  }
+  .ds-ai-summary__body {
+    padding: var(--ai-summary-body-pad-y-narrow) var(--ai-summary-pad-x-narrow);
+    font-size: var(--ai-summary-body-font-narrow);
+  }
+}

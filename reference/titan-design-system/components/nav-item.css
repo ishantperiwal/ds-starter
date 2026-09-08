@@ -1,0 +1,101 @@
+/* Nav item — one row in a vertical navigation rail.
+
+   Three of these existed. The dark app sidebar's `.nav-item` was properly centralised in
+   titan-sidebar.css, but the two light rails were not, and they had already drifted from
+   each other: `.ps-nav-item` (pipeline settings) and `.seq-settings-nav-item` (the
+   sequence editor) disagreed on radius token, on whether the selected row takes accent
+   ink, and on whether hover transitions at all. pipeline-settings.html even carries a
+   comment saying the sidebar's row is "deliberately not reused ... the system has no
+   vertical nav component" — which was true when it was written.
+
+   One component, two surfaces. Everything colour-bearing reads a --nav-item-* token, so
+   the dark sidebar is a scoped override of those tokens rather than a second component —
+   the same move ds-split makes for the pipeline's own colour. The shape needed no
+   reconciling: the sidebar's hand-typed 6px / 14px / 4px are already --radius-md,
+   --text-md and --radius-sm.
+
+     [ icon ] [ label                              ] [ action ]
+
+   The rail owns the space between rows and any indent; the row owns what is inside it. */
+
+.ds-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--nav-item-gap);
+  box-sizing: border-box;
+  min-height: var(--nav-item-height);
+  /* No width here on purpose: the rail owns it, and the two rails answer differently.
+     Both settings rails are flex columns, so their rows already stretch to full width
+     for free; the sidebar's rows are block-level and inset from the panel edges with a
+     horizontal margin, which a width:100% would defeat — the row would measure the full
+     panel, sit 8px in from the left and lose the same 8px off the right edge. */
+  padding: var(--nav-item-pad-y) var(--nav-item-pad-x);
+  /* Reset, so the same class works on a <button> in a settings rail and a <div> in the
+     sidebar without the two rendering differently. */
+  border: 0; background: transparent; font: inherit; text-align: left;
+  font-size: var(--nav-item-font);
+  color: var(--nav-item-fg);
+  border-radius: var(--nav-item-radius);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: var(--motion-hover);
+}
+
+/* Hover is excluded on the selected row: a fill lighter than the one already there
+   reads as the selection being lost while the pointer is on it. */
+.ds-nav-item:hover:not(.is-active) { background: var(--nav-item-bg-hover); }
+.ds-nav-item:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ── Selected ────────────────────────────────────────────────────────────────
+   Fill, ink and weight together. Weight alone is too quiet in a rail of ten rows, and
+   fill alone leaves the current row the same colour as the nine it is distinguished
+   from. Callers should pair this with aria-current so it is announced, not just seen. */
+.ds-nav-item.is-active {
+  background: var(--nav-item-bg-active);
+  color: var(--nav-item-fg-active);
+  font-weight: var(--nav-item-weight-active);
+}
+
+/* ── Icon ────────────────────────────────────────────────────────────────────
+   Draws in currentColor by default so the rail declares its ink once instead of every
+   glyph hardcoding its own. Slightly softer than the label at rest, so the glyph does
+   not out-shout the word beside it, and full strength on the selected row. */
+.ds-nav-item__icon {
+  width: var(--nav-item-icon-size); height: var(--nav-item-icon-size);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--nav-item-icon-fg);
+  flex-shrink: 0;
+}
+.ds-nav-item.is-active .ds-nav-item__icon { color: var(--nav-item-icon-fg-active); }
+
+/* ── Label ───────────────────────────────────────────────────────────────────
+   Takes the free width and truncates. A rail has a fixed width and the names in it are
+   user-supplied, so this is the normal case, not the edge case. */
+.ds-nav-item__label {
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── Action ──────────────────────────────────────────────────────────────────
+   A control belonging to this row — the pipeline rows' kebab. Hidden until the row is
+   pointed at, so a rail of ten is not a column of ten buttons.
+
+   Known limit, carried over from the sidebar rather than introduced here: display:none
+   means the control cannot be reached by keyboard at all. Revealing it with opacity or
+   visibility instead would make it focusable, but it would then occupy its width at
+   rest and every label in the rail would get shorter. That is a layout decision, so it
+   is left as it was rather than changed as a side effect of componentising. */
+.ds-nav-item__action {
+  width: var(--nav-item-action-size); height: var(--nav-item-action-size);
+  border-radius: var(--nav-item-action-radius);
+  display: none; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: var(--nav-item-action-fg);
+  cursor: pointer;
+}
+.ds-nav-item:hover .ds-nav-item__action { display: flex; }
+.ds-nav-item__action:hover {
+  background: var(--nav-item-action-bg-hover);
+  color: var(--nav-item-action-fg-hover);
+}

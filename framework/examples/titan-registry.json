@@ -1,0 +1,3170 @@
+{
+  "$schema": "./registry.schema.json",
+  "name": "Titan Design System Registry",
+  "version": "0.10.0",
+  "description": "Machine-readable index of the design system's components, patterns, data-visualization contracts and directions. An agent should read this before writing any UI and update it in the same change that adds a system primitive. Extracted from App Redesign/index_prodRedesign_interactions.html.",
+  "conventions": {
+    "idiom": "Plain CSS classes plus optional JS render modules — no build step, no framework, no TypeScript. A component is a stylesheet, and a function returning an HTML string where composition earns one. This is the same pattern titan-sidebar.js and form-render.js already use in production.",
+    "consume": "<link> the two token files, then the component stylesheet, then <script> the module if there is one. Order matters: primitives, semantics, theme, components.",
+    "classPrefix": "ds-",
+    "variantClass": ".ds-<component>--<variant>",
+    "tokensOnly": "A component stylesheet may not contain a raw hex or a raw px for anything themeable. If a value is missing, add a token to tokens/semantics.css rather than hardcoding it here.",
+    "visualizationModule": "components/visualization.js owns fluid shared chart layouts, sm/md/lg internal sizing, the optional fill-card layout and categorical colour order used by both workbench specimens and product renderers.",
+    "workbench": "/design-system/index.html renders every component in every state, every registered pattern, canonical data-visualization components, and a live direction switcher. Screenshot the relevant view after any change."
+  },
+  "tokens": {
+    "primitives": "tokens/primitives.css",
+    "semantics": "tokens/semantics.css",
+    "themes": "themes/",
+    "rule": "Components read semantics only. Primitives are raw values; a theme remaps semantics onto them."
+  },
+  "themes": [
+    {
+      "id": "default",
+      "name": "Default",
+      "file": "themes/default.css",
+      "description": "The look extracted from the redesign — every semantic already holds these values."
+    },
+    {
+      "id": "soft",
+      "name": "Soft",
+      "file": "themes/soft.css",
+      "description": "Rounder controls, borderless cards, elevation doing all the separating."
+    }
+  ],
+  "patterns": [
+    {
+      "id": "modal-dialog",
+      "name": "Modal dialog",
+      "category": "Interaction & layout",
+      "visual": "modal-overlay",
+      "summary": "A temporary, focused layer over the current page. The originating context remains visible but inactive beneath the design-system-controlled backdrop.",
+      "useWhen": "Use for a short, bounded task that benefits from retaining the current page as context and can be completed or dismissed without navigating through multiple sections.",
+      "route": "No route — opens over the current page",
+      "structure": [
+        "A full-viewport backdrop dims and disables the originating page.",
+        "A focused panel contains a clear header, scrollable body when needed, and action footer.",
+        "The header names the task and provides an explicit close action.",
+        "The footer presents one primary action and only the secondary actions the task needs."
+      ],
+      "requirements": [
+        "Use --modal-backdrop-bg for the scrim; never introduce a page-specific black overlay.",
+        "Expose role=dialog, aria-modal=true, and an accessible name.",
+        "Move focus into the dialog, contain keyboard focus while open, and return focus to the trigger on close.",
+        "Support Escape to close unless closing would discard a destructive operation without confirmation.",
+        "Lock background scrolling and keep the page beneath non-interactive.",
+        "Keep controls inside the dialog on registered design-system components.",
+        "For new implementations, use the shared --pattern-content-inset-x / --pattern-content-inset-y, --pattern-item-gap, --pattern-section-gap and --pattern-action-gap roles where the anatomy applies. Record page-specific geometry exceptions; existing pages require explicit adoption."
+      ],
+      "avoid": [
+        "Do not use for multi-section settings, deep navigation, or work that needs a durable URL.",
+        "Do not stack routine dialogs; move the task to a full-page pattern when it outgrows one layer.",
+        "Do not use a modal as a substitute for a cold-loadable destination."
+      ],
+      "examples": [
+        "crm.html — New pipeline and Add team",
+        "opportunity-view.html — email and meeting details",
+        "pipeline-settings.html — incoming-email and delete confirmations"
+      ],
+      "anatomy": {
+        "specimen": ".wb-pattern-modal",
+        "parts": [
+          {
+            "name": "Header",
+            "selector": ".wb-pattern-modalhead"
+          },
+          {
+            "name": "Scrollable body",
+            "selector": ".wb-pattern-modalbody"
+          },
+          {
+            "name": "Actions",
+            "selector": ".wb-pattern-modalfoot"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Shared horizontal inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-modalhead, .wb-pattern-modalfoot",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Shared horizontal inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-modalhead, .wb-pattern-modalfoot",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Shared horizontal inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-modalhead, .wb-pattern-modalfoot",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Shared horizontal inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-modalhead, .wb-pattern-modalfoot",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Body inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-modalbody",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Body inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-modalbody",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Body inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-modalbody",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Body inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-modalbody",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Body items",
+            "token": "--pattern-item-gap",
+            "selector": ".wb-pattern-modalbody",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Action gap",
+            "token": "--pattern-action-gap",
+            "selector": ".wb-pattern-modalfoot",
+            "property": "column-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Header, body and footer share a content edge. Actions align to the trailing edge.",
+        "behavior": "Body scrolls when bounded by the viewport; header and actions stay outside that scroll region. The specimen illustrates layout, not focus trapping or dismissal.",
+        "ownership": "Each region owns one inset. Adjacent inset regions and dividers provide separation; do not add a second stack gap. Page owns dialog width, height limit and accessible behavior.",
+        "implementation": "pattern-specimen"
+      }
+    },
+    {
+      "id": "full-page-settings",
+      "name": "Full-page settings",
+      "category": "Navigation & layout",
+      "visual": "sidebar-workspace",
+      "summary": "A standalone settings destination that replaces Titan's global CRM sidebar and owns the full task workspace at a durable route. It is never a modal, drawer, or layer over the originating screen.",
+      "useWhen": "Use for configuration with multiple sections, substantial editing, or its own navigation context—work that benefits from a durable URL and the full workspace width.",
+      "route": "/crm/pipeline/:id/setting",
+      "structure": [
+        "A full-width task header provides Back, the settings scope, status, and page actions.",
+        "The global CRM sidebar is absent so the settings task owns the complete viewport.",
+        "A multi-section task may add one local settings rail below the task header; a single-section task uses the full width.",
+        "Sections flow in the page rather than being split across stacked modals."
+      ],
+      "requirements": [
+        "The route must survive a cold load and preserve ?u=<persona>.",
+        "Fetch required data on the page; do not depend on a previous document having stashed it.",
+        "Do not mount or load titan-sidebar.js on the settings page; titan-sidebar.css may still provide the shared page shell.",
+        "If the task needs section navigation, keep it local to the settings page and below the full-width header.",
+        "Navigate in place. Do not depend on window.opener.",
+        "Keep page-specific CSS to workspace layout and compose controls from registered design-system components.",
+        "For new implementations, use the shared --pattern-content-inset-x / --pattern-content-inset-y, --pattern-item-gap, --pattern-section-gap and --pattern-action-gap roles where the anatomy applies. Record page-specific geometry exceptions; existing pages require explicit adoption."
+      ],
+      "avoid": [
+        "Do not use a modal or drawer for multi-section settings that need sustained attention.",
+        "Do not leave the originating board or global CRM sidebar visible inside a full-page settings task.",
+        "Do not create a route that only works after visiting the board first."
+      ],
+      "examples": [
+        "pipeline-settings.html — /crm/pipeline/:id/setting",
+        "opportunity-settings.html — /crm/pipeline/:id/record-setting",
+        "form-settings.html — /crm/pipeline/:id/form; every form creation/editing entry point navigates here",
+        "sequences.html — /crm/sequences/:id"
+      ],
+      "anatomy": {
+        "specimen": ".wb-pattern-frame",
+        "parts": [
+          {
+            "name": "Task header",
+            "selector": ".wb-pattern-pagehead"
+          },
+          {
+            "name": "Optional navigation",
+            "selector": ".wb-pattern-sidebar"
+          },
+          {
+            "name": "Content region",
+            "selector": ".wb-pattern-sections"
+          },
+          {
+            "name": "Sections",
+            "selector": ".wb-pattern-section"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Header inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-pagehead",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Header inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-pagehead",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Header inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-pagehead",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Header inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-pagehead",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Navigation inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-sidebar",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Navigation inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-sidebar",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Navigation inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-sidebar",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Navigation inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-sidebar",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Content inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-sections",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Content inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-sections",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Content inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-sections",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Content inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-sections",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Between sections",
+            "token": "--pattern-section-gap",
+            "selector": ".wb-pattern-sections",
+            "property": "row-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "A full-width task header sits above local navigation and content. Sections share an inset.",
+        "behavior": "Optional navigation can be omitted without reserving a column. At narrow widths it stacks above content. Page content scrolls in normal flow.",
+        "ownership": "Pattern owns region arrangement; each region owns its inset. Page owns content maximum width, route and navigation behavior.",
+        "implementation": "pattern-specimen"
+      }
+    },
+    {
+      "id": "two-pane-workspace",
+      "name": "Two-pane workspace",
+      "category": "Interaction & layout",
+      "visual": "two-pane-workspace",
+      "summary": "Two persistent sibling panes keep a controlling editor or list visible beside the detail or preview it affects. The panes read as separate work areas, not as cards inside one parent box.",
+      "useWhen": "Use when a task depends on continuously comparing or controlling two related surfaces—such as a library and its selected flow, or an editor and its live preview—and switching between separate pages would hide necessary context.",
+      "route": "Composes inside an existing full-page route",
+      "structure": [
+        "Exactly two adjacent pane surfaces fill the available workspace below any page-level header.",
+        "The contents of both panes align inside one horizontally centred, width-bounded frame while their surface backgrounds may remain full-bleed.",
+        "The controlling or editing pane comes first; its corresponding detail or preview pane comes second.",
+        "A single separator spans the full shared height between the panes.",
+        "Each pane owns its surface, internal padding, heading when needed, and scroll region."
+      ],
+      "variations": [
+        "Fixed split — use page-owned proportions when resizing would add no practical value.",
+        "Bounded resizable split — make the separator draggable when either pane benefits from temporary emphasis. Keep a content-driven default, clamp both panes to page-owned usable limits, expose the separator and its current value accessibly, support keyboard adjustment, and disable resizing when panes stack."
+      ],
+      "requirements": [
+        "Use semantic surface and border tokens; the separator is the boundary, so do not wrap both panes in another card.",
+        "Treat both content rails as one centred unit: choose one page-owned maximum width for their complete frame, preserve the pane proportions within it, then let it remain fluid below that cap.",
+        "When using the bounded resizable variation, resize only the proportions inside the same centred frame; never let dragging expand the frame or collapse either pane.",
+        "Size panes for their content rather than defaulting to equal halves; neither pane may force horizontal page scrolling.",
+        "Keep edits and selections reflected in the companion pane without navigation or manual refresh.",
+        "Give both panes an accessible name or heading and keep their scrolling independent on wide screens.",
+        "Below the width where both panes remain usable, stack them or offer an explicit mode switch instead of squeezing them.",
+        "For new implementations, use the shared --pattern-content-inset-x / --pattern-content-inset-y, --pattern-item-gap, --pattern-section-gap and --pattern-action-gap roles where the anatomy applies. Record page-specific geometry exceptions; existing pages require explicit adoption."
+      ],
+      "avoid": [
+        "Do not copy the sequence timeline, colors, cards, or other feature-specific styling into the pattern.",
+        "Do not constrain full-bleed pane surfaces merely to constrain their content, and do not centre each content rail against a different frame.",
+        "Do not use for unrelated content that merely happens to fit in two columns.",
+        "Do not add a third pane; move secondary tools into the appropriate pane or another route.",
+        "Do not use when the second surface is incidental enough for a modal, drawer, or inline disclosure."
+      ],
+      "examples": [
+        "form-settings.html — form editor and live form preview; bounded resizable split with a 50–68% editor share"
+      ],
+      "anatomy": {
+        "specimen": ".wb-pattern-frame",
+        "parts": [
+          {
+            "name": "Shared header",
+            "selector": ".wb-pattern-pagehead"
+          },
+          {
+            "name": "First pane",
+            "selector": ".wb-pattern-pane:first-child"
+          },
+          {
+            "name": "Second pane",
+            "selector": ".wb-pattern-pane:nth-child(2)"
+          },
+          {
+            "name": "Pane content",
+            "selector": ".wb-pattern-panecontent"
+          },
+          {
+            "name": "Resize separator",
+            "selector": ".wb-pattern-resizer"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Header inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-panehead, .wb-pattern-pagehead",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Header inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-panehead, .wb-pattern-pagehead",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Header inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-panehead, .wb-pattern-pagehead",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Header inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-panehead, .wb-pattern-pagehead",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Pane content inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-panecontent",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Pane content inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-panecontent",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Pane content inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-panecontent",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Pane content inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-panecontent",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Content items",
+            "token": "--pattern-item-gap",
+            "selector": ".wb-pattern-panecontent",
+            "property": "row-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Both panes share one centered bounded frame and one full-height separator. Pane headings and content align to their own inset.",
+        "behavior": "Wide panes scroll independently. This example starts at 60/40 with 50–68% bounds. At narrow widths panes stack and the separator disappears; sheet geometry refreshes when resized.",
+        "ownership": "Pattern owns adjacent surfaces and separator. Each pane owns inset and scrolling. Adopting page chooses usable widths, breakpoint and resize limits; specimen dimensions are not universal defaults.",
+        "implementation": "pattern-specimen"
+      }
+    }
+  ],
+  "visualizations": [
+    {
+      "id": "trend-line",
+      "name": "Trend line",
+      "family": "Change over time",
+      "visual": "trend-line",
+      "sizes": ["sm", "md", "lg"],
+      "useWhen": "Show how one primary measure changes across a continuous time period; add a comparison series only when the comparison is the question.",
+      "reading": "Direction first, latest value second, exact historical values on demand.",
+      "avoid": "Do not smooth a volatile series so heavily that real changes disappear, and do not begin a quantitative axis away from a defensible baseline without saying so.",
+      "accessibility": "Provide a concise trend summary, the period and latest value; expose the underlying values as a table or equivalent text and never rely on line colour alone.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Coordinate plot",
+            "selector": "svg.wb-viz-svg"
+          },
+          {
+            "name": "Axis labels",
+            "selector": ".wb-viz-axis"
+          },
+          {
+            "name": "Series path",
+            "selector": ".wb-viz-primary-stroke"
+          },
+          {
+            "name": "Tooltip",
+            "selector": ".wb-viz-tooltip"
+          }
+        ],
+        "spacing": [],
+        "alignment": "Series, grid and axes share SVG coordinates in a 520 × 240 viewBox.",
+        "behavior": "SVG scales to container width. Size changes CSS typography and stroke tokens, not coordinate spacing.",
+        "ownership": "Workbench owns fixed coordinate geometry. No shared axis-title-gap applies; migrating SVG geometry is separate work.",
+        "implementation": "workbench-svg",
+        "specimen": ".ds-viz"
+      }
+    },
+    {
+      "id": "ranked-bars",
+      "name": "Ranked bars",
+      "family": "Category comparison",
+      "visual": "ranked-bars",
+      "sizes": ["sm", "md", "lg"],
+      "useWhen": "Compare one measure across named categories, especially when labels are long or ranking matters.",
+      "reading": "Order and magnitude should be visible without reading an axis or opening a tooltip.",
+      "avoid": "Do not use vertical columns for long names, random category order, or a different decorative colour for every bar.",
+      "accessibility": "Keep labels and values visible in the same reading order as the bars and provide a text or table equivalent.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Row label",
+            "selector": ".ds-viz-ranked-label"
+          },
+          {
+            "name": "Track",
+            "selector": ".ds-viz-ranked-track"
+          },
+          {
+            "name": "Value",
+            "selector": ".ds-viz-ranked-row strong"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Between rows",
+            "token": "--ds-viz-row-gap",
+            "selector": ".ds-viz-ranked",
+            "property": "row-gap",
+            "note": "Resolves through viz-row-gap-sm/md/lg for the selected size."
+          },
+          {
+            "label": "Label / track / value",
+            "token": "--viz-comparison-column-gap",
+            "selector": ".ds-viz-ranked-row",
+            "property": "column-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Rows share label and value columns; values remain beside labels.",
+        "behavior": "At narrow widths tracks move below their labels. Long labels truncate; outer width remains fluid.",
+        "ownership": "Chart owns rows and columns; card or page owns outer inset.",
+        "implementation": "shared-css",
+        "specimen": ".ds-viz"
+      }
+    },
+    {
+      "id": "binned-distribution",
+      "name": "Binned distribution",
+      "family": "Distribution across ranges",
+      "visual": "binned-distribution",
+      "sizes": ["sm", "md", "lg"],
+      "useWhen": "Show how records are distributed across ordered numeric ranges such as deal amount, age or response time.",
+      "reading": "The modal range and the shape of the distribution come first; every bin count remains directly labelled.",
+      "avoid": "Do not treat ranges as unrelated categories, vary bar colour without meaning, or hide unequal and open-ended bin definitions.",
+      "accessibility": "State every range and count in order, including empty bins, and provide a text or table equivalent that preserves the same range boundaries.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Optional summary",
+            "selector": ".ds-viz-chart-meta"
+          },
+          {
+            "name": "Plot region",
+            "selector": ".ds-viz-distribution-grid"
+          },
+          {
+            "name": "Bin counts",
+            "selector": ".ds-viz-bin-value"
+          },
+          {
+            "name": "Column marks",
+            "selector": ".ds-viz-bin-mark i"
+          },
+          {
+            "name": "Category labels",
+            "selector": ".ds-viz-bin-label"
+          },
+          {
+            "name": "Optional axis title",
+            "selector": ".ds-viz-axis-label"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Summary to plot",
+            "token": "--viz-meta-gap",
+            "selector": ".ds-viz-chart-meta",
+            "property": "margin-bottom",
+            "note": ""
+          },
+          {
+            "label": "Between bins",
+            "token": "--ds-viz-row-gap",
+            "selector": ".ds-viz-distribution-grid",
+            "property": "column-gap",
+            "note": "Uses selected size row-gap token."
+          },
+          {
+            "label": "Count to mark",
+            "token": "--viz-mark-value-gap",
+            "selector": ".ds-viz-bin-mark",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Baseline to category",
+            "token": "--viz-category-label-gap",
+            "selector": ".ds-viz-bin-label",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Categories to axis title",
+            "token": "--viz-axis-title-gap",
+            "selector": ".ds-viz-axis-label",
+            "property": "padding-top",
+            "note": "12px at every size; shared by dashboard and workbench."
+          }
+        ],
+        "alignment": "Columns share a baseline; counts and categories center within each bin. Axis title aligns to the chart edge.",
+        "behavior": "Bins share available width; labels truncate. Zero counts retain their label and empty mark slot. Omitted axis title creates no node or gap.",
+        "ownership": "Chart owns plot-to-label relationships; card owns surrounding inset.",
+        "implementation": "shared-css",
+        "specimen": ".ds-viz"
+      }
+    },
+    {
+      "id": "stacked-composition",
+      "name": "Stacked composition",
+      "family": "Composition over categories",
+      "visual": "stacked-composition",
+      "sizes": ["sm", "md", "lg"],
+      "useWhen": "Compare totals and a small, stable set of constituent parts across periods or groups.",
+      "reading": "Total length first; segment mix second. Keep the same stack order everywhere.",
+      "avoid": "Do not use when precise comparison of middle segments is the primary task or when the category set changes between bars.",
+      "accessibility": "Name the total and each segment in source order; pair colours with persistent labels and a tabular equivalent.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Category",
+            "selector": ".ds-viz-stacked-row > span"
+          },
+          {
+            "name": "Segmented track",
+            "selector": ".ds-viz-stacked-row > div"
+          },
+          {
+            "name": "Total",
+            "selector": ".ds-viz-stacked-row strong"
+          },
+          {
+            "name": "Legend",
+            "selector": ".ds-viz-legend"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Between rows",
+            "token": "--ds-viz-row-gap",
+            "selector": ".ds-viz-stacked",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Between columns",
+            "token": "--viz-comparison-column-gap",
+            "selector": ".ds-viz-stacked-row",
+            "property": "column-gap",
+            "note": "Narrow layout overrides with viz-stacked-column-gap-narrow.",
+            "narrowToken": "--viz-stacked-column-gap-narrow"
+          },
+          {
+            "label": "Between segments",
+            "token": "--viz-stacked-segment-gap",
+            "selector": ".ds-viz-stacked-row > div",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Legend separation",
+            "token": "--viz-legend-top-gap",
+            "selector": ".ds-viz-legend",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Between legend items",
+            "token": "--viz-legend-item-gap",
+            "selector": ".ds-viz-legend",
+            "property": "column-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Labels, tracks and totals share columns; segment order is stable.",
+        "behavior": "Legend wraps. Narrow widths use smaller column gaps and bounded tracks; outer width is fluid.",
+        "ownership": "Chart owns segment and legend spacing; parent owns outer inset.",
+        "implementation": "shared-css",
+        "specimen": ".ds-viz"
+      }
+    },
+    {
+      "id": "conversion-funnel",
+      "name": "Conversion steps",
+      "family": "Sequential progression",
+      "visual": "conversion-funnel",
+      "sizes": ["sm", "md", "lg"],
+      "variants": [
+        "Stacked rows (default): label and percentage above a full-width track, with the value aligned at the right.",
+        "Inline rows: set layout:'inline' for a compact label and track followed by one shared --viz-inline-value-column ending column. Values are left-aligned in that column, percentages follow in parentheses, and all track endings align; the track moves below at narrow widths.",
+        "Comfortable density: set density:'comfortable' when a short conversion sequence has room for more vertical separation."
+      ],
+      "useWhen": "Show attrition through an ordered sequence where every later stage is a subset of the previous one.",
+      "reading": "Stage count and step-to-step conversion are equal citizens; the narrowing bars support rather than replace those numbers.",
+      "avoid": "Do not use a decorative funnel silhouette or for independent statuses that do not form a real sequence.",
+      "accessibility": "Read stages in process order and state both count and conversion percentage for every transition.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Stage heading",
+            "selector": ".ds-viz-row-head"
+          },
+          {
+            "name": "Track",
+            "selector": ".ds-viz-track"
+          },
+          {
+            "name": "Inline label",
+            "selector": ".ds-viz-inline-label"
+          },
+          {
+            "name": "Inline value",
+            "selector": ".ds-viz-inline-value"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Between stacked rows",
+            "token": "--ds-viz-row-gap",
+            "selector": ".ds-viz-conversion:not(.ds-viz-conversion--comfortable)",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Heading to track",
+            "token": "--viz-conversion-content-gap",
+            "selector": ".ds-viz-conversion:not(.ds-viz-conversion--inline) .ds-viz-conversion-row",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Comfortable row separation",
+            "token": "--viz-conversion-row-gap-comfortable",
+            "selector": ".ds-viz-conversion--comfortable",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Inline columns",
+            "token": "--viz-inline-column-gap",
+            "selector": ".ds-viz-conversion--inline .ds-viz-conversion-row",
+            "property": "column-gap",
+            "note": "Narrow layout uses viz-inline-gap-narrow.",
+            "narrowToken": "--viz-inline-gap-narrow"
+          },
+          {
+            "label": "Track to value inset",
+            "token": "--viz-inline-value-pad-left",
+            "selector": ".ds-viz-inline-value",
+            "property": "padding-left",
+            "note": ""
+          }
+        ],
+        "alignment": "Stacked headings align label and value on a baseline. Inline rows align track endings and the value column.",
+        "behavior": "Inline tracks stack below at narrow widths. Comfortable density overrides the normal row gap; size affects internal marks, not outer width.",
+        "ownership": "Chart owns both supported layouts and density. Pages supply data, not spacing overrides.",
+        "implementation": "shared-css",
+        "specimen": ".ds-viz"
+      }
+    },
+    {
+      "id": "part-to-whole",
+      "name": "Part to whole",
+      "family": "Share of a total",
+      "visual": "part-to-whole",
+      "sizes": ["sm", "md", "lg"],
+      "variants": [
+        "Centered total (default): the ring contains the supplied centerValue and centerLabel, or the computed total and TOTAL label.",
+        "Centerless donut: set center:false when surrounding context or the legend already carries the total.",
+        "Compact legend: set legendLayout:'compact' to remove the header and align each category, value and share in a single-column list.",
+        "Legend table: all layouts use a subtle bordered surface and row dividers. External inline margin separates the table from its surroundings while internal padding remains restrained."
+      ],
+      "useWhen": "Show the broad composition of one total with no more than five meaningful categories.",
+      "reading": "The ring shows composition; hover tooltips identify each segment with its label, displayed value and share, while the adjacent legend keeps every category, count and share persistent. The total may sit in the ring or in the surrounding context when center:false is used.",
+      "avoid": "Do not add leader captions, explode slices, use 3D, or ask people to compare many similarly sized wedges.",
+      "accessibility": "Expose the total plus every category count and percentage in legend order, including when the visual center is omitted; colour is never the only label.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Ring",
+            "selector": ".ds-viz-donut"
+          },
+          {
+            "name": "Optional center",
+            "selector": ".ds-viz-donut-center"
+          },
+          {
+            "name": "Legend table",
+            "selector": ".ds-viz-table"
+          },
+          {
+            "name": "Legend row",
+            "selector": ".ds-viz-table-row"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Ring to table",
+            "token": "--ds-viz-gap",
+            "selector": ".ds-viz-part-to-whole",
+            "property": "column-gap",
+            "note": "Resolves through viz-layout-gap-sm/md/lg."
+          },
+          {
+            "label": "Table inset",
+            "token": "--viz-legend-table-pad-x",
+            "selector": ".ds-viz-table",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Table external breathing room",
+            "token": "--viz-legend-table-margin-x",
+            "selector": ".ds-viz-table",
+            "property": "margin-left",
+            "note": ""
+          },
+          {
+            "label": "Compact row inset",
+            "token": "--viz-legend-row-pad-y",
+            "selector": ".ds-viz-part-to-whole--compact .ds-viz-table-row",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Value to center label",
+            "token": "--viz-donut-label-gap",
+            "selector": ".ds-viz-donut-center span",
+            "property": "margin-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Ring and table center vertically. Table aligns category, count and share columns.",
+        "behavior": "Table stacks below the ring at narrow widths. Centerless variant removes center text; compact legend omits its header. Narrow tables hide the share column.",
+        "ownership": "Shared renderer owns ring, table and optional center; parent owns card padding.",
+        "implementation": "shared-css",
+        "specimen": ".ds-viz"
+      }
+    },
+    {
+      "id": "activity-heatmap",
+      "name": "Activity heatmap",
+      "family": "Density across two dimensions",
+      "visual": "activity-heatmap",
+      "sizes": ["sm", "md", "lg"],
+      "useWhen": "Reveal recurring concentration across two ordered dimensions such as weekday and hour or week and day.",
+      "reading": "Clusters and quiet gaps first; exact cell values on demand.",
+      "avoid": "Do not use for sparse unrelated categories, and never imply more precision than the colour scale can communicate.",
+      "accessibility": "Describe the strongest clusters and expose every cell through keyboard focus or an equivalent table; include a labelled intensity scale.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Coordinate grid",
+            "selector": "svg.wb-viz-svg"
+          },
+          {
+            "name": "Day labels",
+            "selector": ".wb-viz-label"
+          },
+          {
+            "name": "Hour and intensity labels",
+            "selector": ".wb-viz-axis"
+          },
+          {
+            "name": "Cells",
+            "selector": "rect.wb-viz-primary"
+          }
+        ],
+        "spacing": [],
+        "alignment": "Cells follow fixed SVG row/column coordinates in a 520 × 230 viewBox.",
+        "behavior": "Grid scales with width. Cells use 51-unit column pitch and 37-unit row pitch; these are SVG units, not CSS spacing tokens.",
+        "ownership": "Workbench owns coordinate layout. Shared size tokens control typography; general CSS spacing changes do not reposition cells.",
+        "implementation": "workbench-svg",
+        "specimen": ".ds-viz"
+      }
+    }
+  ],
+  "components": [
+    {
+      "name": "Button",
+      "category": "primitives",
+      "css": "components/button.css",
+      "module": "components/button.js",
+      "render": "dsButton(opts) -> html string",
+      "class": "ds-btn",
+      "props": {
+        "label": "string — omit together with `icon` set for an icon-only button",
+        "icon": "string (inline SVG markup)",
+        "variant": "'primary' | 'secondary' | 'soft' | 'ghost' | 'destructive' | 'destructive-quiet' | 'add'",
+        "size": "'sm' | 'md' | 'lg'",
+        "loading": "boolean — keeps the variant's fill and shows a spinner; not the same as disabled",
+        "disabled": "boolean",
+        "href": "string — renders an <a>; dropped when disabled or loading",
+        "newTab": "boolean",
+        "onclick": "string — inline handler name, matching this codebase's existing idiom",
+        "title": "string — also becomes aria-label on an icon-only button",
+        "type": "'button' | 'submit'",
+        "id": "string",
+        "className": "string — extra classes for layout only, never for restyling"
+      },
+      "shapeTokens": [
+        "--btn-radius",
+        "--btn-height",
+        "--btn-height-sm",
+        "--btn-height-lg",
+        "--btn-pad-x",
+        "--btn-weight",
+        "--btn-font",
+        "--btn-border-width"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "active",
+        "focus-visible",
+        "disabled",
+        "loading"
+      ],
+      "usage": "Every clickable action. `primary` for the one main action on a surface, `secondary` for the rest, `ghost` for toolbar and icon actions, `destructive` for deletes, `add` for the full-width dashed 'add a thing' affordance from the reference.",
+      "avoid": "Do not hand-roll a button. The product currently has 82 button rules across 14 class names — that is the duplication this replaces.",
+      "variantNotes": {
+        "destructive-quiet": "Outlined, not filled. A \"Delete record\" inside a form the user is editing must not read as the page's primary action. Found on the record screen, which had already forked .ov-btn-danger because no filled variant fit.",
+        "soft": "Filled neutral. Secondary is white with an edge, ghost has no fill at rest; a toolbar button must look like a button without competing with the primary action. The board header had this as three separate inline styles.",
+        "hover": "An outlined variant fills on hover (--accent-subtle), recolours its edge and ink, and doubles that edge with an inset 1px ring — a hover that only swaps colours reads as a colour change, not as a response, and at 1px the edge is too fine for a hue shift to register. The ring rather than a wider border: border-width moves the label inside the box, and 1.5px snaps back to 1px at dpr 1."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Control",
+            "selector": ".ds-btn"
+          },
+          {
+            "name": "Optional icon",
+            "selector": ".ds-icon"
+          },
+          {
+            "name": "Label",
+            "selector": ".ds-btn > span:not([data-ds-icon])"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Horizontal inset",
+            "token": "--btn-pad-x",
+            "selector": ".ds-btn:not(.ds-btn--sm):not(.ds-btn--lg):not(.ds-btn--icon)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Icon to label",
+            "token": "--btn-content-gap",
+            "selector": ".ds-btn",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Small inset",
+            "token": "--btn-pad-x-sm",
+            "selector": ".ds-btn--sm:not(.ds-btn--icon)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Large inset",
+            "token": "--btn-pad-x-lg",
+            "selector": ".ds-btn--lg:not(.ds-btn--icon)",
+            "property": "padding-left",
+            "note": ""
+          }
+        ],
+        "alignment": "Icon and label are centered on both axes.",
+        "behavior": "Labels stay on one line. Icon-only buttons are square and remove horizontal padding. Loading preserves the label width.",
+        "ownership": "Button owns internal spacing; toolbar or page owns gaps between buttons.",
+        "implementation": "shared-css",
+        "specimen": ".ds-btn"
+      }
+    },
+    {
+      "name": "Icon",
+      "category": "primitives",
+      "css": "components/icon.css",
+      "module": "components/icon.js",
+      "render": "dsIcon(name, opts) -> html string",
+      "class": "ds-icon",
+      "props": {
+        "name": "string — a built-in Phosphor name ('caret-left') or a product alias ('back'). dsIcon.names() lists all 85.",
+        "size": "number (px) | string (any CSS length) — defaults to var(--icon-size, 16px)",
+        "title": "string — makes the icon meaningful: adds role=img + aria-label. Omit for decoration beside a label, which is the default and renders aria-hidden.",
+        "className": "string — 'ds-icon--sm' | 'ds-icon--lg' | 'ds-icon--muted' | 'ds-icon--accent' | 'ds-icon--danger' | 'ds-icon--spin'"
+      },
+      "shapeTokens": [
+        "--icon-size",
+        "--icon-size-sm",
+        "--icon-size-lg"
+      ],
+      "states": [
+        "default",
+        "muted",
+        "accent",
+        "danger",
+        "spin"
+      ],
+      "usage": "Every icon. Colour comes from currentColor so an icon inherits its context. Source is Phosphor regular (MIT) — genuine upstream path data, not a redraw.",
+      "avoid": "Do not paste a new inline <svg>. To change or add an icon, edit the ICONS map in icon.js, or call dsIcon.register(name, body, viewBox) to override one — including with your own custom drawing on its own grid.",
+      "extend": "dsIcon.register('plus', '<path d=\"…\"/>') replaces a built-in everywhere; a third argument sets a custom viewBox.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Glyph",
+            "selector": ".ds-icon"
+          }
+        ],
+        "spacing": [],
+        "alignment": "Glyph aligns to surrounding text with the existing -0.5px optical offset.",
+        "behavior": "Size is supplied by the renderer or size modifier. Glyphs do not shrink in flex layouts.",
+        "ownership": "Icon owns glyph dimensions only; the enclosing control owns its padding and icon-to-label gap.",
+        "implementation": "shared-css",
+        "specimen": ".ds-icon"
+      }
+    },
+    {
+      "name": "Input",
+      "category": "primitives",
+      "css": "components/primitives.css",
+      "class": "ds-input",
+      "props": {
+        "variant": "'default' | 'large' (class .ds-input--lg) | 'inline' (class .ds-input--inline) | 'invalid' (class .ds-input--invalid)",
+        "element": "input | textarea | select — the same class styles all three"
+      },
+      "shapeTokens": [
+        "--input-radius",
+        "--input-height",
+        "--input-height-lg",
+        "--input-pad-x",
+        "--input-bg",
+        "--input-border"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "invalid",
+        "disabled",
+        "placeholder"
+      ],
+      "usage": "Any single-line or multi-line text entry, and selects. Wrap in .ds-field with .ds-field-label plus .ds-field-hint or .ds-field-error to get the labelled layout.",
+      "variantNotes": {
+        "large": ".ds-input--lg — 40px boxed input for editable rows and configuration surfaces where the default 34px control is too dense. It changes height and font size only; all interaction states remain Input's.",
+        "inline": ".ds-input--inline — edit-in-place. A boxed field would draw a border around what reads as body text; the record screen edits 25 values this way. Shorter than a boxed field (--input-inline-height), transparent until hover, same focus ring."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Field label",
+            "selector": ".ds-field-label"
+          },
+          {
+            "name": "Control",
+            "selector": ".ds-input"
+          },
+          {
+            "name": "Hint or error",
+            "selector": ".ds-field-hint, .ds-field-error"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Boxed inset",
+            "token": "--input-pad-x",
+            "selector": ".ds-input:not(.ds-input--inline)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Label / control / help",
+            "token": "--field-content-gap",
+            "selector": ".ds-field",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Inline inset",
+            "token": "--input-inline-pad-x",
+            "selector": ".ds-input--inline",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Textarea vertical inset",
+            "token": "--input-textarea-pad-y",
+            "selector": "textarea.ds-input",
+            "property": "padding-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Boxed controls fill their container. Labels and help share the field edge.",
+        "behavior": "Textarea grows vertically; inline input uses automatic width. Remove absent hint/error nodes rather than leaving empty placeholders.",
+        "ownership": "Input owns its inset; ds-field owns label/control/help gaps. Parent owns spacing between fields.",
+        "implementation": "shared-css",
+        "specimen": ".ds-field, .ds-input"
+      }
+    },
+    {
+      "name": "Floating field",
+      "category": "composites",
+      "css": "components/floating-field.css",
+      "render": "declarative — .ds-floating-field wrapping .ds-input, then .ds-floating-field__label, with an optional .ds-floating-field__counter",
+      "class": "ds-floating-field",
+      "props": {
+        "label": ".ds-floating-field__label — a real <label> immediately after the input; placeholder=\" \" lets CSS distinguish empty from filled without duplicating value state",
+        "counter": "optional .ds-floating-field__counter; add .ds-floating-field--counted to reserve its width. The consumer updates the count and owns maxlength.",
+        "input": "a real .ds-input; .ds-input--invalid and disabled states carry through"
+      },
+      "shapeTokens": [
+        "--floating-field-height",
+        "--floating-field-bg",
+        "--floating-field-label-color",
+        "--floating-field-placeholder-color",
+        "--floating-field-label-font",
+        "--floating-field-value-font",
+        "--floating-field-counter-color",
+        "--floating-field-counter-font",
+        "--floating-field-counter-space"
+      ],
+      "states": [
+        "empty",
+        "focus",
+        "filled",
+        "invalid",
+        "disabled",
+        "counted"
+      ],
+      "usage": "A prominent single-line field where keeping the label visible after entry is useful and a separate label row would spend unnecessary vertical space. The label rests inside when empty and straddles the top border on focus or when filled.",
+      "avoid": "Do not use for ordinary dense forms, textarea/select controls, or as a decorative placeholder. The label must remain a real <label> associated to the input, and the input must carry placeholder=\" \".",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Outlined control",
+            "selector": ".ds-floating-field > .ds-input"
+          },
+          {
+            "name": "Floating label",
+            "selector": ".ds-floating-field__label"
+          },
+          {
+            "name": "Optional counter",
+            "selector": ".ds-floating-field__counter"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Text inset",
+            "token": "--input-pad-x",
+            "selector": ".ds-floating-field > .ds-input",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Label cutout inset",
+            "token": "--floating-field-label-pad",
+            "selector": ".ds-floating-field__label",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Counted end inset",
+            "token": "--floating-field-counter-space",
+            "selector": ".ds-floating-field--counted > .ds-input",
+            "property": "padding-right",
+            "note": "Rendered inset is input-pad-x plus counter-space."
+          }
+        ],
+        "alignment": "Label text shares the input content edge; counter is centered at the right inset.",
+        "behavior": "Label moves to the border on focus or when filled. Only counted fields reserve counter space.",
+        "ownership": "Floating field owns label and counter positioning; the form owns inter-field spacing.",
+        "implementation": "shared-css",
+        "specimen": ".ds-floating-field"
+      }
+    },
+    {
+      "name": "Badge",
+      "category": "primitives",
+      "css": "components/primitives.css",
+      "class": "ds-badge",
+      "props": {
+        "variant": "'neutral' | 'accent' | 'success' | 'warning' | 'danger' | 'teal' | 'green' | 'amber' | 'pink' | 'purple'",
+        "dot": "boolean (class .ds-badge--dot) — leading state dot"
+      },
+      "shapeTokens": [
+        "--badge-radius",
+        "--badge-pad-x",
+        "--badge-font"
+      ],
+      "states": [
+        "default"
+      ],
+      "usage": "Status and category labels. The semantic four (accent/success/warning/danger) carry meaning; the five colour labels are for user-assigned categories and ship as fill/ink pairs so they cannot be mismatched.",
+      "avoid": "Do not use a status variant for a category, or a category colour for a state.",
+      "variantNotes": {
+        "pill": ".ds-badge--pill — fully rounded. The default badge is a soft rectangle; several surfaces had independently typed 999px (ov-contact-person-pill, kanban-won-pill)."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Badge",
+            "selector": ".ds-badge"
+          },
+          {
+            "name": "Status dot (pseudo-element)",
+            "selector": ".ds-badge--dot",
+            "pseudo": "::before"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Horizontal inset",
+            "token": "--badge-pad-x",
+            "selector": ".ds-badge:not(.ds-badge--pill)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Vertical inset",
+            "token": "--badge-pad-y",
+            "selector": ".ds-badge",
+            "property": "padding-top",
+            "note": "Intentional 3px exception."
+          },
+          {
+            "label": "Dot to label",
+            "token": "--badge-content-gap",
+            "selector": ".ds-badge--dot",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Pill inset",
+            "token": "--badge-pill-pad-x",
+            "selector": ".ds-badge--pill",
+            "property": "padding-left",
+            "note": ""
+          }
+        ],
+        "alignment": "Dot and label are centered vertically.",
+        "behavior": "Label does not wrap; no gap is laid out when the optional dot is absent.",
+        "ownership": "Badge owns its inset and dot gap; parent owns spacing between badges.",
+        "implementation": "shared-css",
+        "specimen": ".ds-badge"
+      }
+    },
+    {
+      "name": "Card",
+      "category": "layout",
+      "css": "components/primitives.css",
+      "class": "ds-card",
+      "props": {
+        "variant": "'default' | 'flat' | 'recessed' | 'interactive'"
+      },
+      "shapeTokens": [
+        "--card-radius",
+        "--card-pad",
+        "--card-border",
+        "--card-shadow"
+      ],
+      "states": [
+        "default",
+        "hover (interactive only)"
+      ],
+      "usage": "Any grouped region. Elevation is what separates regions in this system — reach for a card before reaching for a border. .ds-card-title and .ds-card-sub give the heading pair.",
+      "variantNotes": {
+        "section": ".ds-card--section — a page content panel rather than a tile: --card-section-radius (12px) and --card-section-pad (24px). The record screen stacks seven. Forking a second card class for this is what produced .ov-card."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Padded surface",
+            "selector": ".ds-card"
+          },
+          {
+            "name": "Optional title",
+            "selector": ".ds-card-title"
+          },
+          {
+            "name": "Optional subtitle",
+            "selector": ".ds-card-sub"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Container inset",
+            "token": "--card-pad",
+            "selector": ".ds-card:not(.ds-card--section)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Container inset",
+            "token": "--card-pad",
+            "selector": ".ds-card:not(.ds-card--section)",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Container inset",
+            "token": "--card-pad",
+            "selector": ".ds-card:not(.ds-card--section)",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Container inset",
+            "token": "--card-pad",
+            "selector": ".ds-card:not(.ds-card--section)",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Section inset",
+            "token": "--card-section-pad",
+            "selector": ".ds-card--section",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Section inset",
+            "token": "--card-section-pad",
+            "selector": ".ds-card--section",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Section inset",
+            "token": "--card-section-pad",
+            "selector": ".ds-card--section",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Section inset",
+            "token": "--card-section-pad",
+            "selector": ".ds-card--section",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Title to subtitle",
+            "token": "--card-sub-gap",
+            "selector": ".ds-card-sub",
+            "property": "margin-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Children share the padded content edge unless caller layout overrides it.",
+        "behavior": "Width and height follow content and parent constraints. Remove absent subtitle markup to remove its margin.",
+        "ownership": "Plain Card is a padded shell with title/subtitle styles. For new multi-region content, opt into the Structured card composition (ds-card--structured); it owns header/body/footer gaps. Existing cards keep caller-owned layout.",
+        "implementation": "shared-css",
+        "specimen": ".ds-card"
+      }
+    },
+    {
+      "name": "Note",
+      "category": "composite",
+      "css": "components/note.css",
+      "class": "ds-note",
+      "props": {
+        "metadata": "optional author/date text and decorative icon",
+        "body": "plain text; preserve line breaks"
+      },
+      "shapeTokens": [
+        "--note-pad-x",
+        "--note-pad-y",
+        "--note-radius",
+        "--note-meta-gap",
+        "--note-content-gap"
+      ],
+      "states": [
+        "default"
+      ],
+      "usage": "Read-only authored note with optional metadata. Omit the entire note when empty. The composer and activity timeline are separate controls.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Surface",
+            "selector": ".ds-note"
+          },
+          {
+            "name": "Metadata",
+            "selector": ".ds-note__meta"
+          },
+          {
+            "name": "Icon",
+            "selector": ".ds-note__icon"
+          },
+          {
+            "name": "Body",
+            "selector": ".ds-note__body"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Horizontal inset",
+            "token": "--note-pad-x",
+            "selector": ".ds-note",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Horizontal inset",
+            "token": "--note-pad-x",
+            "selector": ".ds-note",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Vertical inset",
+            "token": "--note-pad-y",
+            "selector": ".ds-note",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Vertical inset",
+            "token": "--note-pad-y",
+            "selector": ".ds-note",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Icon to metadata",
+            "token": "--note-meta-gap",
+            "selector": ".ds-note__meta",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Metadata to body",
+            "token": "--note-content-gap",
+            "selector": ".ds-note__meta + .ds-note__body",
+            "property": "margin-top",
+            "note": "Absent metadata reserves no gap."
+          }
+        ],
+        "alignment": "Metadata icon aligns centrally with wrapping text; body shares the surface content edge.",
+        "behavior": "Fluid width and content-driven height. Body preserves newlines and wraps long words. Metadata is optional. Passive content has no interactive states.",
+        "ownership": "Note owns its background, typography and internal spacing. Parent owns outer spacing; page owns author/date content and composer behavior.",
+        "implementation": "shared-css",
+        "specimen": ".ds-note"
+      }
+    },
+    {
+      "name": "Stat tile",
+      "category": "composite",
+      "css": "components/stat.css",
+      "class": "ds-stat",
+      "props": {
+        "accent": "CSS custom property --ds-stat-accent; defaults to --accent-primary",
+        "label": ".ds-stat__label — short uppercase metric name",
+        "value": ".ds-stat__value — primary tabular number",
+        "context": ".ds-stat__context — one short supporting line"
+      },
+      "shapeTokens": [
+        "--stat-pad-block",
+        "--stat-dot-size",
+        "--stat-head-gap",
+        "--stat-label-value-gap",
+        "--stat-value-context-gap",
+        "--stat-label-font",
+        "--stat-value-font",
+        "--stat-value-weight",
+        "--stat-context-font"
+      ],
+      "states": [
+        "default"
+      ],
+      "usage": "Headline metrics with a label, one primary value and one concise context line. Compose with .ds-card; use --ds-stat-accent only to distinguish adjacent metrics, not to encode status.",
+      "avoid": "Do not use for trends, ratios that need a scale, or multi-value summaries; choose a visualization or table instead.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Label and accent",
+            "selector": ".ds-stat__head"
+          },
+          {
+            "name": "Primary value",
+            "selector": ".ds-stat__value"
+          },
+          {
+            "name": "Optional context",
+            "selector": ".ds-stat__context"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Vertical inset",
+            "token": "--stat-pad-block",
+            "selector": ".ds-stat",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Accent to label",
+            "token": "--stat-head-gap",
+            "selector": ".ds-stat__head",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Label to value",
+            "token": "--stat-label-value-gap",
+            "selector": ".ds-stat__head",
+            "property": "margin-bottom",
+            "note": ""
+          },
+          {
+            "label": "Value to context",
+            "token": "--stat-value-context-gap",
+            "selector": ".ds-stat__context",
+            "property": "margin-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Label, value and context share a left edge; the optional accent sits within the header.",
+        "behavior": "Long label, value and context truncate. Omitting the context removes its margin.",
+        "ownership": "Stat owns vertical inset and internal gaps; card supplies horizontal inset when composed with ds-card.",
+        "implementation": "shared-css",
+        "specimen": ".ds-stat"
+      }
+    },
+    {
+      "name": "Stage chevron",
+      "category": "composites",
+      "css": "components/board.css",
+      "class": "ds-stage",
+      "variants": "'sm' (compact editor chips) · 'first' / 'last' flatten the ends of the flow",
+      "shapeTokens": [
+        "--stage-taper",
+        "--stage-taper-sm",
+        "--stage-pad-x",
+        "--stage-pad-y",
+        "--stage-radius"
+      ],
+      "usage": "The arrow-shaped stage header on the board and the stage chips in the pipeline editor.",
+      "avoid": "Don't set its fill from a token — the colour is derived from the pipeline's own colour at runtime (shadeFor/darken), so it stays an inline style. Shape only.",
+      "note": "Found by auditing /crm/pipeline/:id. The clip-path polygon appeared four times with three tapers, and .np-chev in crm.html and pipeline-settings.html were byte-identical. Uses --first/--last modifiers, not :first-child: on the board each header is the first child of its own column, so :first-child matched all six stages.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Stage surface",
+            "selector": ".ds-stage"
+          },
+          {
+            "name": "Caller content",
+            "selector": ".ds-stage > div"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Horizontal inset",
+            "token": "--stage-pad-x",
+            "selector": ".ds-stage:not(.ds-stage--sm)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Vertical inset",
+            "token": "--stage-pad-y",
+            "selector": ".ds-stage:not(.ds-stage--sm)",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Small horizontal inset",
+            "token": "--stage-pad-x-sm",
+            "selector": ".ds-stage--sm",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Small vertical inset",
+            "token": "--stage-pad-y-sm",
+            "selector": ".ds-stage--sm",
+            "property": "padding-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Insets protect content from the chevron edge; caller chooses text alignment.",
+        "behavior": "First/last modifiers remove the relevant notch. Parent defines widths and arrangement; content height is automatic.",
+        "ownership": "Stage owns its shape and inset, not gaps between stages or typography within its contents.",
+        "implementation": "shared-css",
+        "specimen": ".ds-stage"
+      },
+      "props": {
+        "size": "default | sm",
+        "position": "first | last | both | intermediate"
+      },
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "name": "Segmented control",
+      "category": "composites",
+      "css": "components/board.css",
+      "class": "ds-segmented",
+      "variants": "none — state is aria-pressed on the item",
+      "shapeTokens": [
+        "--seg-radius",
+        "--seg-item-radius",
+        "--seg-track-bg",
+        "--seg-item-bg-on"
+      ],
+      "usage": "Picking a mode: the board's kanban/list toggle.",
+      "avoid": "Not Tabs. Tabs switch a page's content region and sit on a baseline; a segmented control picks a mode and sits in a track. Use aria-pressed so the state is announced.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Track",
+            "selector": ".ds-segmented"
+          },
+          {
+            "name": "Segment",
+            "selector": ".ds-segmented > button"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Track inset",
+            "token": "--seg-pad",
+            "selector": ".ds-segmented",
+            "property": "padding-left",
+            "note": "Intentional 3px exception."
+          },
+          {
+            "label": "Between segments",
+            "token": "--seg-gap",
+            "selector": ".ds-segmented",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Segment inset",
+            "token": "--seg-item-pad-x",
+            "selector": ".ds-segmented > button",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Icon to label",
+            "token": "--seg-item-gap",
+            "selector": ".ds-segmented > button",
+            "property": "gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Segments stretch to track height and center their contents.",
+        "behavior": "Track stays inline; segment widths follow content. Selected state does not change geometry.",
+        "ownership": "Track owns segment spacing. Toolbar owns surrounding spacing.",
+        "implementation": "shared-css",
+        "specimen": ".ds-segmented"
+      },
+      "props": {
+        "aria-pressed": "true | false on each item"
+      },
+      "states": [
+        "unselected",
+        "selected",
+        "hover",
+        "focus-visible"
+      ]
+    },
+    {
+      "name": "Menu",
+      "category": "composites",
+      "css": "components/menu.css",
+      "module": "components/menu.js",
+      "render": "declarative — data-ds-menu=\"<panel id>\" on the trigger; dsMenu.open/close/toggle(id) for programmatic control",
+      "class": "ds-menu",
+      "props": {
+        "placement": "'below' | 'below-end' | 'fixed' — ds-menu--below aligns to the trigger's left edge, --below-end to its right, --fixed takes viewport coordinates set by the caller",
+        "item": ".ds-menu__item — a <button> or <a>; add an icon element and it lands in the aligned icon column",
+        "meta": ".ds-menu__meta — right-aligned secondary text on an item: a count, a shortcut, a state",
+        "separator": ".ds-menu__sep — a rule, for the one boundary that must not be missed (a destructive action under harmless ones). NOT for group boundaries: a label after items already takes --menu-group-gap of space above it.",
+        "label": ".ds-menu__label — an uppercase heading above a group. Takes --menu-label-gap of air below it before its items, and --menu-group-gap above it when it follows another group.",
+        "danger": ".ds-menu__item--danger",
+        "caret": ".ds-menu-caret — the chevron on whatever opens the menu; rotates 180° while it is open. Also used by Split button.",
+        "anchor": ".ds-menu-anchor — a bare positioning context for a --below menu. Use .ds-split only when there really are two buttons."
+      },
+      "shapeTokens": [
+        "--menu-bg",
+        "--menu-radius",
+        "--menu-shadow",
+        "--menu-pad",
+        "--menu-min-width",
+        "--menu-item-height",
+        "--menu-item-pad-x",
+        "--menu-item-radius",
+        "--menu-item-font",
+        "--menu-item-gap",
+        "--menu-label-gap",
+        "--menu-group-gap",
+        "--menu-sep-color",
+        "--menu-gap"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus-visible",
+        "disabled",
+        "open"
+      ],
+      "usage": "An anchored panel of actions: a three-dot menu, an account switcher, the panel behind a Split button's caret.",
+      "avoid": "Positioning is not this component's job — anchor it with a relatively-positioned wrapper (--below/--below-end) or with coordinates (--fixed). Baking position in is what made all three existing copies re-declare everything. Do not use it for navigation between pages; that is the sidebar.",
+      "variantNotes": {
+        "fixed": "An absolutely-positioned panel is clipped by any overflow ancestor, which is why a three-dot inside a scrolling list needs viewport coordinates instead.",
+        "behaviour": "dsMenu binds by delegation on document, so markup rendered after load works with no re-binding, and it enforces one open menu at a time, outside-click and Escape close, and arrow-key movement. The three hand-rolled copies each implemented a different subset.",
+        "groups": "Groups are separated by space, not by rules: .ds-menu__label picks up --menu-group-gap when it follows items or a separator, and stays tight when it leads the panel. A line between every group turns a list of choices into a stack of boxes and spends the strongest separator available on the weakest boundary."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Panel",
+            "selector": ".ds-menu"
+          },
+          {
+            "name": "Group label",
+            "selector": ".ds-menu__label"
+          },
+          {
+            "name": "Action row",
+            "selector": ".ds-menu__item"
+          },
+          {
+            "name": "Optional metadata",
+            "selector": ".ds-menu__meta"
+          },
+          {
+            "name": "Separator",
+            "selector": ".ds-menu__sep"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Panel inset",
+            "token": "--menu-pad",
+            "selector": ".ds-menu",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Action inset",
+            "token": "--menu-item-pad-x",
+            "selector": ".ds-menu__item",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Icon to label",
+            "token": "--menu-item-gap",
+            "selector": ".ds-menu__item",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Metadata separation",
+            "token": "--menu-meta-gap",
+            "selector": ".ds-menu__meta",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Group separation",
+            "token": "--menu-group-gap",
+            "selector": ".ds-menu__item + .ds-menu__label, .ds-menu__sep + .ds-menu__label",
+            "property": "margin-top",
+            "note": "Applies only to a group following items or a separator."
+          },
+          {
+            "label": "Group label to items",
+            "token": "--menu-label-gap",
+            "selector": ".ds-menu__label",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Separator breathing room",
+            "token": "--menu-separator-gap-y",
+            "selector": ".ds-menu__sep",
+            "property": "margin-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Items align within the panel; metadata is pushed to the right.",
+        "behavior": "Menu width follows its longest one-line item with a minimum width. Optional metadata disappears without a reserved column.",
+        "ownership": "Menu owns internal spacing and below-trigger offset; caller owns positioning context or fixed coordinates.",
+        "implementation": "shared-css",
+        "specimen": ".ds-menu.is-open"
+      }
+    },
+    {
+      "name": "Split button",
+      "category": "composites",
+      "css": "components/split-button.css",
+      "module": "components/menu.js — the caret's panel is a Menu",
+      "render": "markup — .ds-split wrapping two .ds-btn and one .ds-menu",
+      "class": "ds-split",
+      "props": {
+        "variant": "inherited — put the same .ds-btn--* on both halves; primary, secondary and soft all work",
+        "main": ".ds-split > .ds-btn:first-child — the default action, unchanged from a plain button",
+        "toggle": "the second .ds-btn — carries data-ds-menu, aria-haspopup=\"menu\" and aria-expanded",
+        "caret": ".ds-menu-caret on the icon — defined by Menu, since the state it shows is the menu's"
+      },
+      "shapeTokens": [
+        "--split-divider",
+        "--split-toggle-pad-x",
+        "--btn-height",
+        "--btn-radius",
+        "--btn-pad-x",
+        "--btn-content-gap",
+        "--btn-border-width"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "active",
+        "focus-visible",
+        "disabled",
+        "open"
+      ],
+      "usage": "A primary action with rarer, related actions behind a caret — \"Add opportunity\" plus \"Import records from sources\". One control, one visual weight in the toolbar.",
+      "avoid": "Only when the second action belongs to the first. Unrelated actions are unrelated buttons; a caret is not a place to park a toolbar. Both halves must carry the same variant, or the seam shows.",
+      "variantNotes": {
+        "not a new button": "Both halves are real .ds-btn, so height, weight, radius and press behaviour come from --btn-*. This file owns only the seam — squared inner corners, the divider, and pressing as one control.",
+        "divider": "Mixed from currentColor rather than declared per variant, so a filled primary gets a translucent white line and an outlined secondary a grey one, with no variant per case.",
+        "brand colour": "A pipeline's own colour reaches the split by setting --accent-primary on the wrapper, not a background on one half — fill, border and hover all follow from the one property. See crm.html's board header."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Combined control",
+            "selector": ".ds-split"
+          },
+          {
+            "name": "Primary action",
+            "selector": ".ds-split > .ds-btn:first-child"
+          },
+          {
+            "name": "Caret action",
+            "selector": ".ds-split > .ds-btn:first-child + .ds-btn"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Primary action inset",
+            "token": "--btn-pad-x",
+            "selector": ".ds-split > .ds-btn:first-child",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Caret inset",
+            "token": "--split-toggle-pad-x",
+            "selector": ".ds-split > .ds-btn:first-child + .ds-btn",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Shared seam overlap",
+            "token": "--btn-border-width",
+            "selector": ".ds-split > .ds-btn:first-child + .ds-btn",
+            "property": "margin-left",
+            "note": "Negative border width prevents a doubled seam."
+          }
+        ],
+        "alignment": "Both actions stretch to a common height with joined inner edges.",
+        "behavior": "Button states preserve the seam. The menu is positioned outside flow and adds no gap between the halves.",
+        "ownership": "Split owns seam and caret inset; Button owns action spacing; Menu owns dropdown anatomy.",
+        "implementation": "shared-css",
+        "specimen": ".ds-split"
+      }
+    },
+    {
+      "name": "Pipeline tag",
+      "category": "composites",
+      "css": "components/pipeline-tag.css",
+      "module": "components/pipeline-tag.js",
+      "render": "dsPipelineTag({ name, color, size, className }) -> html string",
+      "class": "ds-pipeline-tag",
+      "props": {
+        "name": "string — the pipeline's name",
+        "color": "string — the pipeline's own colour, applied as the --pipe custom property",
+        "variant": "'tab' (class .ds-pipeline-tag--tab) — the folder-tab shape, for a tag that sits on a container's top edge",
+        "size": "'md' | 'sm' (class .ds-pipeline-tag--sm)",
+        "className": "string — extra classes for layout only, never for restyling"
+      },
+      "parts": {
+        "mark": ".ds-pipeline-tag__mark — the pipeline glyph, in --pipe at full strength",
+        "name": ".ds-pipeline-tag__name — truncates rather than widening its container"
+      },
+      "shapeTokens": [
+        "--pipe-tag-radius",
+        "--pipe-tag-pad-x",
+        "--pipe-tag-pad-y",
+        "--pipe-tag-gap",
+        "--pipe-tag-font",
+        "--pipe-tag-tint",
+        "--pipe-tag-line",
+        "--pipe-tag-tab-radius",
+        "--pipe-tag-tab-pad-x",
+        "--pipe-tag-tab-pad-y"
+      ],
+      "states": [
+        "default"
+      ],
+      "usage": "Naming a pipeline where a record's field list, a panel or a confirmation needs to say which pipeline it belongs to. The colour is data, handed in as --pipe, so the fill and border are mixed from the pipeline's own colour rather than picked from a palette.",
+      "avoid": "Not for navigation — the sidebar's pipeline rows are titan-sidebar.css and stay there. Not a Badge variant: badge colours are fixed palette entries and a pipeline's colour is arbitrary. The tab variant does not position itself; a tab floating a hairline above its container is the tell that the caller skipped the overlap.",
+      "variantNotes": {
+        "sm": ".ds-pipeline-tag--sm — inline in a dense header or a line of text. Shape only; same colours and structure.",
+        "tab": "ds-pipeline-tag--tab — top corners rounded, bottom corners square, bottom border dropped, so the tag and the container below it read as one shape rather than a label parked on a box. Placement is the caller's, as with Menu: put it on the container's top edge (translateY(-100%), flush to the side it belongs to) and square that corner of the container. /crm/forms builds its rows this way."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Tag",
+            "selector": ".ds-pipeline-tag"
+          },
+          {
+            "name": "Pipeline mark",
+            "selector": ".ds-pipeline-tag__mark"
+          },
+          {
+            "name": "Name",
+            "selector": ".ds-pipeline-tag__name"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Horizontal inset",
+            "token": "--pipe-tag-pad-x",
+            "selector": ".ds-pipeline-tag:not(.ds-pipeline-tag--sm):not(.ds-pipeline-tag--tab)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Vertical inset",
+            "token": "--pipe-tag-pad-y",
+            "selector": ".ds-pipeline-tag:not(.ds-pipeline-tag--tab)",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Mark to name",
+            "token": "--pipe-tag-gap",
+            "selector": ".ds-pipeline-tag:not(.ds-pipeline-tag--sm)",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Small gap",
+            "token": "--pipe-tag-gap-sm",
+            "selector": ".ds-pipeline-tag--sm",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Tab inset",
+            "token": "--pipe-tag-tab-pad-x",
+            "selector": ".ds-pipeline-tag--tab",
+            "property": "padding-left",
+            "note": ""
+          }
+        ],
+        "alignment": "Mark and name center vertically; the mark does not shrink.",
+        "behavior": "Name truncates within the available width. Small and tab forms retain their own inset choices.",
+        "ownership": "Tag owns internal spacing. Caller attaches the tab to a container and owns its placement.",
+        "implementation": "shared-css",
+        "specimen": ".ds-pipeline-tag"
+      }
+    },
+    {
+      "name": "Kanban card",
+      "category": "composites",
+      "css": "components/kanban-card.css",
+      "class": "ds-kanban-card",
+      "props": {
+        "title": "string — the record's name, in the header",
+        "action": "node — the control that opens the card menu; its glyph is data (overdue / next / done) and stays the caller's",
+        "value": "string — a formatted amount, omitted on a pipeline with no money",
+        "avatar": "node — the contact's initial circle; its colour is derived from the name and written inline",
+        "identity": "node — who the record is for, bottom-left: a company with its logo, or a person with their initial",
+        "trailing": "node — one trailing fact in the footer: an outcome badge on a settled record, last activity on a running one"
+      },
+      "parts": {
+        "header": ".ds-kanban-card__header — title and action control on one row",
+        "title": ".ds-kanban-card__title — wraps, and breaks inside an unbroken name rather than clipping",
+        "action": ".ds-kanban-card__action — round hit area for the card menu; rings on hover",
+        "status": ".ds-kanban-card__status — the sized slot for the action's glyph",
+        "meta": ".ds-kanban-card__meta — amount, separator and contact avatar",
+        "value": ".ds-kanban-card__value — tabular figures so amounts line up down a lane",
+        "sep": ".ds-kanban-card__sep — the dot between amount and contact",
+        "avatar": ".ds-kanban-card__avatar — initial circle, or a photo that fills it",
+        "footer": ".ds-kanban-card__footer — identity and the trailing slot",
+        "identity": ".ds-kanban-card__identity — takes the free width and truncates",
+        "trailing": ".ds-kanban-card__trailing — hard right, never wraps; used by both occupants of the slot",
+        "note": ".ds-kanban-card__note — the quiet type for last activity in that slot"
+      },
+      "shapeTokens": [
+        "--kanban-card-bg",
+        "--kanban-card-radius",
+        "--kanban-card-pad",
+        "--kanban-card-shadow",
+        "--kanban-avatar-size",
+        "--kanban-avatar-font",
+        "--kanban-status-size"
+      ],
+      "states": [
+        "default",
+        "active"
+      ],
+      "usage": "A record on the pipeline board: one per card in a stage lane. It carries the record's name, its amount and contact, who it is for, and one trailing fact — an outcome badge once the record is settled, last activity while it is running.",
+      "avoid": "Not a Card variant: --card-* is a content panel, and the kanban card is deliberately tighter, lifts instead of outlining, and has its own token family. It does not own drag, click or the action menu — those are the board's, as is the avatar colour and the status glyph's fill, which are data. The lane owns the gap between cards and the card's flex sizing inside it.",
+      "variantNotes": {
+        "trailing": ".ds-kanban-card__trailing — a slot rather than a variant. The board puts either .ds-kanban-card__note or a .ds-badge--pill in it, which is why the push-right lives on the slot class and not on the note; a badge parked in the footer with its own margin-left:auto was the page-local .kanban-outcome rule this replaces."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Card",
+            "selector": ".ds-kanban-card"
+          },
+          {
+            "name": "Header",
+            "selector": ".ds-kanban-card__header"
+          },
+          {
+            "name": "Title",
+            "selector": ".ds-kanban-card__title"
+          },
+          {
+            "name": "Action",
+            "selector": ".ds-kanban-card__action"
+          },
+          {
+            "name": "Meta",
+            "selector": ".ds-kanban-card__meta"
+          },
+          {
+            "name": "Footer",
+            "selector": ".ds-kanban-card__footer"
+          },
+          {
+            "name": "Identity",
+            "selector": ".ds-kanban-card__identity"
+          },
+          {
+            "name": "Trailing",
+            "selector": ".ds-kanban-card__trailing"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Card inset",
+            "token": "--kanban-card-pad",
+            "selector": ".ds-kanban-card",
+            "property": "padding-left",
+            "note": "One inset on all four sides; tighter than --card-pad on purpose."
+          },
+          {
+            "label": "Card inset",
+            "token": "--kanban-card-pad",
+            "selector": ".ds-kanban-card",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Card inset",
+            "token": "--kanban-card-pad",
+            "selector": ".ds-kanban-card",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Card inset",
+            "token": "--kanban-card-pad",
+            "selector": ".ds-kanban-card",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Title to action",
+            "token": "--space-100",
+            "selector": ".ds-kanban-card__header",
+            "property": "gap",
+            "note": "Keeps a long title off the action control."
+          },
+          {
+            "label": "Action offset",
+            "token": "--space-075",
+            "selector": ".ds-kanban-card__action",
+            "property": "margin-left",
+            "note": ""
+          },
+          {
+            "label": "Header to meta",
+            "token": "--space-050",
+            "selector": ".ds-kanban-card__meta",
+            "property": "margin-top",
+            "note": "Amount and contact read as part of the title block."
+          },
+          {
+            "label": "Meta items",
+            "token": "--space-075",
+            "selector": ".ds-kanban-card__meta",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Meta to footer",
+            "token": "--space-200",
+            "selector": ".ds-kanban-card__footer",
+            "property": "margin-top",
+            "note": "The one real separation inside the card."
+          },
+          {
+            "label": "Footer items",
+            "token": "--space-075",
+            "selector": ".ds-kanban-card__footer",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Logo to name",
+            "token": "--space-075",
+            "selector": ".ds-kanban-card__identity",
+            "property": "gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Header aligns to the top so a two-line title does not drag the action control down; meta and footer centre. The trailing slot is pushed right by auto margin, not by a spacer.",
+        "behavior": "Content-driven height. The title wraps and breaks inside an unbroken word; the identity name truncates; the trailing slot never wraps or shrinks. Amount is omitted with its separator on a pipeline that carries no money.",
+        "ownership": "Card owns every internal inset and gap. The lane owns the gap between cards (--kanban-card-gap) and the card's flex sizing. The company logo inside the identity is .company-logo, still page-owned and duplicated across four consumers.",
+        "implementation": "shared-css",
+        "specimen": ".ds-kanban-card"
+      }
+    },
+    {
+      "name": "List row",
+      "category": "composites",
+      "css": "components/list-row.css",
+      "class": "ds-list-row",
+      "props": {
+        "leading": "node — the round type mark, or a control that replaces it (a task's checkbox)",
+        "title": "string — what the entry is",
+        "snippet": "string — one supporting line under the title; omitted entirely when absent",
+        "action": "node — a control belonging to this row, revealed on hover or keyboard focus",
+        "trailing": "string — the fact on the right: a timestamp, a due date, a size",
+        "interactive": "boolean (class .ds-list-row--interactive) — the row opens something",
+        "flush": "boolean (class .ds-list-row--flush) — drop the separator and vertical padding"
+      },
+      "parts": {
+        "leading": ".ds-list-row__leading — the round mark; top-aligned in every variant, and the glyph inside is the caller's",
+        "content": ".ds-list-row__content — takes the free width and allows its children to truncate",
+        "title": ".ds-list-row__title",
+        "snippet": ".ds-list-row__snippet — supporting line, quieter than the title",
+        "action": ".ds-list-row__action — hidden until hover or focus",
+        "trailing": ".ds-list-row__trailing — never wraps or shrinks; --danger reads as late"
+      },
+      "shapeTokens": [
+        "--list-row-pad-y",
+        "--list-row-gap",
+        "--list-row-sep",
+        "--list-row-title-font",
+        "--list-row-meta-font",
+        "--list-row-snippet-gap",
+        "--list-row-leading-size",
+        "--list-row-leading-bg",
+        "--list-row-leading-fg",
+        "--list-row-hover-bg",
+        "--list-row-hover-bleed",
+        "--list-row-hover-radius"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus-visible"
+      ],
+      "usage": "One entry in a vertical list inside a card: an activity, a note, a queued task, a contact. Use --interactive when the row opens something, and --flush for a row that is not in a separated list, such as a disclosure header.",
+      "avoid": "Not for rows whose values must line up into columns down the page — that is a table, and dashboard.html and activities.html keep their own grid until Table is built. Not for a filled tile in a grid, such as the record screen's file chips. The row does not own its leading glyph, its action's appearance, or what a click does.",
+      "variantNotes": {
+        "interactive": ".ds-list-row--interactive — hover fill bleeds past the text by --list-row-hover-bleed via negative inline margin, so the fill reads as the row rather than as a highlight inside it, and a static row keeps the same left edge. opportunity-view.html had this as a page-local .clickable rule with the bleed typed as a literal.",
+        "flush": ".ds-list-row--flush — separator and vertical padding removed. Added for the record screen's contact disclosure header, which is a list row inside a card that already has its own edges."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Row",
+            "selector": ".ds-list-row"
+          },
+          {
+            "name": "Leading",
+            "selector": ".ds-list-row__leading"
+          },
+          {
+            "name": "Content",
+            "selector": ".ds-list-row__content"
+          },
+          {
+            "name": "Title",
+            "selector": ".ds-list-row__title"
+          },
+          {
+            "name": "Snippet",
+            "selector": ".ds-list-row__snippet"
+          },
+          {
+            "name": "Trailing",
+            "selector": ".ds-list-row__trailing"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Row inset",
+            "token": "--list-row-pad-y",
+            "selector": ".ds-list-row",
+            "property": "padding-top",
+            "note": "Vertical only; the list's own container owns the horizontal inset."
+          },
+          {
+            "label": "Row inset",
+            "token": "--list-row-pad-y",
+            "selector": ".ds-list-row",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Between parts",
+            "token": "--list-row-gap",
+            "selector": ".ds-list-row",
+            "property": "gap",
+            "note": "Leading to content, content to trailing."
+          },
+          {
+            "label": "Title to snippet",
+            "token": "--list-row-snippet-gap",
+            "selector": ".ds-list-row__snippet",
+            "property": "margin-top",
+            "note": "The two are one thing, so this is the related-content step."
+          },
+          {
+            "label": "Hover bleed",
+            "token": "--list-row-hover-bleed",
+            "selector": ".ds-list-row--interactive:hover",
+            "property": "padding-left",
+            "note": "Matched by a negative inline margin, so the row does not move when it fills."
+          }
+        ],
+        "alignment": "The leading mark is always at the top of the row, in every variant — on a one-line row it is the tallest part so nothing moves, and on a row with a snippet it stays beside the title it labels rather than floating between the two lines. Content and trailing centre on the row's vertical axis. The trailing fact is pushed right by the content column taking the free width, not by a spacer.",
+        "behavior": "Content-driven height. The content column allows its children to truncate or wrap; the trailing fact never wraps or shrinks. Omitting the snippet, action or trailing removes the node and its space rather than reserving it. The action is revealed by hover on the row or focus on the control itself.",
+        "ownership": "Row owns its vertical inset, the gaps between its parts, the separator and the hover treatment. The parent card owns the horizontal inset and the space around the list. The leading glyph, the action control's own appearance and the click target are the caller's.",
+        "implementation": "shared-css",
+        "specimen": ".ds-list-row"
+      }
+    },
+    {
+      "name": "Nav item",
+      "category": "composites",
+      "css": "components/nav-item.css",
+      "class": "ds-nav-item",
+      "props": {
+        "icon": "node — the row's glyph, drawn in currentColor",
+        "label": "string — the destination's name; truncates rather than widening the rail",
+        "action": "node — a control belonging to this row, revealed on hover",
+        "active": "boolean (class .is-active) — this row is the current destination"
+      },
+      "parts": {
+        "icon": ".ds-nav-item__icon — softer than the label at rest, full strength when selected",
+        "label": ".ds-nav-item__label — takes the free width and truncates",
+        "action": ".ds-nav-item__action — hidden until the row is hovered"
+      },
+      "shapeTokens": [
+        "--nav-item-height",
+        "--nav-item-radius",
+        "--nav-item-gap",
+        "--nav-item-pad-x",
+        "--nav-item-pad-y",
+        "--nav-item-font",
+        "--nav-item-fg",
+        "--nav-item-bg-hover",
+        "--nav-item-bg-active",
+        "--nav-item-fg-active",
+        "--nav-item-weight-active",
+        "--nav-item-icon-size",
+        "--nav-item-icon-fg",
+        "--nav-item-icon-fg-active",
+        "--nav-item-action-size",
+        "--nav-item-action-radius",
+        "--nav-item-action-fg",
+        "--nav-item-action-bg-hover",
+        "--nav-item-action-fg-hover"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "active",
+        "focus-visible"
+      ],
+      "usage": "A row in a vertical navigation rail: the CRM sidebar, and the section rails on the full-page settings screens. Selected state is .is-active, and the caller should pair it with aria-current so it is announced and not only painted.",
+      "avoid": "Not a tab and not a list row: a nav item changes what the whole rail is pointing at, a tab switches a content region on a baseline, a list row is an entry you read. It does not own the space between rows, the rail's indent or width, or a 'you are here' caret — those belong to the rail. Do not restyle it for a new surface by writing rules; override its tokens on that surface's scope.",
+      "variantNotes": {
+        "dark-surface": "No variant class. The dark app sidebar is the same component with the --nav-item-* colour tokens overridden on .sidebar in titan-sidebar.css — the ds-split move, where one scoped override carries fill, ink and hover together. The dark values deliberately stay out of semantics.css: the system has no dark primitives yet, and adding them is the dark-mode task rather than a side effect of this one.",
+        "trailing action": ".ds-nav-item__action — the pipeline rows' kebab. Reveal is display-based, carried over from the sidebar unchanged, which means it is pointer-only. Making it keyboard-reachable means reserving its width at rest and shortening every label in the rail, so it is left as it was."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Row",
+            "selector": ".ds-nav-item"
+          },
+          {
+            "name": "Icon",
+            "selector": ".ds-nav-item__icon"
+          },
+          {
+            "name": "Label",
+            "selector": ".ds-nav-item__label"
+          },
+          {
+            "name": "Action",
+            "selector": ".ds-nav-item__action"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Row inset",
+            "token": "--nav-item-pad-x",
+            "selector": ".ds-nav-item",
+            "property": "padding-left",
+            "note": "A rail may add its own further indent; that is the rail's alignment, not the row's."
+          },
+          {
+            "label": "Row inset",
+            "token": "--nav-item-pad-x",
+            "selector": ".ds-nav-item",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Row inset",
+            "token": "--nav-item-pad-y",
+            "selector": ".ds-nav-item",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Row inset",
+            "token": "--nav-item-pad-y",
+            "selector": ".ds-nav-item",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Icon to label",
+            "token": "--nav-item-gap",
+            "selector": ".ds-nav-item",
+            "property": "gap",
+            "note": "Also label to trailing action."
+          }
+        ],
+        "alignment": "Icon, label and action centre on the row's vertical axis. The label takes the free width, so the action sits hard right without a spacer.",
+        "behavior": "Single line at a fixed minimum height; the label truncates, which is the normal case in a fixed-width rail of user-named pipelines. The action appears on hover and takes no space at rest. Hover is suppressed on the selected row.",
+        "ownership": "Row owns its inset, its internal gaps, its states and its colours through tokens. The rail owns the space between rows, any additional indent, its width, and any 'you are here' caret. A surface that needs different colours overrides the tokens on its own scope rather than writing rules.",
+        "implementation": "shared-css",
+        "specimen": ".ds-nav-item"
+      }
+    },
+    {
+      "name": "AI summary",
+      "category": "composites",
+      "css": "components/ai-summary.css",
+      "class": "ds-ai-summary",
+      "props": {
+        "spark": "node — the product's sparkle mark, brand art rather than an icon from the set",
+        "title": "string — what generated this, in the label strip",
+        "body": "node — the generated prose",
+        "next": "node — an optional trailing 'Next activity' line, on its own line"
+      },
+      "parts": {
+        "header": ".ds-ai-summary__header — the label strip that carries the provenance",
+        "spark": ".ds-ai-summary__spark",
+        "title": ".ds-ai-summary__title — uppercase micro label",
+        "body": ".ds-ai-summary__body — the prose",
+        "next": ".ds-ai-summary__next — a trailing statement, separated from the prose"
+      },
+      "shapeTokens": [
+        "--ai-summary-radius",
+        "--ai-summary-border",
+        "--ai-summary-tint",
+        "--ai-summary-surface",
+        "--ai-summary-pad-x",
+        "--ai-summary-head-pad-y",
+        "--ai-summary-head-gap",
+        "--ai-summary-body-pad-y",
+        "--ai-summary-spark-fg",
+        "--ai-summary-title-font",
+        "--ai-summary-title-fg",
+        "--ai-summary-body-font",
+        "--ai-summary-body-fg",
+        "--ai-summary-body-line",
+        "--ai-summary-next-gap",
+        "--ai-summary-pad-x-narrow",
+        "--ai-summary-head-pad-y-narrow",
+        "--ai-summary-body-pad-y-narrow",
+        "--ai-summary-body-font-narrow"
+      ],
+      "states": [
+        "default"
+      ],
+      "usage": "Generated context about the record in view. Its appearance exists to establish provenance — a tint fading out under a labelled strip — so it is not mistaken for a note a colleague wrote. It fits both a full-width record section and a narrow side panel without being told which.",
+      "avoid": "Not a Card variant and not a Note: --card-* is a neutral content panel and a note is authored by a person, which is the exact distinction this card's tint exists to make. Do not select its size with a prop or a modifier — it measures its own container. Do not tint the whole surface; the gradient is spent by the time the prose begins, on purpose. The mail client's .crm-ai-summary-* copy is out of the system's scope and is not a consumer.",
+      "variantNotes": {
+        "narrow": "No class. Below a 22rem container width the card gives back inset and one step of body type through a container query, the same mechanism visualization.css uses. The threshold is 22rem rather than 20rem because the mail client's CRM panel puts the card at 319px: a 320px threshold would have left one pixel of margin. The label strip does not shrink — it is already the smallest thing on the card, and shrinking it would make the part that carries the provenance the hardest to read."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Card",
+            "selector": ".ds-ai-summary"
+          },
+          {
+            "name": "Header",
+            "selector": ".ds-ai-summary__header"
+          },
+          {
+            "name": "Title",
+            "selector": ".ds-ai-summary__title"
+          },
+          {
+            "name": "Body",
+            "selector": ".ds-ai-summary__body"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Horizontal inset",
+            "token": "--ai-summary-pad-x",
+            "selector": ".ds-ai-summary__header",
+            "property": "padding-left",
+            "note": "Shared by the strip and the body so their content sits on one left edge.",
+            "narrowToken": "--ai-summary-pad-x-narrow"
+          },
+          {
+            "label": "Horizontal inset",
+            "token": "--ai-summary-pad-x",
+            "selector": ".ds-ai-summary__body",
+            "property": "padding-right",
+            "note": "",
+            "narrowToken": "--ai-summary-pad-x-narrow"
+          },
+          {
+            "label": "Strip inset",
+            "token": "--ai-summary-head-pad-y",
+            "selector": ".ds-ai-summary__header",
+            "property": "padding-top",
+            "note": "",
+            "narrowToken": "--ai-summary-head-pad-y-narrow"
+          },
+          {
+            "label": "Body inset",
+            "token": "--ai-summary-body-pad-y",
+            "selector": ".ds-ai-summary__body",
+            "property": "padding-top",
+            "note": "",
+            "narrowToken": "--ai-summary-body-pad-y-narrow"
+          },
+          {
+            "label": "Mark to title",
+            "token": "--ai-summary-head-gap",
+            "selector": ".ds-ai-summary__header",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Prose to next line",
+            "token": "--ai-summary-next-gap",
+            "selector": ".ds-ai-summary__next",
+            "property": "margin-top",
+            "note": "Enough that it reads as a separate statement, not a last sentence."
+          }
+        ],
+        "alignment": "Mark and title centre on the strip. The strip and the body share one horizontal inset so their content sits on the same left edge.",
+        "behavior": "Content-driven height; the prose wraps. The card reads its own inline width, not the viewport's, and reduces inset and body type below 22rem. Overflow is clipped so the tint follows the rounded corners. Showing and hiding the card belongs to the page.",
+        "ownership": "Card owns its insets, its tint, its type and its narrow behaviour. The page owns where it sits, the space around it, whether it is visible, and the sparkle mark, which is brand art.",
+        "implementation": "shared-css",
+        "specimen": ".ds-ai-summary"
+      }
+    }
+  ],
+  "inventory": {
+    "note": "The fundamental building blocks of this UI, derived by surveying every CSS rule in the CRM (756 distinct class-rule roots) and clustering by role. `status` is the honest state: built = a component exists and is consumable; planned = the block is real and recurring but each page still hand-rolls it; excluded = deliberately not a component. `evidence` is the duplication a block would absorb — it is also the priority signal.",
+    "surveyed": "crm.html, dashboard.html, opportunity-view.html, the directory and settings pages, titan-sidebar, crm-directory, form-builder, form-render, integrations, index.html",
+    "blocks": [
+      {
+        "name": "Button",
+        "category": "primitives",
+        "status": "built",
+        "component": "ds-btn / dsButton",
+        "evidence": "66 CRM call sites, 18 of them on the component",
+        "whereToday": "components/button.{css,js}",
+        "note": "ao-, np-, ps-, os-, opp-, dir-, fl-, dash-, footer- … all the same button.",
+        "variants": 66,
+        "prefixes": 23,
+        "adopted": 18,
+        "legacy": 48
+      },
+      {
+        "name": "Icon",
+        "category": "primitives",
+        "status": "built",
+        "component": "ds-icon / dsIcon",
+        "evidence": "102 CRM call sites, 58 of them on the component",
+        "whereToday": "components/icon.{css,js}",
+        "note": "27 inline SVGs remain and most are deliberate: kanban status fills and the chart ring are data geometry; LinkedIn/Instagram/AI sparkles are brand marks; the pipeline chevron interpolates the pipeline colour; the circle-check is a checkbox affordance. form.html keeps one inline tick because it is the public page and must not load a 57KB module. Genuinely convertible leftovers: globe, download, arrow up-right/down-left — no equivalent in the set yet.",
+        "variants": 102,
+        "prefixes": null,
+        "adopted": 58,
+        "legacy": 44
+      },
+      {
+        "name": "Input / field",
+        "category": "primitives",
+        "status": "built",
+        "component": "ds-input / ds-field",
+        "evidence": "119 CRM call sites, 22 of them on the component",
+        "whereToday": "components/primitives.css",
+        "note": "Covers input, textarea and select; ds-field adds label/hint/error.",
+        "variants": 119,
+        "prefixes": 15,
+        "adopted": 22,
+        "legacy": 97
+      },
+      {
+        "name": "Badge / chip / pill",
+        "category": "primitives",
+        "status": "built",
+        "component": "ds-badge",
+        "evidence": "40 CRM call sites, 3 of them on the component",
+        "whereToday": "components/primitives.css",
+        "note": "Status four + five category fill/ink pairs.",
+        "variants": 40,
+        "prefixes": 13,
+        "adopted": 3,
+        "legacy": 37
+      },
+      {
+        "name": "Card / panel",
+        "category": "layout",
+        "status": "built",
+        "component": "ds-card",
+        "evidence": "53 CRM call sites, 7 of them on the component",
+        "whereToday": "components/primitives.css",
+        "note": "Elevation separates regions; border is a hairline, not the mechanism.",
+        "variants": 53,
+        "prefixes": 16,
+        "adopted": 7,
+        "legacy": 46
+      },
+      {
+        "name": "List row",
+        "category": "composites",
+        "status": "built",
+        "component": "ds-list-row",
+        "evidence": "84 CRM rules across 6 prefixes",
+        "whereToday": "email-tile, crm-activity-row, opp-activity-row, tile, thread-*, kanban-card …",
+        "note": "Built as .ds-list-row with --interactive and --flush variations, and adopted by the record screen's Upcoming activity, Recent activity and contact disclosure header. Still page-owned: the grid-column form on dashboard.html and activities.html, which is a table rather than this component, and the record screen's filled file chips. crm.html's .crm-activity-* rules are dead (7 rules, 0 markup uses) and inflate this count, as thread-* and email-tile do; index.html is the mailbox and out of scope.",
+        "variants": 84,
+        "prefixes": 6
+      },
+      {
+        "name": "Modal / dialog",
+        "category": "composites",
+        "status": "planned",
+        "component": "—",
+        "evidence": "63 CRM rules across 5 prefixes",
+        "whereToday": "np-overlay, ov-modal, side-modal, app-switcher-dropdown, pipeline-picker …",
+        "note": "The Modal dialog pattern defines when and how to use the interaction. The reusable overlay + panel + head/body/foot component remains planned; modal scrims already share --modal-backdrop-bg. fb-overlay is legacy compatibility CSS and has no product call site.",
+        "variants": 63,
+        "prefixes": 5
+      },
+      {
+        "name": "Section header / toolbar",
+        "category": "layout",
+        "status": "planned",
+        "component": "—",
+        "evidence": "10 CRM rules across 4 prefixes",
+        "whereToday": "subpage-top, kanban-col-header, np-header, dir-toolbar …",
+        "note": "Title + optional meta + right-aligned actions. board-header's stacking bug came from every page rebuilding this.",
+        "variants": 10,
+        "prefixes": 4
+      },
+      {
+        "name": "Menu / dropdown",
+        "category": "composites",
+        "status": "built",
+        "component": "ds-menu",
+        "evidence": "24 CRM rules across 3 prefixes",
+        "whereToday": "pipeline-nav-menu, card-action-menu, account-menu",
+        "note": "Anchored panel, item, separator, danger item, outside-click close.",
+        "variants": 24,
+        "prefixes": 3,
+        "css": "components/menu.css"
+      },
+      {
+        "name": "Avatar",
+        "category": "primitives",
+        "status": "planned",
+        "component": "—",
+        "evidence": "10 CRM rules across 5 prefixes",
+        "whereToday": "dir-avatar, kanban-card-avatar, account-avatar, crm-contact-avatar, side-modal-avatar",
+        "note": "Initial + optional image + size + colour-from-name. Facepile is a stack of these.",
+        "variants": 10,
+        "prefixes": 5
+      },
+      {
+        "name": "Divider",
+        "category": "primitives",
+        "status": "planned",
+        "component": "—",
+        "evidence": "4 CRM rules across 4 prefixes",
+        "whereToday": "sidebar-line, account-menu-sep, footer-divider, pipeline-nav-menu-sep",
+        "note": "Horizontal and vertical, one hairline token. Trivial, and reinvented 20 times.",
+        "variants": 4,
+        "prefixes": 4
+      },
+      {
+        "name": "Checkbox / toggle / radio",
+        "category": "primitives",
+        "status": "planned",
+        "component": "—",
+        "evidence": "21 CRM rules across 5 prefixes; 1 prefix mailbox-only, out of scope",
+        "whereToday": "dash-toggle, fb-toggle, np-radio, tab-checkbox-wrap, crm-act-check, pl-*",
+        "note": "dash-toggle (5 rules) is tokenised and reads --checkbox-size / --checkbox-accent; fb-toggle, np-radio, tab-checkbox-wrap and crm-act-check are still literals. Native <input> + accent-color throughout — no component exists.",
+        "variants": 21,
+        "prefixes": 5
+      },
+      {
+        "name": "Empty state",
+        "category": "layout",
+        "status": "planned",
+        "component": "—",
+        "evidence": "6 CRM rules across 6 prefixes",
+        "whereToday": "dash-empty, dir-empty, kanban-empty, tf-empty, fl-empty, thread-empty-state",
+        "note": "Icon + line + optional action. Currently a bare <div> with a grey string on every page.",
+        "variants": 6,
+        "prefixes": 6
+      },
+      {
+        "name": "Toast / inline note",
+        "category": "composites",
+        "status": "planned",
+        "component": "—",
+        "evidence": "11 CRM rules across 4 prefixes",
+        "whereToday": "np-toast, dir-note, dash-note, int-alert",
+        "note": "Transient toast and persistent inline note are two different things wearing one name.",
+        "variants": 11,
+        "prefixes": 4
+      },
+      {
+        "name": "Tooltip",
+        "category": "composites",
+        "status": "planned",
+        "component": "—",
+        "evidence": "14 CRM rules across 2 prefixes",
+        "whereToday": "crm-file-action-btn, avatar-tip",
+        "note": "Missed by the original 27-block survey because it has no class of its own — it is an ::after on a [data-tip] attribute, so a class-rule census could not see it. Found while migrating the record screen.",
+        "variants": 14,
+        "prefixes": 2
+      },
+      {
+        "name": "Meter / progress",
+        "category": "primitives",
+        "status": "planned",
+        "component": "—",
+        "evidence": "2 CRM rules across 2 prefixes",
+        "whereToday": "dash bars, ring, hcol-bar",
+        "note": "A ratio against a limit. Note the dashboard's KPI meters were deleted for being ratios against nothing.",
+        "variants": 2,
+        "prefixes": 2
+      },
+      {
+        "name": "Link",
+        "category": "primitives",
+        "status": "planned",
+        "component": "—",
+        "evidence": "6 CRM rules across 3 prefixes",
+        "whereToday": "dir-link, ov-add-link, ao-add-link",
+        "note": "Inline link and 'add another' link are distinct; both keep getting redrawn.",
+        "variants": 6,
+        "prefixes": 3
+      },
+      {
+        "name": "Tabs",
+        "category": "composites",
+        "status": "planned",
+        "component": "—",
+        "evidence": "4 CRM rules across 1 prefix",
+        "whereToday": "tab-item, dash tabs, fl tabs",
+        "note": "Underline tabs (dashboard type switch) and segmented control (board view toggle) are different blocks.",
+        "variants": 4,
+        "prefixes": 1
+      },
+      {
+        "name": "Table",
+        "category": "layout",
+        "status": "planned",
+        "component": "—",
+        "evidence": "16 CRM rules across 2 prefixes",
+        "whereToday": "dir-table, ai-table, kanban col grid",
+        "note": "Header row, body row, numeric cell, truncating cell, sticky header.",
+        "variants": 16,
+        "prefixes": 2
+      },
+      {
+        "name": "Nav item",
+        "category": "composites",
+        "status": "built",
+        "component": "ds-nav-item",
+        "evidence": "16 CRM rules across 3 prefixes",
+        "whereToday": "titan-sidebar.css .nav-item, pipeline-settings .ps-nav-item, sequences .seq-settings-nav-item",
+        "note": "Built as .ds-nav-item and adopted by all three. The earlier note said this was already centralised in the sidebar; that was true of the sidebar only — the two light settings rails had forked and disagreed on radius token, accent ink on the selected row, and whether hover transitioned. The dark sidebar is the same component with its colour tokens overridden on .sidebar, so no dark literals entered the system.",
+        "variants": 16,
+        "prefixes": 3
+      },
+      {
+        "name": "Kanban card",
+        "category": "composites",
+        "status": "built",
+        "component": "ds-kanban-card",
+        "evidence": "17 CRM rules across 2 prefixes",
+        "whereToday": "crm.html .kanban-card / .opp-card",
+        "note": "Built as .ds-kanban-card and adopted by the board in the same change. renderCard() still builds the markup as an innerHTML string and keeps drag, click and the action menu; the component owns shape, parts and internal spacing. The stage-header and avatar colours stay inline because they are derived from data.",
+        "variants": 17,
+        "prefixes": 2
+      },
+      {
+        "name": "Kanban column",
+        "category": "layout",
+        "status": "tokenised",
+        "component": "— (tokenised: --kanban-lane-*)",
+        "evidence": "7 CRM rules across 1 prefix",
+        "whereToday": "crm.html .kanban-col*",
+        "note": "Stage-header colour is intentionally NOT a token: renderBoard() derives it from the pipeline colour via darken()/shadeFor(), which is data, not theme.",
+        "variants": 7,
+        "prefixes": 1
+      },
+      {
+        "name": "Side panel / drawer",
+        "category": "layout",
+        "status": "planned",
+        "component": "—",
+        "evidence": "24 CRM rules across 1 prefix",
+        "whereToday": "crm-directory.css .dir-panel",
+        "note": "Opens beside content and pushes it rather than covering it — a stated layout premise.",
+        "variants": 24,
+        "prefixes": 1
+      },
+      {
+        "name": "Stat tile",
+        "category": "composites",
+        "status": "built",
+        "component": "ds-stat",
+        "evidence": "25 CRM rules across 1 prefix",
+        "whereToday": "dashboard.html .ds-stat",
+        "note": "Label + value + context line. Deliberately not a chart; dashboard spacing, typography and accent treatment now come from the shared component.",
+        "variants": 25,
+        "prefixes": 1,
+        "css": "components/stat.css"
+      },
+      {
+        "name": "Search bar",
+        "category": "composites",
+        "status": "planned",
+        "component": "—",
+        "evidence": "3 CRM rules across 1 prefix",
+        "whereToday": "crm.html, dir-search, ai input",
+        "note": "Input + icon + optional scope dropdown.",
+        "variants": 3,
+        "prefixes": 1
+      },
+      {
+        "name": "Split button",
+        "category": "composites",
+        "status": "built",
+        "component": "ds-split",
+        "evidence": "no class prefixes recorded by the survey; scale unmeasured",
+        "whereToday": "crm.html",
+        "note": "Primary action plus a chevron opening a menu.",
+        "variants": null,
+        "prefixes": null,
+        "css": "components/split-button.css"
+      },
+      {
+        "name": "Chart marks",
+        "category": "data visualization",
+        "status": "built",
+        "component": "dsVisualization",
+        "evidence": "responsive donut/table, conversion tracks, ranked bars, stacked composition and binned distribution",
+        "whereToday": "design-system/index.html and dashboard.html",
+        "note": "Shared fluid renderers own marks, responsive labels/tables, legends and overflow behavior. SVG is reserved for coordinate plots and the donut mark; product pages supply data and accessible summaries.",
+        "variants": 5,
+        "prefixes": 1,
+        "css": "components/visualization.css"
+      },
+      {
+        "name": "Brand marks",
+        "category": "patterns",
+        "status": "excluded",
+        "component": "—",
+        "evidence": "LinkedIn, Instagram, Drive, HTML badge, Titan logo",
+        "whereToday": "opportunity-view.html",
+        "note": "No Phosphor equivalent. Register via dsIcon.register() or keep as assets; never redraw inline.",
+        "variants": 0,
+        "prefixes": null
+      }
+    ],
+    "adoptionMeasuredBy": "design-system/measure-adoption.js",
+    "scope": "The CRM and its modules. index.html (the mailbox) is out of scope.",
+    "variantsMeasuredBy": "design-system/measure-inventory.js"
+  },
+  "spacing": {
+    "principles": [
+      "Components own internal padding and gaps; parents own space between components.",
+      "Keep related content closer than separate groups; use the existing scale rather than inventing a measurement.",
+      "Align content to common edges. One owner per relationship prevents doubled padding.",
+      "Let content determine height and wrapping; document component-specific truncation and fixed geometry."
+    ],
+    "roles": [
+      {
+        "name": "Related content",
+        "token": "--layout-related-gap",
+        "description": "8px default for close relationships that opt in; tighter control-specific gaps remain explicit."
+      },
+      {
+        "name": "Items within a region",
+        "token": "--layout-item-gap",
+        "description": "16px default for distinct items or groups within one region."
+      },
+      {
+        "name": "Separate sections",
+        "token": "--layout-section-gap",
+        "description": "24px default between larger regions and for section-card insets."
+      },
+      {
+        "name": "Container inset",
+        "token": "--layout-container-inset",
+        "description": "16px default content inset, including standard cards."
+      }
+    ],
+    "examples": [
+      "General: “Give related content more breathing room.” Adjust its shared role and inspect linked consumers.",
+      "Component: “Increase the gap above chart axis titles everywhere.” Adjust --viz-axis-title-gap.",
+      "Page: “Move these dashboard cards farther apart.” Change the parent layout using spacing tokens."
+    ],
+    "note": "Roles connect only where meaning and existing values match. Theme and component exceptions stay explicit. This workbench inspects values; changes are made in semantic tokens or theme CSS. New content starts with the registered compositions; patterns add region and scrolling contracts. Component or variant tokens may override shared defaults without changing unrelated relationships."
+  },
+  "compositions": [
+    {
+      "name": "Stack",
+      "category": "layout",
+      "css": "components/composition.css",
+      "class": "ds-stack",
+      "props": {
+        "spacing": "default (16px) | related (8px) | sections (24px)"
+      },
+      "states": [
+        "default"
+      ],
+      "usage": "Start with a vertical stack for items; choose related for closely connected text and sections for larger regions.",
+      "anatomy": {
+        "specimen": ".ds-stack",
+        "parts": [
+          {
+            "name": "Stack",
+            "selector": ".ds-stack"
+          },
+          {
+            "name": "Items",
+            "selector": ".ds-stack > *"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Items",
+            "token": "--stack-gap",
+            "selector": ".ds-stack:not(.ds-stack--related):not(.ds-stack--sections)",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Related content",
+            "token": "--stack-related-gap",
+            "selector": ".ds-stack--related",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Sections",
+            "token": "--stack-section-gap",
+            "selector": ".ds-stack--sections",
+            "property": "row-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Children stretch to a shared horizontal edge.",
+        "behavior": "Height follows content. Omitted or hidden children create no item and no extra gap. Long prose wraps.",
+        "ownership": "Stack owns space between direct children; each child owns its own internal spacing.",
+        "implementation": "shared-css"
+      },
+      "examples": [
+        {
+          "label": "Items · 16px",
+          "markup": "<div class=\"ds-stack\"><p>Primary information</p><p>Supporting information</p><p>Next action</p></div>"
+        },
+        {
+          "label": "Related · 8px",
+          "markup": "<div class=\"ds-stack ds-stack--related\"><strong>Record overview</strong><p>A short explanation of this record.</p></div>"
+        },
+        {
+          "label": "Sections · 24px",
+          "markup": "<div class=\"ds-stack ds-stack--sections\"><div>Record details</div><div>Activity history</div></div>"
+        }
+      ]
+    },
+    {
+      "name": "Row",
+      "category": "layout",
+      "css": "components/composition.css",
+      "class": "ds-row",
+      "props": {
+        "spacing": "default (8px) | items (16px)",
+        "alignment": "default | end"
+      },
+      "states": [
+        "default"
+      ],
+      "usage": "Arrange related controls horizontally, wrapping as available width decreases.",
+      "anatomy": {
+        "specimen": ".ds-row",
+        "parts": [
+          {
+            "name": "Row",
+            "selector": ".ds-row"
+          },
+          {
+            "name": "Items",
+            "selector": ".ds-row > *"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Related items",
+            "token": "--row-gap",
+            "selector": ".ds-row:not(.ds-row--items)",
+            "property": "column-gap",
+            "note": ""
+          },
+          {
+            "label": "Distinct items",
+            "token": "--row-item-gap",
+            "selector": ".ds-row--items",
+            "property": "column-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Items align vertically to the center; end aligns the action group to the trailing edge.",
+        "behavior": "Rows wrap rather than force horizontal page scrolling. Each child retains its own sizing rules.",
+        "ownership": "Row owns gaps and wrapping; buttons and other children own their insets.",
+        "implementation": "shared-css"
+      },
+      "examples": [
+        {
+          "label": "Related controls · 8px",
+          "markup": "<div class=\"ds-row\"><button type=\"button\" class=\"ds-btn ds-btn--secondary\">Filter</button><button type=\"button\" class=\"ds-btn ds-btn--secondary\">Sort</button><button type=\"button\" class=\"ds-btn ds-btn--secondary\">Choose columns</button></div>"
+        },
+        {
+          "label": "Distinct items · 16px",
+          "markup": "<div class=\"ds-row ds-row--items\"><span class=\"ds-badge\">Open</span><span>Assigned to you</span></div>"
+        }
+      ]
+    },
+    {
+      "name": "Section",
+      "category": "layout",
+      "css": "components/composition.css",
+      "class": "ds-section",
+      "props": {
+        "parts": "optional heading + body"
+      },
+      "states": [
+        "default"
+      ],
+      "usage": "Group an optional heading and related content without adding another padded surface.",
+      "anatomy": {
+        "specimen": ".ds-section",
+        "parts": [
+          {
+            "name": "Section",
+            "selector": ".ds-section"
+          },
+          {
+            "name": "Optional heading",
+            "selector": ".ds-section__heading"
+          },
+          {
+            "name": "Body",
+            "selector": ".ds-section__body"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Heading to content",
+            "token": "--section-content-gap",
+            "selector": ".ds-section",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Heading to description",
+            "token": "--section-heading-gap",
+            "selector": ".ds-section__heading",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Content items",
+            "token": "--section-item-gap",
+            "selector": ".ds-section__body",
+            "property": "row-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Heading and body share an edge; the surrounding surface supplies the inset.",
+        "behavior": "Heading may be omitted or hidden. Body grows with content; use a sections stack between sibling sections.",
+        "ownership": "Section owns its internal grouping but adds no padding; parent owns the inset and separation from other sections.",
+        "implementation": "shared-css"
+      },
+      "examples": [
+        {
+          "label": "Heading and content",
+          "markup": "<section class=\"ds-section\"><header class=\"ds-section__heading\"><strong>Contact details</strong><p>How to reach this person.</p></header><div class=\"ds-section__body\"><div>Name</div><div>Email address</div></div></section>"
+        }
+      ]
+    },
+    {
+      "name": "Structured card",
+      "category": "layout",
+      "css": "components/composition.css",
+      "class": "ds-card--structured",
+      "props": {
+        "parts": "optional header + body + optional footer",
+        "inset": "inherits ds-card; ds-card--section keeps its larger inset"
+      },
+      "states": [
+        "default"
+      ],
+      "usage": "Default starting point for new multi-region card content. Add this modifier alongside ds-card.",
+      "anatomy": {
+        "specimen": ".ds-card--structured",
+        "parts": [
+          {
+            "name": "Surface",
+            "selector": ".ds-card--structured"
+          },
+          {
+            "name": "Optional header",
+            "selector": ".ds-card__header"
+          },
+          {
+            "name": "Body",
+            "selector": ".ds-card__body"
+          },
+          {
+            "name": "Optional footer",
+            "selector": ".ds-card__footer"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Outer inset",
+            "token": "--card-pad",
+            "selector": ".ds-card--structured:not(.ds-card--section)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Outer inset",
+            "token": "--card-pad",
+            "selector": ".ds-card--structured:not(.ds-card--section)",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Outer inset",
+            "token": "--card-pad",
+            "selector": ".ds-card--structured:not(.ds-card--section)",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Outer inset",
+            "token": "--card-pad",
+            "selector": ".ds-card--structured:not(.ds-card--section)",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Between regions",
+            "token": "--card-region-gap",
+            "selector": ".ds-card--structured",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Title to description",
+            "token": "--card-heading-gap",
+            "selector": ".ds-card__header",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Body items",
+            "token": "--card-content-gap",
+            "selector": ".ds-card__body",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Footer actions",
+            "token": "--card-action-gap",
+            "selector": ".ds-card__footer",
+            "property": "column-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Header, body and footer share the card inset; actions align to the trailing edge.",
+        "behavior": "Omit or hide optional regions; they leave no gaps. Height follows content and footer actions wrap. Existing plain cards are unchanged.",
+        "ownership": "Card owns outer inset; the structured modifier owns region gaps; child components own their internal padding. Do not pad each region again.",
+        "implementation": "shared-css"
+      },
+      "examples": [
+        {
+          "label": "Header, body and footer",
+          "markup": "<article class=\"ds-card ds-card--structured\">\n  <header class=\"ds-card__header\">\n    <h3 class=\"ds-card-title\">Record overview</h3>\n    <p class=\"ds-card-sub\">A short summary of the current record.</p>\n  </header>\n  <div class=\"ds-card__body\">\n    <p>Primary information</p>\n    <p>Supporting information</p>\n  </div>\n  <footer class=\"ds-card__footer\">\n    <button type=\"button\" class=\"ds-btn ds-btn--secondary\">Cancel</button>\n    <button type=\"button\" class=\"ds-btn ds-btn--primary\">Save</button>\n  </footer>\n</article>"
+        },
+        {
+          "label": "Body only · hidden footer reserves no space",
+          "markup": "<article class=\"ds-card ds-card--structured\"><div class=\"ds-card__body\"><p>A card can contain just its body.</p></div><footer class=\"ds-card__footer\" hidden><button type=\"button\" class=\"ds-btn\">Save</button></footer></article>"
+        }
+      ]
+    }
+  ]
+}

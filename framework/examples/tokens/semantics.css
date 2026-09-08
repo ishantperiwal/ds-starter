@@ -1,0 +1,529 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   TIER 2 — SEMANTICS: what a value is *for*.
+   ─────────────────────────────────────────────────────────────────────────────
+   Components read only these. A design direction is a file that redefines some of
+   these on top of the same primitives — see ../themes/. That is why "try a
+   different button and see it across the whole product" costs one file and not a
+   refactor.
+
+   Naming: --<role>-<thing>-<qualifier>.
+     surface / text / border / accent / status  = what it paints
+     Anything component-specific lives in the § component block at the bottom, so
+     a button's shape can be explored without touching global colour.
+
+   Bridging the live app: the shipped CRM uses --dir-* (crm-directory.css) and
+   hardcoded values. Those names are aliased at the end of this file, so a page can
+   be moved onto the system by pointing its --dir-* at these and deleting its own
+   definitions — no markup change, no big-bang migration.
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* ── Surfaces ────────────────────────────────────────────────────────────── */
+  --surface-page:      var(--gray-025);  /* the plane everything sits on */
+  --surface-primary:   var(--gray-000);  /* cards, panels, menus */
+  --surface-recessed:  var(--gray-025);  /* reading pane, wells */
+  /* One step below recessed. --surface-recessed equals --surface-page, so a lane that
+     must read as cut *into* the page needs its own step: the kanban column body. */
+  --surface-sunken:    var(--gray-050);  /* kanban lane, tracks */
+  --surface-hover:     var(--gray-050);  /* neutral hover fill */
+  --surface-pressed:   var(--gray-100);
+  --surface-selected:  var(--blue-050);  /* current row / tab */
+  --surface-selected-strong: var(--blue-100);
+  --surface-disabled:  var(--gray-025);
+  --surface-inverse:   var(--gray-900);  /* dark chrome, tooltips */
+
+  /* ── Text ───────────────────────────────────────────────────────────────── */
+  --text-primary:   var(--gray-700);
+  --text-heading:   var(--gray-900);
+  --text-secondary: var(--gray-500);
+  --text-muted:     var(--gray-450);
+  --text-placeholder: var(--gray-400);
+  --text-disabled:  var(--gray-300);
+  --text-accent:    var(--blue-600);
+  --text-on-accent: var(--gray-000);
+  --text-on-inverse: var(--gray-000);
+
+  /* ── Borders ────────────────────────────────────────────────────────────────
+     Used sparingly by design: the reference separates regions with elevation, so
+     a border here is a real edge, not a habit. */
+  /* Lighter than subtle: a separator *inside* a list, where a real edge would be too loud.
+     The bridge's --dir-hair was already doing this job without a semantic to point at. */
+  --border-hairline: var(--gray-050);
+  --border-subtle:  var(--gray-150);
+  --border-default: var(--gray-200);
+  --border-strong:  var(--gray-300);
+  --border-accent:  var(--blue-600);
+  --border-focus:   var(--blue-600);
+  /* A destructive outline needs an edge that reads as danger without shouting like a fill. */
+  --border-danger:  var(--red-200);
+
+  /* ── Accent ─────────────────────────────────────────────────────────────── */
+  --accent-primary: var(--blue-600);
+  --accent-hover:   var(--blue-700);
+  --accent-subtle:  var(--blue-050);
+  --accent-muted:   var(--blue-100);
+  /* Overlays for states *on top of* an accent fill, so a filled button doesn't
+     need a second hardcoded blue. */
+  --overlay-hover-on-accent:  rgba(255, 255, 255, 0.12);
+  --overlay-active-on-accent: rgba(0, 0, 0, 0.15);
+
+  /* ── Status ─────────────────────────────────────────────────────────────── */
+  --status-success: var(--green-600);
+  --status-success-subtle: var(--green-050);
+  --status-warning: var(--amber-600);
+  --status-warning-subtle: var(--amber-050);
+  --status-danger:  var(--red-600);
+  --status-danger-subtle: var(--red-050);
+
+  /* ── Data visualization ──────────────────────────────────────────────────
+     Chart geometry is data rather than a component, but its visual vocabulary is
+     shared. Categorical colours come from the label palette rather than borrowing
+     status colours, so a series never accidentally reads as success or danger. */
+  --viz-gridline: var(--border-hairline);
+  --viz-divider-width: var(--stroke-hairline);
+  --viz-axis-label: var(--text-muted);
+  --viz-primary: var(--accent-primary);
+  --viz-primary-soft: var(--accent-muted);
+  --viz-primary-highlight: color-mix(in srgb, var(--viz-primary) 72%, var(--surface-primary));
+  --viz-categorical-2: var(--teal-500);
+  --viz-categorical-3: var(--orange-500);
+  --viz-categorical-4: var(--violet-500);
+  --viz-categorical-5: var(--rose-500);
+  --viz-categorical-6: var(--lime-500);
+  --viz-categorical-2-highlight: color-mix(in srgb, var(--viz-categorical-2) 72%, var(--surface-primary));
+  --viz-categorical-3-highlight: color-mix(in srgb, var(--viz-categorical-3) 72%, var(--surface-primary));
+  --viz-categorical-4-highlight: color-mix(in srgb, var(--viz-categorical-4) 72%, var(--surface-primary));
+  --viz-categorical-5-highlight: color-mix(in srgb, var(--viz-categorical-5) 72%, var(--surface-primary));
+  --viz-categorical-6-highlight: color-mix(in srgb, var(--viz-categorical-6) 72%, var(--surface-primary));
+  --viz-tooltip-bg: var(--surface-inverse);
+  --viz-tooltip-text: var(--text-on-inverse);
+  --viz-tooltip-max-width: 256px;
+  --viz-axis-font-sm: var(--text-2xs);
+  --viz-axis-font-md: var(--text-xs);
+  --viz-axis-font-lg: var(--text-sm);
+  --viz-label-font-sm: var(--text-2xs);
+  --viz-label-font-md: var(--text-md);
+  --viz-label-font-lg: var(--text-lg);
+  --viz-value-font-sm: var(--text-2xs);
+  --viz-value-font-md: var(--text-md);
+  --viz-value-font-lg: var(--text-lg);
+  --viz-legend-font-sm: var(--text-xs);
+  --viz-legend-font-md: var(--text-md);
+  --viz-legend-font-lg: var(--text-lg);
+  --viz-legend-table-pad-x: var(--space-125);
+  --viz-legend-table-pad-y: var(--space-075);
+  --viz-legend-table-margin-x: var(--space-100);
+  --viz-legend-table-radius: var(--radius-md);
+  --viz-legend-row-pad-y: var(--space-075);
+  --viz-legend-column-gap: var(--space-050);
+  --viz-inline-label-column: 18%;
+  --viz-inline-label-min-width: calc(var(--space-400) + var(--space-400) + var(--space-200));
+  --viz-inline-value-column: calc(var(--space-400) + var(--space-400) + var(--space-400) + var(--space-100));
+  --viz-inline-column-gap: var(--space-075);
+  --viz-inline-value-gap: var(--space-050);
+  --viz-inline-value-pad-left: var(--space-150);
+  --viz-conversion-row-gap-comfortable: var(--space-200);
+  --viz-conversion-pad-y-comfortable: var(--space-075);
+  /* Mark dimensions are part of the chart contract, not page-local decoration. */
+  --viz-bar-thickness-compact: var(--space-075);
+  --viz-bar-thickness: var(--space-150);
+  --viz-bar-thickness-ranked: calc(var(--space-300) - var(--space-025));
+  --viz-bar-thickness-stacked: var(--space-300);
+  --viz-column-width-sm: calc(var(--space-400) + var(--space-300));
+  --viz-column-width-md: calc(var(--space-400) + var(--space-400) + var(--space-100));
+  --viz-column-width-lg: calc(var(--space-400) + var(--space-400) + var(--space-300));
+  --viz-layout-gap-sm: var(--space-150);
+  --viz-layout-gap-md: var(--layout-section-gap);
+  --viz-layout-gap-lg: var(--space-400);
+  --viz-row-gap-sm: var(--layout-related-gap);
+  --viz-row-gap-md: var(--space-150);
+  --viz-row-gap-lg: var(--layout-item-gap);
+  --viz-donut-size-sm: calc(var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-100));
+  --viz-donut-size-md: calc(var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-100));
+  --viz-donut-size-lg: calc(var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-100));
+  --viz-plot-height-sm: calc(var(--space-400) + var(--space-400) + var(--space-400) + var(--space-300));
+  --viz-plot-height-md: calc(var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-200));
+  --viz-plot-height-lg: calc(var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-400) + var(--space-200));
+  --viz-donut-value-font-sm: var(--text-2xl);
+  --viz-donut-value-font-md: var(--text-3xl);
+  --viz-donut-value-font-lg: calc(var(--text-3xl) + var(--space-050));
+  --viz-donut-label-font-sm: var(--text-3xs);
+  --viz-donut-label-font-md: var(--text-2xs);
+  --viz-donut-label-font-lg: var(--text-xs);
+  --viz-line-width-sm: 1;
+  --viz-line-width-md: 2;
+  --viz-line-width-lg: 3;
+
+  /* ── Elevation & focus ──────────────────────────────────────────────────── */
+  --elevation-raise: var(--shadow-raise);  /* draggable tiles */
+  --elevation-card:  var(--shadow-card);
+  --elevation-menu:  var(--shadow-menu);
+  --elevation-modal: var(--shadow-modal);
+  /* The page-dimming layer behind modal dialogs. Kept separate from panel/drawer
+     scrims so modal emphasis can be tuned globally without changing navigation. */
+  --modal-backdrop-bg: rgba(16, 24, 40, 0.65);
+  --focus-ring:      var(--ring-accent);
+  --focus-ring-danger: var(--ring-danger);
+
+  /* ── Shape & rhythm ─────────────────────────────────────────────────────── */
+  --radius-control:   var(--radius-md);  /* buttons, inputs, chips */
+  --radius-container: var(--radius-lg);  /* cards, panels, modals */
+  --radius-inner:     var(--radius-sm);  /* things inside a control */
+
+  /* ── Motion ─────────────────────────────────────────────────────────────── */
+  --motion-hover: background var(--dur-base) var(--ease-standard),
+                  border-color var(--dur-base) var(--ease-standard),
+                  color var(--dur-base) var(--ease-standard);
+  --motion-press: transform var(--dur-fast) var(--ease-standard);
+  --motion-enter: opacity var(--dur-slow) var(--ease-decel),
+                  transform var(--dur-slow) var(--ease-spring);
+
+  /* Spacing roles: change a relationship, not the primitive scale.
+     Existing component exceptions and theme overrides remain intentional. */
+  --note-bg: color-mix(in srgb, var(--accent-subtle) 55%, var(--surface-primary));
+  --note-radius: var(--radius-lg);
+  --note-border: color-mix(in srgb, var(--accent-primary) 14%, transparent);
+  --note-border-width: 1.5px;
+  --note-pad-x: var(--space-200);
+  --note-pad-y: var(--space-200);
+  --note-meta-gap: var(--space-075);
+  --note-content-gap: var(--space-100);
+  --note-meta-line-height: 1.5;
+  --note-icon-color: var(--text-accent);
+  --note-meta-font: var(--text-xs);
+  --note-meta-color: var(--text-secondary);
+  --note-font: var(--text-md);
+  --note-weight: var(--weight-medium);
+  --note-text: var(--text-primary);
+  --note-line-height: 1.6;
+
+  --layout-related-gap: var(--space-100);
+  --layout-item-gap: var(--space-200);
+  --layout-section-gap: var(--space-300);
+  --layout-container-inset: var(--space-200);
+
+  /* Opt-in composition and pattern defaults. Product pages adopt patterns explicitly. */
+  --stack-gap: var(--layout-item-gap);
+  --stack-related-gap: var(--layout-related-gap);
+  --stack-section-gap: var(--layout-section-gap);
+  --row-gap: var(--layout-related-gap);
+  --row-item-gap: var(--layout-item-gap);
+  --section-content-gap: var(--layout-item-gap);
+  --section-heading-gap: var(--layout-related-gap);
+  --section-item-gap: var(--layout-item-gap);
+  --card-region-gap: var(--layout-item-gap);
+  --card-heading-gap: var(--layout-related-gap);
+  --card-content-gap: var(--space-150);
+  --card-action-gap: var(--layout-related-gap);
+  --pattern-content-inset: var(--layout-container-inset);
+  --pattern-content-inset-x: var(--pattern-content-inset);
+  --pattern-content-inset-y: var(--pattern-content-inset);
+  --pattern-section-gap: var(--layout-section-gap);
+  --pattern-item-gap: var(--layout-item-gap);
+  --pattern-action-gap: var(--layout-related-gap);
+
+  /* Named internal spacing. 3px badge/track insets preserve existing geometry. */
+  --btn-content-gap: var(--space-075);
+  --btn-pad-x-sm: var(--space-100);
+  --btn-pad-x-lg: var(--space-200);
+  --input-inline-pad-x: var(--space-050);
+  --input-textarea-pad-y: var(--space-100);
+  --input-select-pad-end: var(--space-300);
+  --input-inline-select-pad-end: var(--space-200);
+  --field-content-gap: var(--space-150);
+  --floating-field-label-pad: var(--space-050);
+  --badge-content-gap: var(--space-050);
+  --badge-pad-y: 3px;
+  --badge-pill-pad-x: var(--space-100);
+  --card-sub-gap: var(--space-050);
+  --stage-pad-x-sm: var(--space-150);
+  --stage-pad-y-sm: var(--space-100);
+  --seg-pad: 3px;
+  --seg-gap: var(--space-050);
+  --seg-item-gap: var(--space-075);
+  --seg-item-pad-x: var(--space-125);
+  --menu-meta-gap: var(--layout-item-gap);
+  --menu-separator-gap-y: var(--space-050);
+  /* Sidebar separators preserve their existing 14px / compact-menu 5px rhythm. */
+  --sidebar-separator-gap: var(--space-175);
+  --sidebar-menu-separator-gap: calc(var(--space-050) + var(--space-025) / 2);
+  --menu-separator-inset: var(--space-025);
+  --menu-label-pad-top: var(--space-075);
+  --pipe-tag-pad-x-sm: var(--space-075);
+  --pipe-tag-gap-sm: var(--space-050);
+  --viz-axis-title-gap: var(--space-150);
+  --viz-category-label-gap: var(--layout-related-gap);
+  --viz-meta-gap: var(--space-075);
+  --viz-mark-value-gap: var(--space-075);
+  --viz-table-column-gap: var(--layout-related-gap);
+  --viz-table-heading-gap: var(--space-075);
+  --viz-donut-label-gap: var(--space-025);
+  --viz-conversion-content-gap: var(--space-075);
+  --viz-row-heading-gap: var(--layout-related-gap);
+  --viz-row-percentage-gap: var(--layout-related-gap);
+  --viz-comparison-column-gap: var(--space-125);
+  --viz-stacked-segment-gap: var(--space-025);
+  --viz-stacked-column-gap-narrow: var(--space-075);
+  --viz-legend-row-gap: var(--layout-related-gap);
+  --viz-legend-item-gap: var(--layout-item-gap);
+  --viz-legend-top-gap: var(--layout-related-gap);
+  --viz-legend-marker-gap: var(--space-075);
+  --viz-inline-gap-narrow: var(--layout-related-gap);
+  --viz-tooltip-pad-y: var(--space-075);
+  --viz-tooltip-pad-x: var(--space-100);
+  --viz-tooltip-offset: var(--layout-related-gap);
+
+  /* ═══ Component tokens ═══════════════════════════════════════════════════
+     A component's *shape* lives here, apart from global colour, so a direction
+     can restyle every button in the product by changing these six values —
+     without touching a component file or any markup. This is the lever the
+     workbench's theme switcher pulls. */
+  --btn-radius:  var(--radius-control);
+  --btn-height:  32px;
+  --btn-height-sm: 26px;
+  --btn-height-lg: 40px;
+  --btn-pad-x:   14px;
+  --btn-weight:  var(--weight-semi);
+  --btn-font:    var(--text-sm);
+  /* Stays 1px: 1.5 snaps back to 1 at dpr 1, so it would thicken on some screens and not
+     others. Weight where it is needed instead — see the hover ring in button.css. */
+  --btn-border-width: 1px;
+
+  --input-radius: var(--radius-control);
+  --input-height: 34px;
+  --input-height-lg: var(--btn-height-lg);
+  /* Edit-in-place fields sit in a text flow, so they are shorter than a boxed field. */
+  --input-inline-height: 26px;
+  --input-pad-x:  11px;
+  --input-bg:     var(--surface-primary);
+  --input-border: var(--border-subtle);
+
+  --floating-field-height: calc(var(--input-height-lg) + var(--space-100));
+  --floating-field-bg: var(--input-bg);
+  --floating-field-label-color: var(--text-muted);
+  --floating-field-placeholder-color: var(--text-placeholder);
+  --floating-field-label-font: var(--text-xs);
+  --floating-field-value-font: var(--text-lg);
+  --floating-field-counter-color: var(--text-muted);
+  --floating-field-counter-font: var(--text-xs);
+  --floating-field-counter-space: var(--space-400);
+
+  --card-radius:  var(--radius-container);
+  --card-pad:     var(--layout-container-inset);
+  /* A page section panel is roomier and rounder than a tile — see .ds-card--section. */
+  --card-section-radius: var(--radius-xl);
+  --card-section-pad:    var(--layout-section-gap);
+  --card-border:  var(--border-subtle);
+  --card-shadow:  var(--elevation-card);
+
+  /* ── Stat tile ─────────────────────────────────────────────────────────── */
+  --stat-pad-block: calc(var(--card-pad) + var(--space-050));
+  --stat-dot-size: var(--space-100);
+  --stat-head-gap: var(--layout-related-gap);
+  --stat-label-value-gap: var(--layout-related-gap);
+  --stat-value-context-gap: var(--space-075);
+  --stat-label-font: var(--text-2xs);
+  --stat-value-font: 27px;
+  --stat-value-weight: 760;
+  --stat-context-font: var(--text-xs);
+
+  /* The kanban card is not a --card-*: it is tighter (4px, not 8px), lifts 1px rather
+     than 4px, and sits in a lane rather than on the page. It gets its own shape tokens
+     so a direction can restyle the board — pointing it at --card-* instead would make
+     every board tile look like a panel. Stage-header colour is deliberately absent:
+     renderBoard() derives it from the pipeline's own colour, so it is data, not theme. */
+  --kanban-card-radius: var(--radius-md);
+  --kanban-card-bg:     var(--surface-primary);
+  --kanban-card-shadow: var(--elevation-raise);
+  --kanban-card-pad:    var(--space-150);
+  --kanban-lane-bg:     var(--surface-sunken);
+  --kanban-lane-radius: var(--radius-container);
+  --kanban-lane-pad:    var(--space-100);
+  --kanban-col-width:   240px;
+  --kanban-col-gap:     var(--space-150);
+  --kanban-card-gap:    var(--space-150);
+  --kanban-avatar-size: 20px;
+  --kanban-avatar-font: 9px;   /* --text-2xs is 11px, too tall inside a 20px circle */
+  /* The little company mark beside a record's company name. Its own tokens because it is
+     not an avatar (square, contains a logo image) and appears on the board, the record
+     screen and both directory pages. */
+  --logo-size:   16px;
+  --logo-radius: var(--radius-sm);   /* one step inside the card's own corner */
+  --logo-font:   9px;
+  --kanban-status-size: 18px;
+
+  /* The list row: an activity, a note, a file, a queued task. Its own shape tokens for
+     the reason the kanban card has them — a surface reads its own tokens or a direction
+     cannot move it. The separator is deliberately the hairline and not --border-subtle:
+     rows inside one card are a weaker boundary than the edge of the card. */
+  /* One step up the ramp from the 8px the forked copies used: with a separator between
+     rows, 8px above and below put the line closer to each row's text than the two rows
+     are to each other, so the list read as tighter than it was. 12px each side gives the
+     line its own air. This is the general control — every consumer of the row moves. */
+  --list-row-pad-y:      var(--space-150);
+  --list-row-gap:        var(--space-150);   /* leading to content, content to trailing */
+  --list-row-sep:        var(--border-hairline);
+  --list-row-title-font: var(--text-sm);
+  --list-row-meta-font:  var(--text-xs);
+  --list-row-snippet-gap: var(--space-050);
+  --list-row-leading-size: 26px;
+  --list-row-leading-bg:   var(--surface-hover);
+  --list-row-leading-fg:   var(--text-secondary);
+  --list-row-hover-bg:     var(--surface-hover);
+  /* An interactive row's hover fill bleeds past the text by this much so the fill reads
+     as the row, not as a highlight sitting inside it. The row has no inset of its own. */
+  --list-row-hover-bleed:  var(--space-100);
+  --list-row-hover-radius: var(--radius-sm);
+
+  /* A row in a vertical navigation rail. The defaults are the light rails' values
+     (pipeline settings, the sequence editor). The dark app sidebar is the same
+     component on a different surface and overrides the colour tokens on its own
+     scope — the ds-split pattern, where a scoped override carries fill, ink and
+     hover at once. The dark values stay in titan-sidebar.css rather than here,
+     because the system has no dark primitives yet and inventing them is the
+     dark-mode task, not this one. */
+  --nav-item-height:       32px;
+  --nav-item-radius:       var(--radius-control);
+  --nav-item-gap:          var(--space-100);
+  --nav-item-pad-x:        var(--space-150);
+  --nav-item-pad-y:        var(--space-125);
+  --nav-item-font:         var(--text-md);
+  --nav-item-fg:           var(--text-primary);
+  --nav-item-bg-hover:     var(--surface-hover);
+  /* The selected fill is an accent tint, so the ink on it is accent too — a dark
+     semibold label on a blue tint reads as a row that was left half-styled. */
+  --nav-item-bg-active:    var(--surface-selected);
+  --nav-item-fg-active:    var(--text-accent);
+  --nav-item-weight-active: var(--weight-semi);
+  --nav-item-icon-size:    20px;
+  --nav-item-icon-fg:      var(--text-secondary);
+  --nav-item-icon-fg-active: var(--nav-item-fg-active);
+  --nav-item-action-size:  20px;
+  --nav-item-action-radius: var(--radius-sm);
+  --nav-item-action-fg:    var(--text-secondary);
+  --nav-item-action-bg-hover: var(--surface-hover);
+  --nav-item-action-fg-hover: var(--text-primary);
+
+  /* The AI summary card. Its job is to look generated — a tint fading out under a
+     labelled strip — so that it cannot be mistaken for a note a colleague wrote. It
+     sizes itself from its own width rather than from the page, because it appears both
+     in a full-width record section and in a narrow side panel. */
+  --ai-summary-radius:      var(--radius-lg);
+  --ai-summary-border:      var(--border-subtle);
+  --ai-summary-tint:        var(--accent-subtle);
+  --ai-summary-surface:     var(--surface-primary);
+  --ai-summary-pad-x:       var(--space-200);
+  --ai-summary-head-pad-y:  var(--space-125);
+  --ai-summary-head-gap:    var(--space-075);
+  --ai-summary-body-pad-y:  var(--space-200);
+  --ai-summary-spark-fg:    var(--accent-primary);
+  --ai-summary-title-font:  var(--text-2xs);
+  --ai-summary-title-fg:    var(--text-accent);
+  --ai-summary-body-font:   var(--text-sm);
+  --ai-summary-body-fg:     var(--text-primary);
+  --ai-summary-body-line:   1.6;
+  --ai-summary-next-gap:    var(--space-100);
+  /* Narrow: what the card uses when its own width is tight, not the viewport's. The
+     22rem threshold lives in the @container condition, which cannot read a custom
+     property — the registry records it as the component's narrowToken instead. */
+  --ai-summary-pad-x-narrow:      var(--space-150);
+  --ai-summary-head-pad-y-narrow: var(--space-100);
+  --ai-summary-body-pad-y-narrow: var(--space-150);
+  --ai-summary-body-font-narrow:  var(--text-xs);
+
+  /* Layout: the width of a directory page's detail panel. Not a colour, but it is a
+     shared decision, and leaving it out of the bridge broke those panels. */
+  --panel-width: 384px;
+
+  /* No checkbox component exists yet, but its two shape decisions are the same everywhere,
+     so they belong here rather than being re-picked per page. */
+  --checkbox-size:   16px;
+  --checkbox-accent: var(--accent-primary);
+
+  /* Stage chevron — shape only. Its fill is derived from the pipeline colour at runtime,
+     so it stays inline; see components/board.css. */
+  --stage-taper:     3%;
+  --stage-taper-sm:  8%;
+  --stage-pad-x:     var(--space-200);
+  --stage-pad-y:     var(--space-150);
+  --stage-radius:    var(--radius-container);
+
+  /* Segmented control (view toggle) — a mode picker in a track, not tabs. */
+  /* Matches the button height: a toolbar's controls must share one height, or the shorter
+     ones centre inside the taller row and nothing sits on a common baseline. */
+  --seg-height:       var(--btn-height);
+  --seg-radius:       var(--radius-control);
+  --seg-item-radius:  var(--radius-sm);
+  --seg-track-bg:     var(--surface-hover);
+  --seg-item-bg-on:   var(--surface-primary);
+
+  --badge-radius: var(--radius-sm);
+  --badge-pad-x:  var(--space-075);
+  --badge-font:   var(--text-2xs);
+
+  /* Pipeline tag — one pipeline's mark and name as a single object, for the places that
+     name a pipeline rather than navigate to it (a picker's header, a panel title).
+     Deliberately not a --badge variant: every badge colour is a fixed palette entry, and a
+     pipeline's colour is data the person chose, so the fill and edge are mixed from it at
+     the call site through --pipe (the property name crm-directory.css already uses for the
+     stage track). The two mix ratios are the ones the Forms list arrived at on its own. */
+  /* A rounded rectangle, not a lozenge. Fully round read as a status pill — a state
+     something is in — and a pipeline is a thing, named. --radius-control is what the
+     other named, contained objects on these screens use. */
+  --pipe-tag-radius: var(--radius-control);
+  --pipe-tag-pad-x:  var(--space-100);
+  --pipe-tag-pad-y:  3px;
+  --pipe-tag-gap:    var(--space-075);
+  --pipe-tag-font:   var(--text-sm);
+  --pipe-tag-tint:   12%;   /* of --pipe in the fill */
+  --pipe-tag-line:   26%;   /* of --pipe in the border */
+  /* The tab variant: rounder on top, square below, and roomier — it sits on a container's
+     edge and the two are meant to read as one shape, so it carries a tab's proportions
+     rather than a chip's. */
+  --pipe-tag-tab-radius: var(--radius-lg);
+  --pipe-tag-tab-pad-x:  var(--space-200);
+  --pipe-tag-tab-pad-y:  var(--space-125);
+
+  /* Menu — the anchored panel behind a three-dot, an account switcher, a split button's
+     caret. Three hand-rolled copies exist today (pipeline-nav-menu, card-action-menu,
+     account-menu) and they disagree on radius, shadow and padding; these are the values
+     they were all approximating. */
+  --menu-bg:          var(--surface-primary);
+  --menu-radius:      var(--radius-container);
+  --menu-shadow:      var(--elevation-menu);
+  --menu-pad:         var(--space-075);
+  --menu-min-width:   200px;
+  --menu-item-height: 32px;
+  --menu-item-pad-x:  var(--space-125);
+  --menu-item-radius: var(--radius-inner);
+  --menu-item-font:   var(--text-sm);
+  --menu-item-gap:    var(--layout-related-gap);
+  --menu-sep-color:   var(--border-hairline);
+  --menu-gap:         var(--space-050);   /* panel's offset from its trigger */
+  --menu-group-gap:   var(--layout-item-gap);   /* air above a group that follows another */
+  --menu-label-gap:   var(--space-125);   /* and below the heading, before its items */
+
+  /* Split button — one control, two targets. It inherits every --btn-* value, so it is
+     the same height and weight as the button beside it; only the seam is its own.
+     The divider is mixed from the button's own ink so it works on a filled primary and
+     an outlined secondary alike, without a variant per case. */
+  --split-divider:       color-mix(in srgb, currentColor 26%, transparent);
+  --split-toggle-pad-x:  var(--space-100);
+
+  /* ═══ Bridge to the shipped app ══════════════════════════════════════════
+     crm-directory.css defines these itself today. A page adopts the system by
+     dropping its own definitions and inheriting these — nothing else changes,
+     because the markup already says var(--dir-*). Delete this block once no page
+     defines --dir-* locally any more. */
+  --dir-ink:     var(--text-heading);
+  --dir-body:    var(--text-primary);
+  --dir-muted:   var(--text-muted);
+  --dir-faint:   var(--text-disabled);
+  --dir-line:    var(--border-subtle);
+  --dir-hair:    var(--gray-050);
+  --dir-surface: var(--surface-primary);
+  --dir-canvas:  var(--surface-page);
+  --dir-tint:    var(--gray-025);
+  --dir-accent:  var(--accent-primary);
+  --dir-accent-soft: var(--accent-subtle);
+  --dir-panel-w: var(--panel-width);
+}

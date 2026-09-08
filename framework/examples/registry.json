@@ -1,0 +1,1691 @@
+{
+  "contractVersion": 1,
+  "name": "Studio sandbox · fictional data",
+  "version": "0.1.0",
+  "description": "Reference controls and test fixtures for developing tooling. Not a project design system.",
+  "components": [
+    {
+      "name": "Button",
+      "category": "primitives",
+      "css": "components/button.css",
+      "module": "components/button.js",
+      "render": "dsButton(opts) -> html string",
+      "class": "ds-btn",
+      "props": {
+        "label": "string — omit together with `icon` set for an icon-only button",
+        "icon": "string (inline SVG markup)",
+        "variant": "'primary' | 'secondary' | 'soft' | 'ghost' | 'destructive' | 'destructive-quiet' | 'add'",
+        "size": "'sm' | 'md' | 'lg'",
+        "loading": "boolean — keeps the variant's fill and shows a spinner; not the same as disabled",
+        "disabled": "boolean",
+        "href": "string — renders an <a>; dropped when disabled or loading",
+        "newTab": "boolean",
+        "onclick": "string — inline handler name, matching this codebase's existing idiom",
+        "title": "string — also becomes aria-label on an icon-only button",
+        "type": "'button' | 'submit'",
+        "id": "string",
+        "className": "string — extra classes for layout only, never for restyling"
+      },
+      "shapeTokens": [
+        "--btn-radius",
+        "--btn-height",
+        "--btn-height-sm",
+        "--btn-height-lg",
+        "--btn-pad-x",
+        "--btn-weight",
+        "--btn-font",
+        "--btn-border-width"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "active",
+        "focus-visible",
+        "disabled",
+        "loading"
+      ],
+      "usage": "Every clickable action. `primary` for the one main action on a surface, `secondary` for the rest, `ghost` for toolbar and icon actions, `destructive` for deletes, `add` for the full-width dashed 'add a thing' affordance from the reference.",
+      "avoid": "Do not hand-roll a button. The product currently has 82 button rules across 14 class names — that is the duplication this replaces.",
+      "variantNotes": {
+        "destructive-quiet": "Outlined, not filled. A \"Delete record\" inside a form the user is editing must not read as the page's primary action. Found on the record screen, which had already forked .ov-btn-danger because no filled variant fit.",
+        "soft": "Filled neutral. Secondary is white with an edge, ghost has no fill at rest; a toolbar button must look like a button without competing with the primary action. The board header had this as three separate inline styles.",
+        "hover": "An outlined variant fills on hover (--accent-subtle), recolours its edge and ink, and doubles that edge with an inset 1px ring — a hover that only swaps colours reads as a colour change, not as a response, and at 1px the edge is too fine for a hue shift to register. The ring rather than a wider border: border-width moves the label inside the box, and 1.5px snaps back to 1px at dpr 1."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Control",
+            "selector": ".ds-btn"
+          },
+          {
+            "name": "Optional icon",
+            "selector": ".ds-icon"
+          },
+          {
+            "name": "Label",
+            "selector": ".ds-btn > span:not([data-ds-icon])"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Horizontal inset",
+            "token": "--btn-pad-x",
+            "selector": ".ds-btn:not(.ds-btn--sm):not(.ds-btn--lg):not(.ds-btn--icon)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Icon to label",
+            "token": "--btn-content-gap",
+            "selector": ".ds-btn",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Small inset",
+            "token": "--btn-pad-x-sm",
+            "selector": ".ds-btn--sm:not(.ds-btn--icon)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Large inset",
+            "token": "--btn-pad-x-lg",
+            "selector": ".ds-btn--lg:not(.ds-btn--icon)",
+            "property": "padding-left",
+            "note": ""
+          }
+        ],
+        "alignment": "Icon and label are centered on both axes.",
+        "behavior": "Labels stay on one line. Icon-only buttons are square and remove horizontal padding. Loading preserves the label width.",
+        "ownership": "Button owns internal spacing; toolbar or page owns gaps between buttons.",
+        "implementation": "shared-css",
+        "specimen": ".ds-btn"
+      },
+      "id": "ds-btn",
+      "preview": "screens/specimen.html?part=ds-btn"
+    },
+    {
+      "name": "Input",
+      "category": "primitives",
+      "css": "components/primitives.css",
+      "class": "ds-input",
+      "props": {
+        "variant": "'default' | 'large' (class .ds-input--lg) | 'inline' (class .ds-input--inline) | 'invalid' (class .ds-input--invalid)",
+        "element": "input | textarea | select — the same class styles all three"
+      },
+      "shapeTokens": [
+        "--input-radius",
+        "--input-height",
+        "--input-height-lg",
+        "--input-pad-x",
+        "--input-bg",
+        "--input-border"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus",
+        "invalid",
+        "disabled",
+        "placeholder"
+      ],
+      "usage": "Any single-line or multi-line text entry, and selects. Wrap in .ds-field with .ds-field-label plus .ds-field-hint or .ds-field-error to get the labelled layout.",
+      "variantNotes": {
+        "large": ".ds-input--lg — 40px boxed input for editable rows and configuration surfaces where the default 34px control is too dense. It changes height and font size only; all interaction states remain Input's.",
+        "inline": ".ds-input--inline — edit-in-place. A boxed field would draw a border around what reads as body text; the record screen edits 25 values this way. Shorter than a boxed field (--input-inline-height), transparent until hover, same focus ring."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Field label",
+            "selector": ".ds-field-label"
+          },
+          {
+            "name": "Control",
+            "selector": ".ds-input"
+          },
+          {
+            "name": "Hint or error",
+            "selector": ".ds-field-hint, .ds-field-error"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Boxed inset",
+            "token": "--input-pad-x",
+            "selector": ".ds-input:not(.ds-input--inline)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Label / control / help",
+            "token": "--field-content-gap",
+            "selector": ".ds-field",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Inline inset",
+            "token": "--input-inline-pad-x",
+            "selector": ".ds-input--inline",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Textarea vertical inset",
+            "token": "--input-textarea-pad-y",
+            "selector": "textarea.ds-input",
+            "property": "padding-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Boxed controls fill their container. Labels and help share the field edge.",
+        "behavior": "Textarea grows vertically; inline input uses automatic width. Remove absent hint/error nodes rather than leaving empty placeholders.",
+        "ownership": "Input owns its inset; ds-field owns label/control/help gaps. Parent owns spacing between fields.",
+        "implementation": "shared-css",
+        "specimen": ".ds-field, .ds-input"
+      },
+      "id": "ds-input",
+      "preview": "screens/specimen.html?part=ds-input"
+    },
+    {
+      "name": "Floating field",
+      "category": "composites",
+      "css": "components/floating-field.css",
+      "render": "declarative — .ds-floating-field wrapping .ds-input, then .ds-floating-field__label, with an optional .ds-floating-field__counter",
+      "class": "ds-floating-field",
+      "props": {
+        "label": ".ds-floating-field__label — a real <label> immediately after the input; placeholder=\" \" lets CSS distinguish empty from filled without duplicating value state",
+        "counter": "optional .ds-floating-field__counter; add .ds-floating-field--counted to reserve its width. The consumer updates the count and owns maxlength.",
+        "input": "a real .ds-input; .ds-input--invalid and disabled states carry through"
+      },
+      "shapeTokens": [
+        "--floating-field-height",
+        "--floating-field-bg",
+        "--floating-field-label-color",
+        "--floating-field-placeholder-color",
+        "--floating-field-label-font",
+        "--floating-field-value-font",
+        "--floating-field-counter-color",
+        "--floating-field-counter-font",
+        "--floating-field-counter-space"
+      ],
+      "states": [
+        "empty",
+        "focus",
+        "filled",
+        "invalid",
+        "disabled",
+        "counted"
+      ],
+      "usage": "A prominent single-line field where keeping the label visible after entry is useful and a separate label row would spend unnecessary vertical space. The label rests inside when empty and straddles the top border on focus or when filled.",
+      "avoid": "Do not use for ordinary dense forms, textarea/select controls, or as a decorative placeholder. The label must remain a real <label> associated to the input, and the input must carry placeholder=\" \".",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Outlined control",
+            "selector": ".ds-floating-field > .ds-input"
+          },
+          {
+            "name": "Floating label",
+            "selector": ".ds-floating-field__label"
+          },
+          {
+            "name": "Optional counter",
+            "selector": ".ds-floating-field__counter"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Text inset",
+            "token": "--input-pad-x",
+            "selector": ".ds-floating-field > .ds-input",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Label cutout inset",
+            "token": "--floating-field-label-pad",
+            "selector": ".ds-floating-field__label",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Counted end inset",
+            "token": "--floating-field-counter-space",
+            "selector": ".ds-floating-field--counted > .ds-input",
+            "property": "padding-right",
+            "note": "Rendered inset is input-pad-x plus counter-space."
+          }
+        ],
+        "alignment": "Label text shares the input content edge; counter is centered at the right inset.",
+        "behavior": "Label moves to the border on focus or when filled. Only counted fields reserve counter space.",
+        "ownership": "Floating field owns label and counter positioning; the form owns inter-field spacing.",
+        "implementation": "shared-css",
+        "specimen": ".ds-floating-field"
+      },
+      "id": "ds-floating-field",
+      "preview": "screens/specimen.html?part=ds-floating-field"
+    },
+    {
+      "name": "Badge",
+      "category": "primitives",
+      "css": "components/primitives.css",
+      "class": "ds-badge",
+      "props": {
+        "variant": "'neutral' | 'accent' | 'success' | 'warning' | 'danger' | 'teal' | 'green' | 'amber' | 'pink' | 'purple'",
+        "dot": "boolean (class .ds-badge--dot) — leading state dot"
+      },
+      "shapeTokens": [
+        "--badge-radius",
+        "--badge-pad-x",
+        "--badge-font"
+      ],
+      "states": [
+        "default"
+      ],
+      "usage": "Status and category labels. The semantic four (accent/success/warning/danger) carry meaning; the five colour labels are for user-assigned categories and ship as fill/ink pairs so they cannot be mismatched.",
+      "avoid": "Do not use a status variant for a category, or a category colour for a state.",
+      "variantNotes": {
+        "pill": ".ds-badge--pill — fully rounded. The default badge is a soft rectangle; several surfaces had independently typed 999px (ov-contact-person-pill, kanban-won-pill)."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Badge",
+            "selector": ".ds-badge"
+          },
+          {
+            "name": "Status dot (pseudo-element)",
+            "selector": ".ds-badge--dot",
+            "pseudo": "::before"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Horizontal inset",
+            "token": "--badge-pad-x",
+            "selector": ".ds-badge:not(.ds-badge--pill)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Vertical inset",
+            "token": "--badge-pad-y",
+            "selector": ".ds-badge",
+            "property": "padding-top",
+            "note": "Intentional 3px exception."
+          },
+          {
+            "label": "Dot to label",
+            "token": "--badge-content-gap",
+            "selector": ".ds-badge--dot",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Pill inset",
+            "token": "--badge-pill-pad-x",
+            "selector": ".ds-badge--pill",
+            "property": "padding-left",
+            "note": ""
+          }
+        ],
+        "alignment": "Dot and label are centered vertically.",
+        "behavior": "Label does not wrap; no gap is laid out when the optional dot is absent.",
+        "ownership": "Badge owns its inset and dot gap; parent owns spacing between badges.",
+        "implementation": "shared-css",
+        "specimen": ".ds-badge"
+      },
+      "id": "ds-badge",
+      "preview": "screens/specimen.html?part=ds-badge"
+    },
+    {
+      "name": "Card",
+      "category": "layout",
+      "css": "components/primitives.css",
+      "class": "ds-card",
+      "props": {
+        "variant": "'default' | 'flat' | 'recessed' | 'interactive'"
+      },
+      "shapeTokens": [
+        "--card-radius",
+        "--card-pad",
+        "--card-border",
+        "--card-shadow"
+      ],
+      "states": [
+        "default",
+        "hover (interactive only)"
+      ],
+      "usage": "Any grouped region. Elevation is what separates regions in this system — reach for a card before reaching for a border. .ds-card-title and .ds-card-sub give the heading pair.",
+      "variantNotes": {
+        "section": ".ds-card--section — a page content panel rather than a tile: --card-section-radius (12px) and --card-section-pad (24px). The record screen stacks seven. Forking a second card class for this is what produced .ov-card."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Padded surface",
+            "selector": ".ds-card"
+          },
+          {
+            "name": "Optional title",
+            "selector": ".ds-card-title"
+          },
+          {
+            "name": "Optional subtitle",
+            "selector": ".ds-card-sub"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Container inset",
+            "token": "--card-pad",
+            "selector": ".ds-card:not(.ds-card--section)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Container inset",
+            "token": "--card-pad",
+            "selector": ".ds-card:not(.ds-card--section)",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Container inset",
+            "token": "--card-pad",
+            "selector": ".ds-card:not(.ds-card--section)",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Container inset",
+            "token": "--card-pad",
+            "selector": ".ds-card:not(.ds-card--section)",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Section inset",
+            "token": "--card-section-pad",
+            "selector": ".ds-card--section",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Section inset",
+            "token": "--card-section-pad",
+            "selector": ".ds-card--section",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Section inset",
+            "token": "--card-section-pad",
+            "selector": ".ds-card--section",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Section inset",
+            "token": "--card-section-pad",
+            "selector": ".ds-card--section",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Title to subtitle",
+            "token": "--card-sub-gap",
+            "selector": ".ds-card-sub",
+            "property": "margin-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Children share the padded content edge unless caller layout overrides it.",
+        "behavior": "Width and height follow content and parent constraints. Remove absent subtitle markup to remove its margin.",
+        "ownership": "Plain Card is a padded shell with title/subtitle styles. For new multi-region content, opt into the Structured card composition (ds-card--structured); it owns header/body/footer gaps. Existing cards keep caller-owned layout.",
+        "implementation": "shared-css",
+        "specimen": ".ds-card"
+      },
+      "id": "ds-card",
+      "preview": "screens/specimen.html?part=ds-card"
+    },
+    {
+      "name": "Note",
+      "category": "composite",
+      "css": "components/note.css",
+      "class": "ds-note",
+      "props": {
+        "metadata": "optional author/date text and decorative icon",
+        "body": "plain text; preserve line breaks"
+      },
+      "shapeTokens": [
+        "--note-pad-x",
+        "--note-pad-y",
+        "--note-radius",
+        "--note-meta-gap",
+        "--note-content-gap"
+      ],
+      "states": [
+        "default"
+      ],
+      "usage": "Read-only authored note with optional metadata. Omit the entire note when empty. The composer and activity timeline are separate controls.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Surface",
+            "selector": ".ds-note"
+          },
+          {
+            "name": "Metadata",
+            "selector": ".ds-note__meta"
+          },
+          {
+            "name": "Icon",
+            "selector": ".ds-note__icon"
+          },
+          {
+            "name": "Body",
+            "selector": ".ds-note__body"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Horizontal inset",
+            "token": "--note-pad-x",
+            "selector": ".ds-note",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Horizontal inset",
+            "token": "--note-pad-x",
+            "selector": ".ds-note",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Vertical inset",
+            "token": "--note-pad-y",
+            "selector": ".ds-note",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Vertical inset",
+            "token": "--note-pad-y",
+            "selector": ".ds-note",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Icon to metadata",
+            "token": "--note-meta-gap",
+            "selector": ".ds-note__meta",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Metadata to body",
+            "token": "--note-content-gap",
+            "selector": ".ds-note__meta + .ds-note__body",
+            "property": "margin-top",
+            "note": "Absent metadata reserves no gap."
+          }
+        ],
+        "alignment": "Metadata icon aligns centrally with wrapping text; body shares the surface content edge.",
+        "behavior": "Fluid width and content-driven height. Body preserves newlines and wraps long words. Metadata is optional. Passive content has no interactive states.",
+        "ownership": "Note owns its background, typography and internal spacing. Parent owns outer spacing; page owns author/date content and composer behavior.",
+        "implementation": "shared-css",
+        "specimen": ".ds-note"
+      },
+      "id": "ds-note",
+      "preview": "screens/specimen.html?part=ds-note"
+    },
+    {
+      "name": "Stat tile",
+      "category": "composite",
+      "css": "components/stat.css",
+      "class": "ds-stat",
+      "props": {
+        "accent": "CSS custom property --ds-stat-accent; defaults to --accent-primary",
+        "label": ".ds-stat__label — short uppercase metric name",
+        "value": ".ds-stat__value — primary tabular number",
+        "context": ".ds-stat__context — one short supporting line"
+      },
+      "shapeTokens": [
+        "--stat-pad-block",
+        "--stat-dot-size",
+        "--stat-head-gap",
+        "--stat-label-value-gap",
+        "--stat-value-context-gap",
+        "--stat-label-font",
+        "--stat-value-font",
+        "--stat-value-weight",
+        "--stat-context-font"
+      ],
+      "states": [
+        "default"
+      ],
+      "usage": "Headline metrics with a label, one primary value and one concise context line. Compose with .ds-card; use --ds-stat-accent only to distinguish adjacent metrics, not to encode status.",
+      "avoid": "Do not use for trends, ratios that need a scale, or multi-value summaries; choose a visualization or table instead.",
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Label and accent",
+            "selector": ".ds-stat__head"
+          },
+          {
+            "name": "Primary value",
+            "selector": ".ds-stat__value"
+          },
+          {
+            "name": "Optional context",
+            "selector": ".ds-stat__context"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Vertical inset",
+            "token": "--stat-pad-block",
+            "selector": ".ds-stat",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Accent to label",
+            "token": "--stat-head-gap",
+            "selector": ".ds-stat__head",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Label to value",
+            "token": "--stat-label-value-gap",
+            "selector": ".ds-stat__head",
+            "property": "margin-bottom",
+            "note": ""
+          },
+          {
+            "label": "Value to context",
+            "token": "--stat-value-context-gap",
+            "selector": ".ds-stat__context",
+            "property": "margin-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Label, value and context share a left edge; the optional accent sits within the header.",
+        "behavior": "Long label, value and context truncate. Omitting the context removes its margin.",
+        "ownership": "Stat owns vertical inset and internal gaps; card supplies horizontal inset when composed with ds-card.",
+        "implementation": "shared-css",
+        "specimen": ".ds-stat"
+      },
+      "id": "ds-stat",
+      "preview": "screens/specimen.html?part=ds-stat"
+    },
+    {
+      "name": "Menu",
+      "category": "composites",
+      "css": "components/menu.css",
+      "module": "components/menu.js",
+      "render": "declarative — data-ds-menu=\"<panel id>\" on the trigger; dsMenu.open/close/toggle(id) for programmatic control",
+      "class": "ds-menu",
+      "props": {
+        "placement": "'below' | 'below-end' | 'fixed' — ds-menu--below aligns to the trigger's left edge, --below-end to its right, --fixed takes viewport coordinates set by the caller",
+        "item": ".ds-menu__item — a <button> or <a>; add an icon element and it lands in the aligned icon column",
+        "meta": ".ds-menu__meta — right-aligned secondary text on an item: a count, a shortcut, a state",
+        "separator": ".ds-menu__sep — a rule, for the one boundary that must not be missed (a destructive action under harmless ones). NOT for group boundaries: a label after items already takes --menu-group-gap of space above it.",
+        "label": ".ds-menu__label — an uppercase heading above a group. Takes --menu-label-gap of air below it before its items, and --menu-group-gap above it when it follows another group.",
+        "danger": ".ds-menu__item--danger",
+        "caret": ".ds-menu-caret — the chevron on whatever opens the menu; rotates 180° while it is open. Also used by Split button.",
+        "anchor": ".ds-menu-anchor — a bare positioning context for a --below menu. Use .ds-split only when there really are two buttons."
+      },
+      "shapeTokens": [
+        "--menu-bg",
+        "--menu-radius",
+        "--menu-shadow",
+        "--menu-pad",
+        "--menu-min-width",
+        "--menu-item-height",
+        "--menu-item-pad-x",
+        "--menu-item-radius",
+        "--menu-item-font",
+        "--menu-item-gap",
+        "--menu-label-gap",
+        "--menu-group-gap",
+        "--menu-sep-color",
+        "--menu-gap"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus-visible",
+        "disabled",
+        "open"
+      ],
+      "usage": "An anchored panel of actions: a three-dot menu, an account switcher, the panel behind a Split button's caret.",
+      "avoid": "Positioning is not this component's job — anchor it with a relatively-positioned wrapper (--below/--below-end) or with coordinates (--fixed). Baking position in is what made all three existing copies re-declare everything. Do not use it for navigation between pages; that is the sidebar.",
+      "variantNotes": {
+        "fixed": "An absolutely-positioned panel is clipped by any overflow ancestor, which is why a three-dot inside a scrolling list needs viewport coordinates instead.",
+        "behaviour": "dsMenu binds by delegation on document, so markup rendered after load works with no re-binding, and it enforces one open menu at a time, outside-click and Escape close, and arrow-key movement. The three hand-rolled copies each implemented a different subset.",
+        "groups": "Groups are separated by space, not by rules: .ds-menu__label picks up --menu-group-gap when it follows items or a separator, and stays tight when it leads the panel. A line between every group turns a list of choices into a stack of boxes and spends the strongest separator available on the weakest boundary."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Panel",
+            "selector": ".ds-menu"
+          },
+          {
+            "name": "Group label",
+            "selector": ".ds-menu__label"
+          },
+          {
+            "name": "Action row",
+            "selector": ".ds-menu__item"
+          },
+          {
+            "name": "Optional metadata",
+            "selector": ".ds-menu__meta"
+          },
+          {
+            "name": "Separator",
+            "selector": ".ds-menu__sep"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Panel inset",
+            "token": "--menu-pad",
+            "selector": ".ds-menu",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Action inset",
+            "token": "--menu-item-pad-x",
+            "selector": ".ds-menu__item",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Icon to label",
+            "token": "--menu-item-gap",
+            "selector": ".ds-menu__item",
+            "property": "gap",
+            "note": ""
+          },
+          {
+            "label": "Metadata separation",
+            "token": "--menu-meta-gap",
+            "selector": ".ds-menu__meta",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Group separation",
+            "token": "--menu-group-gap",
+            "selector": ".ds-menu__item + .ds-menu__label, .ds-menu__sep + .ds-menu__label",
+            "property": "margin-top",
+            "note": "Applies only to a group following items or a separator."
+          },
+          {
+            "label": "Group label to items",
+            "token": "--menu-label-gap",
+            "selector": ".ds-menu__label",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Separator breathing room",
+            "token": "--menu-separator-gap-y",
+            "selector": ".ds-menu__sep",
+            "property": "margin-top",
+            "note": ""
+          }
+        ],
+        "alignment": "Items align within the panel; metadata is pushed to the right.",
+        "behavior": "Menu width follows its longest one-line item with a minimum width. Optional metadata disappears without a reserved column.",
+        "ownership": "Menu owns internal spacing and below-trigger offset; caller owns positioning context or fixed coordinates.",
+        "implementation": "shared-css",
+        "specimen": ".ds-menu.is-open"
+      },
+      "id": "ds-menu",
+      "preview": "screens/specimen.html?part=ds-menu"
+    },
+    {
+      "name": "List row",
+      "category": "composites",
+      "css": "components/list-row.css",
+      "class": "ds-list-row",
+      "props": {
+        "leading": "node — the round type mark, or a control that replaces it (a task's checkbox)",
+        "title": "string — what the entry is",
+        "snippet": "string — one supporting line under the title; omitted entirely when absent",
+        "action": "node — a control belonging to this row, revealed on hover or keyboard focus",
+        "trailing": "string — the fact on the right: a timestamp, a due date, a size",
+        "interactive": "boolean (class .ds-list-row--interactive) — the row opens something",
+        "flush": "boolean (class .ds-list-row--flush) — drop the separator and vertical padding"
+      },
+      "parts": {
+        "leading": ".ds-list-row__leading — the round mark; top-aligned in every variant, and the glyph inside is the caller's",
+        "content": ".ds-list-row__content — takes the free width and allows its children to truncate",
+        "title": ".ds-list-row__title",
+        "snippet": ".ds-list-row__snippet — supporting line, quieter than the title",
+        "action": ".ds-list-row__action — hidden until hover or focus",
+        "trailing": ".ds-list-row__trailing — never wraps or shrinks; --danger reads as late"
+      },
+      "shapeTokens": [
+        "--list-row-pad-y",
+        "--list-row-gap",
+        "--list-row-sep",
+        "--list-row-title-font",
+        "--list-row-meta-font",
+        "--list-row-snippet-gap",
+        "--list-row-leading-size",
+        "--list-row-leading-bg",
+        "--list-row-leading-fg",
+        "--list-row-hover-bg",
+        "--list-row-hover-bleed",
+        "--list-row-hover-radius"
+      ],
+      "states": [
+        "default",
+        "hover",
+        "focus-visible"
+      ],
+      "usage": "One entry in a vertical list inside a card: an activity, a note, a queued task, a contact. Use --interactive when the row opens something, and --flush for a row that is not in a separated list, such as a disclosure header.",
+      "avoid": "Not for rows whose values must line up into columns down the page — that is a table, and dashboard.html and activities.html keep their own grid until Table is built. Not for a filled tile in a grid, such as the record screen's file chips. The row does not own its leading glyph, its action's appearance, or what a click does.",
+      "variantNotes": {
+        "interactive": ".ds-list-row--interactive — hover fill bleeds past the text by --list-row-hover-bleed via negative inline margin, so the fill reads as the row rather than as a highlight inside it, and a static row keeps the same left edge. opportunity-view.html had this as a page-local .clickable rule with the bleed typed as a literal.",
+        "flush": ".ds-list-row--flush — separator and vertical padding removed. Added for the record screen's contact disclosure header, which is a list row inside a card that already has its own edges."
+      },
+      "anatomy": {
+        "parts": [
+          {
+            "name": "Row",
+            "selector": ".ds-list-row"
+          },
+          {
+            "name": "Leading",
+            "selector": ".ds-list-row__leading"
+          },
+          {
+            "name": "Content",
+            "selector": ".ds-list-row__content"
+          },
+          {
+            "name": "Title",
+            "selector": ".ds-list-row__title"
+          },
+          {
+            "name": "Snippet",
+            "selector": ".ds-list-row__snippet"
+          },
+          {
+            "name": "Trailing",
+            "selector": ".ds-list-row__trailing"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Row inset",
+            "token": "--list-row-pad-y",
+            "selector": ".ds-list-row",
+            "property": "padding-top",
+            "note": "Vertical only; the list's own container owns the horizontal inset."
+          },
+          {
+            "label": "Row inset",
+            "token": "--list-row-pad-y",
+            "selector": ".ds-list-row",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Between parts",
+            "token": "--list-row-gap",
+            "selector": ".ds-list-row",
+            "property": "gap",
+            "note": "Leading to content, content to trailing."
+          },
+          {
+            "label": "Title to snippet",
+            "token": "--list-row-snippet-gap",
+            "selector": ".ds-list-row__snippet",
+            "property": "margin-top",
+            "note": "The two are one thing, so this is the related-content step."
+          },
+          {
+            "label": "Hover bleed",
+            "token": "--list-row-hover-bleed",
+            "selector": ".ds-list-row--interactive:hover",
+            "property": "padding-left",
+            "note": "Matched by a negative inline margin, so the row does not move when it fills."
+          }
+        ],
+        "alignment": "The leading mark is always at the top of the row, in every variant — on a one-line row it is the tallest part so nothing moves, and on a row with a snippet it stays beside the title it labels rather than floating between the two lines. Content and trailing centre on the row's vertical axis. The trailing fact is pushed right by the content column taking the free width, not by a spacer.",
+        "behavior": "Content-driven height. The content column allows its children to truncate or wrap; the trailing fact never wraps or shrinks. Omitting the snippet, action or trailing removes the node and its space rather than reserving it. The action is revealed by hover on the row or focus on the control itself.",
+        "ownership": "Row owns its vertical inset, the gaps between its parts, the separator and the hover treatment. The parent card owns the horizontal inset and the space around the list. The leading glyph, the action control's own appearance and the click target are the caller's.",
+        "implementation": "shared-css",
+        "specimen": ".ds-list-row"
+      },
+      "id": "ds-list-row",
+      "preview": "screens/specimen.html?part=ds-list-row"
+    }
+  ],
+  "compositions": [
+    {
+      "name": "Stack",
+      "category": "layout",
+      "css": "components/composition.css",
+      "class": "ds-stack",
+      "props": {
+        "spacing": "default (16px) | related (8px) | sections (24px)"
+      },
+      "states": [
+        "default"
+      ],
+      "usage": "Start with a vertical stack for items; choose related for closely connected text and sections for larger regions.",
+      "anatomy": {
+        "specimen": ".ds-stack",
+        "parts": [
+          {
+            "name": "Stack",
+            "selector": ".ds-stack"
+          },
+          {
+            "name": "Items",
+            "selector": ".ds-stack > *"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Items",
+            "token": "--stack-gap",
+            "selector": ".ds-stack:not(.ds-stack--related):not(.ds-stack--sections)",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Related content",
+            "token": "--stack-related-gap",
+            "selector": ".ds-stack--related",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Sections",
+            "token": "--stack-section-gap",
+            "selector": ".ds-stack--sections",
+            "property": "row-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Children stretch to a shared horizontal edge.",
+        "behavior": "Height follows content. Omitted or hidden children create no item and no extra gap. Long prose wraps.",
+        "ownership": "Stack owns space between direct children; each child owns its own internal spacing.",
+        "implementation": "shared-css"
+      },
+      "examples": [
+        {
+          "label": "Items · 16px",
+          "markup": "<div class=\"ds-stack\"><p>Primary information</p><p>Supporting information</p><p>Next action</p></div>"
+        },
+        {
+          "label": "Related · 8px",
+          "markup": "<div class=\"ds-stack ds-stack--related\"><strong>Record overview</strong><p>A short explanation of this record.</p></div>"
+        },
+        {
+          "label": "Sections · 24px",
+          "markup": "<div class=\"ds-stack ds-stack--sections\"><div>Record details</div><div>Activity history</div></div>"
+        }
+      ],
+      "id": "ds-stack",
+      "preview": "screens/specimen.html?part=ds-stack"
+    },
+    {
+      "name": "Row",
+      "category": "layout",
+      "css": "components/composition.css",
+      "class": "ds-row",
+      "props": {
+        "spacing": "default (8px) | items (16px)",
+        "alignment": "default | end"
+      },
+      "states": [
+        "default"
+      ],
+      "usage": "Arrange related controls horizontally, wrapping as available width decreases.",
+      "anatomy": {
+        "specimen": ".ds-row",
+        "parts": [
+          {
+            "name": "Row",
+            "selector": ".ds-row"
+          },
+          {
+            "name": "Items",
+            "selector": ".ds-row > *"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Related items",
+            "token": "--row-gap",
+            "selector": ".ds-row:not(.ds-row--items)",
+            "property": "column-gap",
+            "note": ""
+          },
+          {
+            "label": "Distinct items",
+            "token": "--row-item-gap",
+            "selector": ".ds-row--items",
+            "property": "column-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Items align vertically to the center; end aligns the action group to the trailing edge.",
+        "behavior": "Rows wrap rather than force horizontal page scrolling. Each child retains its own sizing rules.",
+        "ownership": "Row owns gaps and wrapping; buttons and other children own their insets.",
+        "implementation": "shared-css"
+      },
+      "examples": [
+        {
+          "label": "Related controls · 8px",
+          "markup": "<div class=\"ds-row\"><button type=\"button\" class=\"ds-btn ds-btn--secondary\">Filter</button><button type=\"button\" class=\"ds-btn ds-btn--secondary\">Sort</button><button type=\"button\" class=\"ds-btn ds-btn--secondary\">Choose columns</button></div>"
+        },
+        {
+          "label": "Distinct items · 16px",
+          "markup": "<div class=\"ds-row ds-row--items\"><span class=\"ds-badge\">Open</span><span>Assigned to you</span></div>"
+        }
+      ],
+      "id": "ds-row",
+      "preview": "screens/specimen.html?part=ds-row"
+    },
+    {
+      "name": "Section",
+      "category": "layout",
+      "css": "components/composition.css",
+      "class": "ds-section",
+      "props": {
+        "parts": "optional heading + body"
+      },
+      "states": [
+        "default"
+      ],
+      "usage": "Group an optional heading and related content without adding another padded surface.",
+      "anatomy": {
+        "specimen": ".ds-section",
+        "parts": [
+          {
+            "name": "Section",
+            "selector": ".ds-section"
+          },
+          {
+            "name": "Optional heading",
+            "selector": ".ds-section__heading"
+          },
+          {
+            "name": "Body",
+            "selector": ".ds-section__body"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Heading to content",
+            "token": "--section-content-gap",
+            "selector": ".ds-section",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Heading to description",
+            "token": "--section-heading-gap",
+            "selector": ".ds-section__heading",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Content items",
+            "token": "--section-item-gap",
+            "selector": ".ds-section__body",
+            "property": "row-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Heading and body share an edge; the surrounding surface supplies the inset.",
+        "behavior": "Heading may be omitted or hidden. Body grows with content; use a sections stack between sibling sections.",
+        "ownership": "Section owns its internal grouping but adds no padding; parent owns the inset and separation from other sections.",
+        "implementation": "shared-css"
+      },
+      "examples": [
+        {
+          "label": "Heading and content",
+          "markup": "<section class=\"ds-section\"><header class=\"ds-section__heading\"><strong>Contact details</strong><p>How to reach this person.</p></header><div class=\"ds-section__body\"><div>Name</div><div>Email address</div></div></section>"
+        }
+      ],
+      "id": "ds-section",
+      "preview": "screens/specimen.html?part=ds-section"
+    },
+    {
+      "name": "Structured card",
+      "category": "layout",
+      "css": "components/composition.css",
+      "class": "ds-card--structured",
+      "props": {
+        "parts": "optional header + body + optional footer",
+        "inset": "inherits ds-card; ds-card--section keeps its larger inset"
+      },
+      "states": [
+        "default"
+      ],
+      "usage": "Default starting point for new multi-region card content. Add this modifier alongside ds-card.",
+      "anatomy": {
+        "specimen": ".ds-card--structured",
+        "parts": [
+          {
+            "name": "Surface",
+            "selector": ".ds-card--structured"
+          },
+          {
+            "name": "Optional header",
+            "selector": ".ds-card__header"
+          },
+          {
+            "name": "Body",
+            "selector": ".ds-card__body"
+          },
+          {
+            "name": "Optional footer",
+            "selector": ".ds-card__footer"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Outer inset",
+            "token": "--card-pad",
+            "selector": ".ds-card--structured:not(.ds-card--section)",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Outer inset",
+            "token": "--card-pad",
+            "selector": ".ds-card--structured:not(.ds-card--section)",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Outer inset",
+            "token": "--card-pad",
+            "selector": ".ds-card--structured:not(.ds-card--section)",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Outer inset",
+            "token": "--card-pad",
+            "selector": ".ds-card--structured:not(.ds-card--section)",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Between regions",
+            "token": "--card-region-gap",
+            "selector": ".ds-card--structured",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Title to description",
+            "token": "--card-heading-gap",
+            "selector": ".ds-card__header",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Body items",
+            "token": "--card-content-gap",
+            "selector": ".ds-card__body",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Footer actions",
+            "token": "--card-action-gap",
+            "selector": ".ds-card__footer",
+            "property": "column-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Header, body and footer share the card inset; actions align to the trailing edge.",
+        "behavior": "Omit or hide optional regions; they leave no gaps. Height follows content and footer actions wrap. Existing plain cards are unchanged.",
+        "ownership": "Card owns outer inset; the structured modifier owns region gaps; child components own their internal padding. Do not pad each region again.",
+        "implementation": "shared-css"
+      },
+      "examples": [
+        {
+          "label": "Header, body and footer",
+          "markup": "<article class=\"ds-card ds-card--structured\">\n  <header class=\"ds-card__header\">\n    <h3 class=\"ds-card-title\">Record overview</h3>\n    <p class=\"ds-card-sub\">A short summary of the current record.</p>\n  </header>\n  <div class=\"ds-card__body\">\n    <p>Primary information</p>\n    <p>Supporting information</p>\n  </div>\n  <footer class=\"ds-card__footer\">\n    <button type=\"button\" class=\"ds-btn ds-btn--secondary\">Cancel</button>\n    <button type=\"button\" class=\"ds-btn ds-btn--primary\">Save</button>\n  </footer>\n</article>"
+        },
+        {
+          "label": "Body only · hidden footer reserves no space",
+          "markup": "<article class=\"ds-card ds-card--structured\"><div class=\"ds-card__body\"><p>A card can contain just its body.</p></div><footer class=\"ds-card__footer\" hidden><button type=\"button\" class=\"ds-btn\">Save</button></footer></article>"
+        }
+      ],
+      "id": "ds-card--structured",
+      "preview": "screens/specimen.html?part=ds-card--structured"
+    }
+  ],
+  "patterns": [
+    {
+      "id": "modal-dialog",
+      "name": "Modal dialog",
+      "category": "Interaction & layout",
+      "visual": "modal-overlay",
+      "summary": "A temporary, focused layer over the current page. The originating context remains visible but inactive beneath the design-system-controlled backdrop.",
+      "useWhen": "Use for a short, bounded task that benefits from retaining the current page as context and can be completed or dismissed without navigating through multiple sections.",
+      "route": "No route — opens over the current page",
+      "structure": [
+        "A full-viewport backdrop dims and disables the originating page.",
+        "A focused panel contains a clear header, scrollable body when needed, and action footer.",
+        "The header names the task and provides an explicit close action.",
+        "The footer presents one primary action and only the secondary actions the task needs."
+      ],
+      "requirements": [
+        "Use --modal-backdrop-bg for the scrim; never introduce a page-specific black overlay.",
+        "Expose role=dialog, aria-modal=true, and an accessible name.",
+        "Move focus into the dialog, contain keyboard focus while open, and return focus to the trigger on close.",
+        "Support Escape to close unless closing would discard a destructive operation without confirmation.",
+        "Lock background scrolling and keep the page beneath non-interactive.",
+        "Keep controls inside the dialog on registered design-system components.",
+        "For new implementations, use the shared --pattern-content-inset-x / --pattern-content-inset-y, --pattern-item-gap, --pattern-section-gap and --pattern-action-gap roles where the anatomy applies. Record page-specific geometry exceptions; existing pages require explicit adoption."
+      ],
+      "avoid": [
+        "Do not use for multi-section settings, deep navigation, or work that needs a durable URL.",
+        "Do not stack routine dialogs; move the task to a full-page pattern when it outgrows one layer.",
+        "Do not use a modal as a substitute for a cold-loadable destination."
+      ],
+      "examples": [
+        "crm.html — New pipeline and Add team",
+        "opportunity-view.html — email and meeting details",
+        "pipeline-settings.html — incoming-email and delete confirmations"
+      ],
+      "anatomy": {
+        "specimen": ".wb-pattern-modal",
+        "parts": [
+          {
+            "name": "Header",
+            "selector": ".wb-pattern-modalhead"
+          },
+          {
+            "name": "Scrollable body",
+            "selector": ".wb-pattern-modalbody"
+          },
+          {
+            "name": "Actions",
+            "selector": ".wb-pattern-modalfoot"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Shared horizontal inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-modalhead, .wb-pattern-modalfoot",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Shared horizontal inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-modalhead, .wb-pattern-modalfoot",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Shared horizontal inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-modalhead, .wb-pattern-modalfoot",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Shared horizontal inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-modalhead, .wb-pattern-modalfoot",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Body inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-modalbody",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Body inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-modalbody",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Body inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-modalbody",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Body inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-modalbody",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Body items",
+            "token": "--pattern-item-gap",
+            "selector": ".wb-pattern-modalbody",
+            "property": "row-gap",
+            "note": ""
+          },
+          {
+            "label": "Action gap",
+            "token": "--pattern-action-gap",
+            "selector": ".wb-pattern-modalfoot",
+            "property": "column-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Header, body and footer share a content edge. Actions align to the trailing edge.",
+        "behavior": "Body scrolls when bounded by the viewport; header and actions stay outside that scroll region. The specimen illustrates layout, not focus trapping or dismissal.",
+        "ownership": "Each region owns one inset. Adjacent inset regions and dividers provide separation; do not add a second stack gap. Page owns dialog width, height limit and accessible behavior.",
+        "implementation": "pattern-specimen"
+      },
+      "preview": "screens/patterns.html?part=modal"
+    },
+    {
+      "id": "full-page-settings",
+      "name": "Full-page settings",
+      "category": "Navigation & layout",
+      "visual": "sidebar-workspace",
+      "summary": "A standalone settings destination that replaces Titan's global CRM sidebar and owns the full task workspace at a durable route. It is never a modal, drawer, or layer over the originating screen.",
+      "useWhen": "Use for configuration with multiple sections, substantial editing, or its own navigation context—work that benefits from a durable URL and the full workspace width.",
+      "route": "/crm/pipeline/:id/setting",
+      "structure": [
+        "A full-width task header provides Back, the settings scope, status, and page actions.",
+        "The global CRM sidebar is absent so the settings task owns the complete viewport.",
+        "A multi-section task may add one local settings rail below the task header; a single-section task uses the full width.",
+        "Sections flow in the page rather than being split across stacked modals."
+      ],
+      "requirements": [
+        "The route must survive a cold load and preserve ?u=<persona>.",
+        "Fetch required data on the page; do not depend on a previous document having stashed it.",
+        "Do not mount or load titan-sidebar.js on the settings page; titan-sidebar.css may still provide the shared page shell.",
+        "If the task needs section navigation, keep it local to the settings page and below the full-width header.",
+        "Navigate in place. Do not depend on window.opener.",
+        "Keep page-specific CSS to workspace layout and compose controls from registered design-system components.",
+        "For new implementations, use the shared --pattern-content-inset-x / --pattern-content-inset-y, --pattern-item-gap, --pattern-section-gap and --pattern-action-gap roles where the anatomy applies. Record page-specific geometry exceptions; existing pages require explicit adoption."
+      ],
+      "avoid": [
+        "Do not use a modal or drawer for multi-section settings that need sustained attention.",
+        "Do not leave the originating board or global CRM sidebar visible inside a full-page settings task.",
+        "Do not create a route that only works after visiting the board first."
+      ],
+      "examples": [
+        "pipeline-settings.html — /crm/pipeline/:id/setting",
+        "opportunity-settings.html — /crm/pipeline/:id/record-setting",
+        "form-settings.html — /crm/pipeline/:id/form; every form creation/editing entry point navigates here",
+        "sequences.html — /crm/sequences/:id"
+      ],
+      "anatomy": {
+        "specimen": ".wb-pattern-frame",
+        "parts": [
+          {
+            "name": "Task header",
+            "selector": ".wb-pattern-pagehead"
+          },
+          {
+            "name": "Optional navigation",
+            "selector": ".wb-pattern-sidebar"
+          },
+          {
+            "name": "Content region",
+            "selector": ".wb-pattern-sections"
+          },
+          {
+            "name": "Sections",
+            "selector": ".wb-pattern-section"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Header inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-pagehead",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Header inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-pagehead",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Header inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-pagehead",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Header inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-pagehead",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Navigation inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-sidebar",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Navigation inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-sidebar",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Navigation inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-sidebar",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Navigation inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-sidebar",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Content inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-sections",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Content inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-sections",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Content inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-sections",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Content inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-sections",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Between sections",
+            "token": "--pattern-section-gap",
+            "selector": ".wb-pattern-sections",
+            "property": "row-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "A full-width task header sits above local navigation and content. Sections share an inset.",
+        "behavior": "Optional navigation can be omitted without reserving a column. At narrow widths it stacks above content. Page content scrolls in normal flow.",
+        "ownership": "Pattern owns region arrangement; each region owns its inset. Page owns content maximum width, route and navigation behavior.",
+        "implementation": "pattern-specimen"
+      },
+      "preview": "screens/patterns.html?part=settings"
+    },
+    {
+      "id": "two-pane-workspace",
+      "name": "Two-pane workspace",
+      "category": "Interaction & layout",
+      "visual": "two-pane-workspace",
+      "summary": "Two persistent sibling panes keep a controlling editor or list visible beside the detail or preview it affects. The panes read as separate work areas, not as cards inside one parent box.",
+      "useWhen": "Use when a task depends on continuously comparing or controlling two related surfaces—such as a library and its selected flow, or an editor and its live preview—and switching between separate pages would hide necessary context.",
+      "route": "Composes inside an existing full-page route",
+      "structure": [
+        "Exactly two adjacent pane surfaces fill the available workspace below any page-level header.",
+        "The contents of both panes align inside one horizontally centred, width-bounded frame while their surface backgrounds may remain full-bleed.",
+        "The controlling or editing pane comes first; its corresponding detail or preview pane comes second.",
+        "A single separator spans the full shared height between the panes.",
+        "Each pane owns its surface, internal padding, heading when needed, and scroll region."
+      ],
+      "variations": [
+        "Fixed split — use page-owned proportions when resizing would add no practical value.",
+        "Bounded resizable split — make the separator draggable when either pane benefits from temporary emphasis. Keep a content-driven default, clamp both panes to page-owned usable limits, expose the separator and its current value accessibly, support keyboard adjustment, and disable resizing when panes stack."
+      ],
+      "requirements": [
+        "Use semantic surface and border tokens; the separator is the boundary, so do not wrap both panes in another card.",
+        "Treat both content rails as one centred unit: choose one page-owned maximum width for their complete frame, preserve the pane proportions within it, then let it remain fluid below that cap.",
+        "When using the bounded resizable variation, resize only the proportions inside the same centred frame; never let dragging expand the frame or collapse either pane.",
+        "Size panes for their content rather than defaulting to equal halves; neither pane may force horizontal page scrolling.",
+        "Keep edits and selections reflected in the companion pane without navigation or manual refresh.",
+        "Give both panes an accessible name or heading and keep their scrolling independent on wide screens.",
+        "Below the width where both panes remain usable, stack them or offer an explicit mode switch instead of squeezing them.",
+        "For new implementations, use the shared --pattern-content-inset-x / --pattern-content-inset-y, --pattern-item-gap, --pattern-section-gap and --pattern-action-gap roles where the anatomy applies. Record page-specific geometry exceptions; existing pages require explicit adoption."
+      ],
+      "avoid": [
+        "Do not copy the sequence timeline, colors, cards, or other feature-specific styling into the pattern.",
+        "Do not constrain full-bleed pane surfaces merely to constrain their content, and do not centre each content rail against a different frame.",
+        "Do not use for unrelated content that merely happens to fit in two columns.",
+        "Do not add a third pane; move secondary tools into the appropriate pane or another route.",
+        "Do not use when the second surface is incidental enough for a modal, drawer, or inline disclosure."
+      ],
+      "examples": [
+        "form-settings.html — form editor and live form preview; bounded resizable split with a 50–68% editor share"
+      ],
+      "anatomy": {
+        "specimen": ".wb-pattern-frame",
+        "parts": [
+          {
+            "name": "Shared header",
+            "selector": ".wb-pattern-pagehead"
+          },
+          {
+            "name": "First pane",
+            "selector": ".wb-pattern-pane:first-child"
+          },
+          {
+            "name": "Second pane",
+            "selector": ".wb-pattern-pane:nth-child(2)"
+          },
+          {
+            "name": "Pane content",
+            "selector": ".wb-pattern-panecontent"
+          },
+          {
+            "name": "Resize separator",
+            "selector": ".wb-pattern-resizer"
+          }
+        ],
+        "spacing": [
+          {
+            "label": "Header inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-panehead, .wb-pattern-pagehead",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Header inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-panehead, .wb-pattern-pagehead",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Header inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-panehead, .wb-pattern-pagehead",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Header inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-panehead, .wb-pattern-pagehead",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Pane content inset · left",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-panecontent",
+            "property": "padding-left",
+            "note": ""
+          },
+          {
+            "label": "Pane content inset · right",
+            "token": "--pattern-content-inset-x",
+            "selector": ".wb-pattern-panecontent",
+            "property": "padding-right",
+            "note": ""
+          },
+          {
+            "label": "Pane content inset · top",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-panecontent",
+            "property": "padding-top",
+            "note": ""
+          },
+          {
+            "label": "Pane content inset · bottom",
+            "token": "--pattern-content-inset-y",
+            "selector": ".wb-pattern-panecontent",
+            "property": "padding-bottom",
+            "note": ""
+          },
+          {
+            "label": "Content items",
+            "token": "--pattern-item-gap",
+            "selector": ".wb-pattern-panecontent",
+            "property": "row-gap",
+            "note": ""
+          }
+        ],
+        "alignment": "Both panes share one centered bounded frame and one full-height separator. Pane headings and content align to their own inset.",
+        "behavior": "Wide panes scroll independently. This example starts at 60/40 with 50–68% bounds. At narrow widths panes stack and the separator disappears; sheet geometry refreshes when resized.",
+        "ownership": "Pattern owns adjacent surfaces and separator. Each pane owns inset and scrolling. Adopting page chooses usable widths, breakpoint and resize limits; specimen dimensions are not universal defaults.",
+        "implementation": "pattern-specimen"
+      },
+      "preview": "screens/patterns.html?part=two-pane"
+    }
+  ],
+  "visualizations": [
+    {
+      "id": "partToWhole",
+      "name": "Part to whole",
+      "preview": "screens/charts.html?part=partToWhole",
+      "css": "components/visualization.css",
+      "module": "components/visualization.js",
+      "usage": "Fictional data rendered by the shared visualization implementation. See the reference catalog for the full original anatomy."
+    },
+    {
+      "id": "rankedBars",
+      "name": "Ranked bars",
+      "preview": "screens/charts.html?part=rankedBars",
+      "css": "components/visualization.css",
+      "module": "components/visualization.js",
+      "usage": "Fictional data rendered by the shared visualization implementation. See the reference catalog for the full original anatomy."
+    },
+    {
+      "id": "conversionSteps",
+      "name": "Conversion steps",
+      "preview": "screens/charts.html?part=conversionSteps",
+      "css": "components/visualization.css",
+      "module": "components/visualization.js",
+      "usage": "Fictional data rendered by the shared visualization implementation. See the reference catalog for the full original anatomy."
+    },
+    {
+      "id": "binnedDistribution",
+      "name": "Binned distribution",
+      "preview": "screens/charts.html?part=binnedDistribution",
+      "css": "components/visualization.css",
+      "module": "components/visualization.js",
+      "usage": "Fictional data rendered by the shared visualization implementation. See the reference catalog for the full original anatomy."
+    },
+    {
+      "id": "stackedComposition",
+      "name": "Stacked composition",
+      "preview": "screens/charts.html?part=stackedComposition",
+      "css": "components/visualization.css",
+      "module": "components/visualization.js",
+      "usage": "Fictional data rendered by the shared visualization implementation. See the reference catalog for the full original anatomy."
+    }
+  ],
+  "themes": [
+    {
+      "id": "default",
+      "name": "Default",
+      "file": "themes/default.css",
+      "description": "Reference theme."
+    },
+    {
+      "id": "soft",
+      "name": "Soft",
+      "file": "themes/soft.css",
+      "description": "Semantic theme overrides; the component implementation is unchanged."
+    }
+  ],
+  "screens": [
+    {
+      "id": "record",
+      "name": "Project record",
+      "preview": "screens/record.html",
+      "usage": "Inspect nesting, card spacing, editable fields, notes and mock activity."
+    },
+    {
+      "id": "ownership",
+      "name": "Spacing ownership lab",
+      "preview": "screens/ownership.html",
+      "usage": "Equal values with different owners, inheritance, literals, reset, and theme overrides."
+    }
+  ],
+  "icons": [
+    {
+      "id": "phosphor-reference",
+      "name": "Phosphor reference provider",
+      "preview": "screens/icons.html",
+      "module": "components/icon.js",
+      "usage": "Search names, inspect weights and copy the provider call. Source and license notices are in reference/."
+    }
+  ],
+  "tokenFiles": [
+    "tokens/primitives.css",
+    "tokens/semantics.css"
+  ],
+  "knownGaps": [
+    "This sandbox intentionally retains Titan reference styling. New projects begin empty.",
+    "Inspector ownership remains conservative for complex selectors, inaccessible stylesheets and custom property registrations.",
+    "Native platform adapters and cross-page live preview propagation are not implemented.",
+    "Original Titan survey scripts and workbench are reference snapshots, not the portable measurement implementation."
+  ]
+}

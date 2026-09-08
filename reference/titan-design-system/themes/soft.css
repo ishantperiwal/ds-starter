@@ -1,0 +1,28 @@
+/* Direction: "soft" — a worked example of what a theme is allowed to do.
+   Rounder controls, borderless cards, elevation doing all the separating.
+   Note what is NOT here: no component selectors, no new hex values. Nine token
+   overrides restyle every button, input and card in the product. */
+:root {
+  --btn-radius:     var(--radius-full);
+  --btn-height:     34px;
+  --btn-pad-x:      18px;
+  --btn-weight:     var(--weight-medium);
+
+  --input-radius:   var(--radius-lg);
+  --input-height:   38px;
+
+  --card-radius:    var(--radius-xl);
+  --card-border:    transparent;
+  --card-shadow:    var(--shadow-card-soft);
+
+  --badge-radius:   var(--radius-full);
+  --surface-hover:  var(--blue-050);
+
+  /* The board follows too, now that the kanban has component tokens. Same idea as the
+     card above: no border, elevation doing the separating, and a softer lane. */
+  --kanban-card-radius: var(--radius-xl);
+  --kanban-card-shadow: var(--shadow-card);
+  --kanban-card-pad:    14px;
+  --kanban-lane-bg:     var(--gray-025);
+  --kanban-lane-radius: var(--radius-xl);
+}

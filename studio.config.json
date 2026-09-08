@@ -1,0 +1,8 @@
+{
+  "name": "Design System Studio",
+  "port": 8020,
+  "project": "project",
+  "examples": "framework/examples",
+  "defaultProfile": "demo",
+  "contractVersion": 1
+}

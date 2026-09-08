@@ -1,0 +1,23 @@
+/* Opt-in composition defaults for new content. These classes own layout only.
+   Existing .ds-card instances retain their current geometry. */
+.ds-stack { display:flex; flex-direction:column; gap:var(--stack-gap); min-width:0; }
+.ds-stack--related { gap:var(--stack-related-gap); }
+.ds-stack--sections { gap:var(--stack-section-gap); }
+.ds-row { display:flex; flex-wrap:wrap; align-items:center; gap:var(--row-gap); min-width:0; }
+.ds-row--items { gap:var(--row-item-gap); }
+.ds-row--end { justify-content:flex-end; }
+.ds-section { display:flex; flex-direction:column; gap:var(--section-content-gap); min-width:0; }
+.ds-section__heading { display:flex; flex-direction:column; gap:var(--section-heading-gap); min-width:0; }
+.ds-section__body { display:flex; flex-direction:column; gap:var(--section-item-gap); min-width:0; }
+.ds-card--structured { display:flex; flex-direction:column; gap:var(--card-region-gap); }
+.ds-card__header { display:flex; flex-direction:column; gap:var(--card-heading-gap); min-width:0; }
+.ds-card__body { --card-content-gap: var(--space-200); display:flex; flex-direction:column; gap:var(--card-content-gap); min-width:0; }
+.ds-card__footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:var(--card-action-gap); min-width:0; }
+/* A structured header owns this relationship instead of the subtitle's legacy margin. */
+.ds-card--structured > .ds-card__header > .ds-card-sub { margin-top:0; }
+:where(.ds-stack, .ds-row, .ds-section, .ds-section__heading, .ds-section__body, .ds-card--structured, .ds-card__header, .ds-card__body, .ds-card__footer) > * { min-width:0; }
+/* Clear default prose margins only inside the new layouts, so gap is the single owner. */
+:where(.ds-stack, .ds-row, .ds-section, .ds-section__heading, .ds-section__body, .ds-card--structured, .ds-card__header, .ds-card__body, .ds-card__footer) > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,dl,figure) { margin-block:0; }
+/* Explicitly hidden optional regions must not leave a flex item or an extra gap. */
+:where(.ds-stack, .ds-row, .ds-section, .ds-section__heading, .ds-section__body, .ds-card--structured, .ds-card__header, .ds-card__body, .ds-card__footer)[hidden],
+:where(.ds-stack, .ds-row, .ds-section, .ds-section__heading, .ds-section__body, .ds-card--structured, .ds-card__header, .ds-card__body, .ds-card__footer) > [hidden] { display:none !important; }
