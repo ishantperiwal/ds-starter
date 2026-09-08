@@ -20,8 +20,9 @@ or dependency installation is needed. Do not expose this development server publ
 
 ## Persistence and ownership
 
-All profiles in one starter share `.moodboard-data/board.json` and PNG originals in
-`.moodboard-data/images/`, at the starter root. They are gitignored, project-local
+All profiles in one studio session share `.moodboard-data/board.json` and PNG originals
+in `.moodboard-data/images/`, inside the attached app’s content folder (or the studio
+root when running the standalone sandbox). They are gitignored, project-local
 data; framework releases do not include or replace them. Separate starter instances
 have separate storage, even if hosted by the same Node process. Back up this folder
 to retain the board across machines.

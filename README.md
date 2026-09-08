@@ -1,99 +1,125 @@
 # Design System Studio
 
-A standalone starting point for extracting and growing a design system from
-HTML/CSS/JS screens, with an independently updatable workbench and inspector.
+An updatable studio that plugs into an existing app. Its UI, inspector and shared
+workflows live in this Git repository. Each app’s design-system content lives in a
+separate folder and is never synchronized over by studio updates.
 
-The **project catalog is empty**. The **inspector sandbox is populated** with
-fictional content and optional Titan-derived reference controls. They are separate.
+No screen copying, inbox or prescribed app structure.
 
-## Start
+## Plug into an existing app
 
-Use Node.js 22 or later. No dependency installation, build step or CRM server is required.
+Requires Node.js 22+ and Git. No npm install/build step.
 
-```sh
-node server.js
-```
-
-Open **http://localhost:8020/**. A different port is supported:
+From your existing app folder:
 
 ```sh
-node server.js 8030
+git clone https://github.com/ishantperiwal/ds-starter.git ds-studio
+node ds-studio/studio.js init --app .
+node ds-studio/studio.js start --config app-design-system/studio.config.json
 ```
 
-The server binds to localhost. The workbench opens the sandbox by default; choose
-**Your project** in the catalog switcher to see the zero-stage catalog.
-
-Useful entry points:
-
-- `/` — the eight-tab workbench.
-- `/demo/screens/record.html?ds=true` — fictional record and working mock controls.
-- `/demo/screens/ownership.html?ds=true` — controlled inspector cases.
-- `/?profile=project#overview` — your project catalog.
-- `/moodboard/` — persistent reference canvas, served from the same process.
-
-## What you get
-
-- Registry-driven Overview, Foundations, Icons, Components, Patterns, Data
-  visualization, Directions and Moodboard views.
-- Token source browsing and filtering; catalogs start from registered real previews.
-- Component/composition anatomy overlays in sandbox specimens.
-- Spacing inspector with **− / +**, **Shared / Local**, owner-based grouping,
-  Reset, pending changes and **Copy changes prompt**.
-- Components mode with **Ctrl/Cmd** targeting of nested, unregistered elements.
-- Shared icon provider, menu behavior and five chart renderers in the sandbox.
-- Working modal, settings and bounded-resizable two-pane pattern examples.
-- A moodboard with image references, notes, source context, arrangement, undo and export.
-- Catalog/source/token validation and safe local release/update tooling.
-- An intact snapshot of the original DS for deeper reference, including its broader
-  component catalog, contracts, themes, workbench, fixtures and historical audit tools.
-
-## File ownership
+Open **http://localhost:8020/**. Add `--port 8030` if another studio is running.
+The private GitHub repository requires authentication.
 
 ```text
-framework/                  Upstream tools; updated as one versioned unit
-  workbench/                Generic catalog UI
-  spacing-inspector.js      Inspector and temporary live previews
-  anatomy.*                 Workbench anatomy overlays
-  catalog.schema.json       Portable catalog v1
-  examples/                 Fictional sandbox + reference implementations
-  moodboard/                Reference canvas and persistence handler
-  tests/                    Contract, HTTP and update regression checks
-project/                    Your app; never replaced by the updater
-  inbox/                    Original supplied screens and assets
-  screens/                  Working/migrated screens
-  design-system/            Project tokens, components, registry, themes, specimens
-  decisions/                Extraction decisions, approved exceptions and audits
-reference/                  Original Titan snapshot; read-only historical reference
-studio.config.json          Project paths, default catalog and port
-framework.lock.json         Installed version and hashes of managed files
-.moodboard-data/            Local reference data; created when the board is opened
-.framework-backups/         Previous tool versions retained by applied updates
+existing-app/
+  whatever-folders-you-already-have/
+  index.html
+  ds-studio/                   Independent upstream Git checkout: software
+  app-design-system/           App-owned content: created once
+    studio.config.json         Relative paths and compatibility contract
+    AGENTS.md                  Small loader for current shared instructions
+    BRIEF.md                   App-specific constraints
+    registry.json              This app’s catalog
+    tokens.css, components.css Shared imports for this app
+    tokens/, components/       App implementations
+    icons/, patterns/, themes/
+    specimens/, decisions/
+    .moodboard-data/            Private local references; ignored by Git
 ```
 
-The workbench chrome has its own styles. It stays usable while project tokens are
-empty or being changed. Preview frames load the actual project styles, so project
-themes cannot accidentally restyle the tool UI or each other.
+Keep ds-studio/ ignored by the app repo (or manage it as a deliberate submodule).
+Commit app-design-system/ in the app repo. The initializer does not edit your
+existing app instructions, .gitignore, screens or existing design-system files.
 
-## Start a new app from screens
+Already have a studio checkout adjacent to the app? Reuse it:
 
-1. Copy this entire folder into a new repo; keep the ownership layout above.
-2. Put source HTML/CSS/JS and assets in `project/inbox/`. Keep originals intact.
-3. Fill in `project/BRIEF.md` and include viewport and behavior expectations.
-4. Ask your agent: **“Build a design system from these screens. Follow AGENTS.md.”**
-5. Review extraction decisions, real examples and migrated screens. Evolve the
-   catalog as new screens establish more reusable relationships.
+```sh
+node ../ds-studio/studio.js init --app .
+node ../ds-studio/studio.js start --config app-design-system/studio.config.json
+```
 
-The agent must extract and implement the system. This is not an automatic screenshot
-recognition engine. Screens are evidence; absent states, behavior and accessibility
-still need to be defined and tested. Do not copy the demo palette or spacing ramp
-into the project without a design reason.
+A different content location is supported with `init --app ./my-app --content ./my-app-ds`.
+Paths are resolved from the command’s working directory. Studio and content must
+be non-overlapping folders; both can live inside the app, but neither can contain
+the other. Initialization never overwrites an existing destination. Repeating
+it for the same attachment is a no-op.
 
-To make Your project the default, set `defaultProfile` to `project` in
-`studio.config.json`.
+## Tell your agent what to build
 
-## Integrate the inspector
+Point to the actual screens, for example:
 
-Project screens served under `/screens/` use:
+> Read app-design-system/AGENTS.md. Build/expand this app’s DS from
+> pages/opportunities/record.html and settings/editor.html. Work with the screens
+> in place, put shared app content in the configured DS folder, and register real
+> previews. Keep the studio checkout unchanged.
+
+The generated AGENTS.md loads the shared workflow from the current studio checkout.
+It does not freeze a copy of those instructions. App-specific constraints stay in
+BRIEF.md, decisions/ and the app’s own instructions.
+
+This is an agent-assisted extraction workflow, not an automatic screenshot-to-DS
+engine. Screens provide evidence; behavior, states and accessibility need validation.
+
+## What updates, what stays yours
+
+| Studio software: upstream-owned | App content: app-owned |
+| --- | --- |
+| Sidebar and catalog presentation | Which components appear and their definitions |
+| Inspector, previews, anatomy UI | Tokens, icons, patterns, themes and specimens |
+| Shared agent workflow and schemas | App instructions, decisions and registry |
+| Mock sandbox and tooling tests | Existing app screens and reference board data |
+
+The workbench chrome is isolated from app styles. Real specimens load their own
+app styles inside separate frames.
+
+## Update like software
+
+Stop the running studio. From the app folder:
+
+```sh
+node ds-studio/studio.js update --config app-design-system/studio.config.json --check
+node ds-studio/studio.js update --config app-design-system/studio.config.json
+node ds-studio/studio.js check --config app-design-system/studio.config.json
+node ds-studio/studio.js start --config app-design-system/studio.config.json
+```
+
+The updater fetches the configured Git upstream and fast-forwards the **studio
+checkout only**, including its UI and shared instructions. It refuses local edits,
+divergent history and incompatible content contracts before checkout. Check mode
+fetches Git metadata but does not install files. No background/automatic pulls.
+
+Direct `git pull --ff-only` in the studio checkout also updates its software, but
+skips the pre-install contract check. Startup still refuses incompatible content.
+Use the checked updater for app installations. See [UPDATES.md](UPDATES.md).
+
+## Existing screens and preview URLs
+
+The server reads files from their actual locations:
+
+- `/design-system/*` → the attached app’s content folder.
+- `/app/*` → existing static HTML/CSS/JS/assets under appRoot, without copying.
+- `/framework/*` → current studio software.
+- Root-relative static assets such as `/assets/app.css` also resolve under appRoot,
+  unless they collide with reserved studio routes.
+- `/moodboard/` → this app’s board; data is in its content folder.
+
+In registry.json, use `specimens/note.html` for an app-owned component specimen,
+or `../app/pages/record.html` for an existing screen. These are URLs relative to
+/design-system/, not paths relative to the registry on disk. The validator and
+server resolve them using the same mounts.
+
+Shared imports in app screens:
 
 ```html
 <link rel="stylesheet" href="/design-system/tokens.css">
@@ -101,54 +127,31 @@ Project screens served under `/screens/` use:
 <script defer src="/framework/spacing-inspector.js"></script>
 ```
 
-Append `?ds=true` to enable it. **H** pauses selection so normal controls work.
-For another application server, serve the same files and set the adapter before
-loading the inspector:
+Append `?ds=true` to inspect; H pauses selection. −/+ previews spacing, Shared/Local
+controls scope, Ctrl/Cmd targets nested objects, and Copy changes prompt hands
+reviewed changes to your agent. Equal pixels do not establish shared ownership.
 
-```html
-<script>
-window.dsInspectorConfig = {
-  registryUrl: '/design-system/registry.json',
-  workbenchUrl: '/design-system/#components'
-};
-</script>
-```
+The studio is a localhost static development server, not your app backend. Root
+navigation, SPA routing and APIs may require your existing server. To integrate
+there, mount the content at /design-system/ and tools at /framework/ on that same
+origin. Do not expose your whole filesystem or proxy arbitrary backend writes.
+Private/hidden files, node_modules, app JSON/data and symlink escapes are not served
+through the /app mount. Only trusted local screens should be loaded.
 
-Token stylesheet URLs currently need a `/design-system/` path segment for token
-recognition. Same-origin CSS is required for reliable source inspection.
-
-## Improve tools and roll out updates
-
-Use this folder as the upstream repo for framework development. Keep project changes
-in `project/` in downstream repos. See [UPDATES.md](UPDATES.md) for the exact release,
-dry-run, apply and rollback workflow.
-
-Updates are explicit and reviewable, not background pulls. They replace `framework/`
-and its lock only. Local edits inside that folder block an update instead of being
-silently discarded. Mock-screen improvements ship with the framework.
-
-## Checks
+## Develop the studio itself
 
 ```sh
-node framework/validate.js
-node --test framework/tests/starter.test.js
+node studio.js start
+node studio.js check
+npm test
 node framework/release.js --check
 ```
 
-See [VERIFICATION.md](VERIFICATION.md) for tested behavior and remaining browser checks.
-Node tests do not substitute for visual and interaction QA.
+Without an app configuration, the populated fictional sandbox opens: components,
+compositions, icons, five chart renderers, patterns, themes, anatomy and inspector
+fixtures. No app content is created. project/ remains an empty legacy test fixture
+for v0.1 compatibility; it is not the new initialization workflow.
 
-## Limits and provenance
-
-This is a first working extraction, not a promise of complete cascade analysis or
-zero maintenance. Complex CSS, pseudo-elements and inaccessible stylesheets are
-conservatively unresolved. Live changes affect the current document; applying their
-source prompt can affect other screens. There is no native-app inspection adapter.
-
-The development server serves trusted local HTML/JS; it does not isolate malicious
-input screens. There is no application database or general write API. Moodboard
-content is the only persistent data written through the UI.
-
-See [PROVENANCE.md](PROVENANCE.md) for original sources, reference limitations and
-third-party redistribution considerations. No Git repository or remote is created
-automatically, and no release has been published.
+See [VERIFICATION.md](VERIFICATION.md) for tested behavior and browser QA limits,
+[PROVENANCE.md](PROVENANCE.md) for reference and license boundaries, and
+[framework/CONTRACTS.md](framework/CONTRACTS.md) for the catalog/integration contract.

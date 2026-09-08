@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0 — plug-in studio and app-owned content
+
+- Initialize against existing apps without an inbox, screen copying or relocation.
+- Create a separate app DS folder once; repeat initialization preserves its content.
+- Resolve configured content and existing screen URLs through shared server/validator mounts.
+- Keep app boards, registries, tokens, specimens and local instructions outside the studio checkout.
+- Load current shared agent instructions through an app-owned loader instead of frozen copies.
+- Add checked Git software updates for the entire studio, including root UI/workflow files.
+- Refuse dirty/divergent updates, overlapping folders and incompatible content contracts.
+- Preserve v0.1 catalog and legacy startup compatibility; schema contract remains v1.
+- Add regression tests for in-place attachment, isolated apps, safe serving and app-preserving updates.
+
 ## 0.1.0 — initial extraction
 
 - Standalone localhost server and registry-driven eight-tab workbench.

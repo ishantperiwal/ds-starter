@@ -23,45 +23,85 @@ function validateSchema(value,schema,root=schema,location='$'){
   }
   return errors;
 }
-function files(root){if(!fs.existsSync(root))return [];return fs.readdirSync(root,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?files(path.join(root,entry.name)):entry.isFile()?[path.join(root,entry.name)]:[]);}
-function validate(root=ROOT){
+function files(root) {
+  if (!fs.existsSync(root)) return [];
+  return fs.readdirSync(root,{withFileTypes:true}).filter(entry=>!entry.name.startsWith('.') && entry.name!=='node_modules').flatMap(entry=>
+    entry.isDirectory()?files(path.join(root,entry.name)):entry.isFile()?[path.join(root,entry.name)]:[]);
+}
+function validate(root=ROOT, configFile) {
   const errors=[],warnings=[],counts={};
+  const {runtimePaths}=require('./configuration');
+  const {catalogFile}=require('./public-files');
+  let paths;
+  try {paths=runtimePaths(root,configFile);} catch(error) {return {errors:[error.message],warnings,counts};}
   const schema=JSON.parse(fs.readFileSync(path.join(root,'framework/catalog.schema.json'),'utf8'));
-  const config=JSON.parse(fs.readFileSync(path.join(root,'studio.config.json'),'utf8'));
-  const profiles=[['project',path.join(root,config.project,'design-system')],['demo',path.join(root,config.examples)]];
-  for(const [profile,base] of profiles){
-    const registry=JSON.parse(fs.readFileSync(path.join(base,'registry.json'),'utf8'));
-    errors.push(...validateSchema(registry,schema).map(error=>profile+' '+error));
-    const ids=new Set(),entries=['components','compositions','patterns','visualizations','screens','icons'].flatMap(key=>registry[key]||[]);
-    for(const entry of entries){
-      if(ids.has(entry.id))errors.push(profile+': duplicate entry ID '+entry.id);ids.add(entry.id);
-      for(const field of ['preview','css','module'])if(entry[field]){
-        const relative=entry[field].split(/[?#]/)[0],target=path.resolve(base,relative);
-        const allowed=profile==='demo'?path.join(root,config.examples):path.join(root,config.project);
-        if(/^(?:[a-z]+:|\/)/i.test(relative)||!target.startsWith(allowed+path.sep)||!fs.existsSync(target))errors.push(profile+': missing/unsafe '+field+' '+entry[field]);
+  const profiles=[['project',paths.content],['demo',paths.examples]];
+  const inspected=new Set(files(path.join(root,'framework')));
+  for(const [profile,base] of profiles) {
+    let registry;
+    try {registry=JSON.parse(fs.readFileSync(path.join(base,'registry.json'),'utf8'));}
+    catch(error) {errors.push(profile+': '+error.message);continue;}
+    const schemaErrors=validateSchema(registry,schema);
+    errors.push(...schemaErrors.map(error=>profile+' '+error));
+    if(schemaErrors.length) continue;
+    const resolve=relative=>{
+      try {return catalogFile(paths,relative,profile);} catch {return null;}
+    };
+    const ids=new Set(),entries=['components','compositions','patterns','visualizations','screens','icons'].flatMap(key=>registry[key]);
+    const screenFiles=new Set();
+    for(const entry of entries) {
+      if(ids.has(entry.id)) errors.push(profile+': duplicate entry ID '+entry.id);
+      ids.add(entry.id);
+      for(const field of ['preview','css','module']) if(entry[field]) {
+        const file=resolve(entry[field]);
+        if(!file) errors.push(profile+': missing/unsafe '+field+' '+entry[field]);
+        else {inspected.add(file);if(field==='preview')screenFiles.add(file);}
       }
     }
-    for(const file of [...registry.tokenFiles,...registry.themes.map(t=>t.file)])if(!fs.existsSync(path.join(base,file)))errors.push(profile+': missing token/theme file '+file);
-    const css=files(base).filter(file=>file.endsWith('.css'));
-    const text=css.map(file=>fs.readFileSync(file,'utf8')).join('\n');
-    const definitions=new Set(Array.from(text.matchAll(/(--[\w-]+)\s*:/g),match=>match[1]));
-    for(const entry of entries)for(const spacing of entry.anatomy?.spacing||[])if(!definitions.has(spacing.token))errors.push(profile+': missing anatomy token '+spacing.token);
-    for(const file of css){
-      const source=fs.readFileSync(file,'utf8');
-      for(const match of source.matchAll(/@import\s+(?:url\()?['"]([^'"]+)/g))if(!fs.existsSync(path.resolve(path.dirname(file),match[1])))errors.push('Missing CSS import '+path.relative(root,file)+' → '+match[1]);
+    for(const file of [...registry.tokenFiles,...registry.themes.map(t=>t.file)]) {
+      // Foundation and theme files must be app-owned, not borrowed from another mount.
+      const target=resolve(file);
+      if(!target || !target.startsWith(fs.realpathSync(base)+path.sep)) errors.push(profile+': missing/unsafe token/theme file '+file);
     }
-    const screens=files(profile==='demo'?path.join(base,'screens'):path.join(root,config.project,'screens')).filter(file=>file.endsWith('.html'));
-    const callsites=screens.map(file=>fs.readFileSync(file,'utf8')).join('\n');
+    const owned=files(base);owned.forEach(file=>inspected.add(file));
+    const css=owned.filter(file=>file.endsWith('.css'));
+    const uncommented=file=>fs.readFileSync(file,'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+    const text=css.map(uncommented).join('\n');
+    const definitions=new Set(Array.from(text.matchAll(/(--[\w-]+)\s*:/g),match=>match[1]));
+    for(const entry of entries) for(const spacing of entry.anatomy?.spacing||[]) {
+      if(!definitions.has(spacing.token))errors.push(profile+': missing anatomy token '+spacing.token);
+    }
+    for(const file of css) {
+      for(const match of uncommented(file).matchAll(/@import\s+(?:url\()?['"]([^'"]+)/g)) {
+        const relative=path.relative(base,file).split(path.sep).join('/');
+        const url=new URL(match[1],new URL(relative,'http://studio.local/'+(profile==='demo'?'demo/':'')+'design-system/'));
+        const imported=resolve(path.posix.relative('/'+(profile==='demo'?'demo/':'')+'design-system',url.pathname));
+        if(url.origin!=='http://studio.local'||!imported) errors.push('Missing/unsafe CSS import '+file+' → '+match[1]);
+      }
+    }
+    if(profile==='demo')files(path.join(base,'screens')).filter(file=>file.endsWith('.html')).forEach(file=>screenFiles.add(file));
+    else if(paths.screens)files(paths.screens).filter(file=>file.endsWith('.html')).forEach(file=>screenFiles.add(file));
+    const callsites=[...screenFiles].map(file=>fs.readFileSync(file,'utf8')).join('\n');
     counts[profile]={components:registry.components.length,compositions:registry.compositions.length,patterns:registry.patterns.length,screens:registry.screens.length,registeredClassesSeen:registry.components.filter(entry=>new RegExp('\\b'+entry.class+'\\b').test(callsites)).length};
     if(registry.components.length)warnings.push(profile+': class counts are static heuristics; dynamic renderers and computed cascade require browser verification.');
   }
-  for(const file of [...files(path.join(root,'framework')),...files(path.join(root,config.project))]){
-    try{
-      if(file.endsWith('.js'))new vm.Script(fs.readFileSync(file,'utf8'),{filename:file});
-      if(file.endsWith('.html'))for(const match of fs.readFileSync(file,'utf8').matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))new vm.Script(match[1],{filename:file});
-    }catch(error){errors.push(error.message);}
+  for(const file of inspected) {
+    try {
+      const source=fs.readFileSync(file,'utf8');
+      if(file.endsWith('.mjs') || (file.endsWith('.js') && /^\s*(?:import|export)\s/m.test(source))) {
+        warnings.push('Use the app module/build checker for '+file);
+      } else if(file.endsWith('.js'))new vm.Script(source,{filename:file});
+      if(file.endsWith('.html')) for(const match of source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
+        if(/\btype\s*=\s*['"](?:module|application\/(?:ld\+)?json)['"]/i.test(match[1]))continue;
+        new vm.Script(match[2],{filename:file});
+      }
+    } catch(error) {errors.push(error.message);}
   }
   return {errors,warnings,counts};
 }
 module.exports={validate,validateSchema,files};
-if(require.main===module){const result=validate();console.log(JSON.stringify(result,null,2));if(result.errors.length)process.exitCode=1;}
+if(require.main===module) {
+  const i=process.argv.indexOf('--config');
+  const result=validate(ROOT,i<0?undefined:process.argv[i+1]);
+  console.log(JSON.stringify(result,null,2));if(result.errors.length)process.exitCode=1;
+}

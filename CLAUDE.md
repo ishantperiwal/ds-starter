@@ -1,4 +1,4 @@
 # Design System Studio
 
-Follow [AGENTS.md](AGENTS.md) for the extraction, maintenance and update workflow.
-Start with [README.md](README.md) and [project/BRIEF.md](project/BRIEF.md).
+Read AGENTS.md and README.md. For attached-app work, follow the current
+framework/AGENT-WORKFLOW.md and the app’s own configuration/instructions.

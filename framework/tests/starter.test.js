@@ -59,6 +59,8 @@ test('moodboard stores are isolated, persistent, undoable and reject cross-origi
     for(const name of ['first','second']){
       const root=path.join(temp,name);fs.mkdirSync(root);
       fs.copyFileSync(path.join(ROOT,'studio.config.json'),path.join(root,'studio.config.json'));
+      fs.mkdirSync(path.join(root,'framework'));
+      fs.copyFileSync(path.join(ROOT,'framework/version.json'),path.join(root,'framework/version.json'));
       const server=createServer({root});servers.push(server);
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       urls.push('http://127.0.0.1:'+server.address().port+'/api/board');

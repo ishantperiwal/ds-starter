@@ -1,12 +1,12 @@
 # Verification and release checklist
 
-## Automated checks completed for 0.1.0
+## Automated checks for 0.2.0
 
 Run from the starter directory:
 
 ```sh
 node framework/validate.js
-node --test framework/tests/starter.test.js
+npm test
 node framework/release.js --check
 ```
 
@@ -24,6 +24,13 @@ The suite checks:
   refusal of edited managed files and corrupted release contents.
 - Independent moodboard stores in two studio instances, persistence and undo,
   with cross-origin and non-JSON writes rejected.
+- Repeat-safe external initialization, paths with spaces, no relocated screens or
+  overwritten app instructions, collisions and symlink-overlap rejection.
+- Two attached apps with independent catalogs and board stores; existing nested
+  screens and root-relative assets, private-data/hidden-file protection.
+- Checked Git update against a disposable local upstream: instructions and UI
+  refresh while app files (including board data) stay byte-for-byte identical.
+  Dry run/no-op, dirty checkout and incompatible-contract refusal are tested.
 
 The HTTP checks need permission to bind a loopback port. Update tests use generated
 temporary directories and remove only their own fixtures. They never update this
@@ -66,6 +73,10 @@ tests use lightweight DOM stubs and do not substitute for these checks.
     framework/. Do not use private reference images for tool-development fixtures.
 12. In a disposable consumer copy, apply a reviewed release. Check your project
     previews, board persistence and rollback before rolling out to real projects.
+13. Initialize against an existing app with screens in different folders, then start
+    with its --config path. Verify the app-owned location notice, its empty catalog,
+    registered screen previews and agent instruction link. Repeat for another app
+    on a different port; references and tokens must remain isolated.
 
 ## Known boundaries
 

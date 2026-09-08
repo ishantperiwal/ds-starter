@@ -35,8 +35,11 @@ Example (create the referenced files before registering it):
 }
 ```
 
-Source URLs must be relative and remain within project/ (or the sandbox root).
-`../screens/example.html` is valid for a project registry in design-system/.
+Source URLs are relative to the served registry URL, not the disk directory.
+For new attachments, `specimens/note.html` maps to the app content folder and
+`../app/any/folder/screen.html` maps to the existing appRoot without copying files.
+Token/theme files remain inside the content folder. Cross-profile URLs are rejected.
+Legacy `../screens/example.html` continues to work only with legacy configurations.
 Static fixture HTML should import the real component CSS/renderer. Include the
 inspector script for the Inspect example link to work. Theme-aware fixtures read
 their `theme` query parameter and select an approved theme from the catalog;
@@ -64,6 +67,24 @@ separate frames for direction comparisons so styles cannot bleed between themes.
 The anatomy module exposes `wbAnatomy.mount(host, entry, bodySelector)`; hosts have
 `.wb-spec-head` and a specimen body. See framework/examples/screens/specimen.js.
 No saved app actions are required to inspect specimens.
+
+## App attachment and software ownership
+
+New initialization creates an app-owned studio.config.json with configVersion: 1,
+contractVersion: 1, content, appRoot, studioRoot, name, defaultProfile and port.
+All filesystem paths are relative to that configuration file. content and the
+studio checkout must be disjoint, including after resolving symlinked ancestors.
+appRoot is an existing directory and is not relocated. The studio may be nested in
+appRoot, but app content must not contain the studio or the existing screen root.
+
+The server, validator and checked updater use this same attachment contract.
+Startup refuses a different linked studio or incompatible registry/config version.
+The checked Git updater refuses incompatible upstream content contracts before
+changing installed files. Schema migration is a separate, explicitly approved task.
+
+Shared agent workflow is framework/AGENT-WORKFLOW.md. App AGENTS.md is only a loader
+plus app-specific guidance. Do not copy the shared workflow into app content or
+synchronize upstream templates over initialized content on updates.
 
 ## Current inspector boundaries
 
