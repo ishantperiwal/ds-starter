@@ -1,61 +1,123 @@
 (() => {
   'use strict';
-  const tabs=[['overview','Overview','A place to define your design language, inspect real screens, and evolve the tools that keep them connected.'],['foundations','Foundations','Scales, semantic roles and component controls, read directly from the token source.'],['icons','Icons','Discover symbols through the project’s icon provider.'],['components','Components','Real implementations, anatomy, optional parts and states.'],['patterns','Patterns','Contracts for how tasks occupy a screen.'],['visualizations','Data visualization','Chart language, reading order and renderer examples.'],['directions','Directions','The same examples rendered with different semantic themes.'],['moodboard','Moodboard','Collect references and capture the decisions they inform.']];
-  const $=id=>document.getElementById(id);
-  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let registry,profile,base,renderId=0;
-  const source=relative=>new URL(relative,new URL(base,location.origin)).href;
-  function safeURL(relative){const url=new URL(source(relative));if(url.origin!==location.origin)throw Error('Catalog URLs must be same-origin');return url;}
-  function previewURL(entry,theme,inspect=false){const url=safeURL(entry.preview);if(theme)url.searchParams.set('theme',theme);if(inspect)url.searchParams.set('ds','true');return url.href;}
-  const frame=(url,name,cls='preview')=>`<iframe class="${cls}" title="${esc(name)}" src="${esc(url)}" loading="lazy"></iframe>`;
-  function card(entry,theme){
-    const url=previewURL(entry,theme);
-    return `<article class="card"><div class="card-head"><div><h2>${esc(entry.name)}</h2>${entry.class?`<code>${esc(entry.class)}</code>`:''}</div><span class="tag">${esc(entry.category||'CONTRACT')}</span></div>${entry.usage?`<p>${esc(entry.usage)}</p>`:''}<div class="width-tools" role="group" aria-label="Preview width"><button data-width="100%">Fluid</button><button data-width="320px">320px</button></div>${frame(url,entry.name)}<div class="actions"><a href="${esc(previewURL(entry,theme,true))}" target="_blank" rel="noopener">Inspect example ↗</a>${entry.css?`<a href="${esc(source(entry.css))}" target="_blank" rel="noopener">CSS source</a>`:''}${entry.module?`<a href="${esc(source(entry.module))}" target="_blank" rel="noopener">Renderer</a>`:''}</div><details><summary>Contract &amp; anatomy</summary><pre>${esc(JSON.stringify(entry,null,2))}</pre></details></article>`;
+  const M=window.StudioModel,V=window.StudioViews,$=id=>document.getElementById(id);
+  const state={catalog:null,tokens:null,tokenError:'',base:'',theme:'',tab:'overview',profile:'demo'};
+  let config;
+  async function fetchData(url,format='json'){
+    const response=await fetch(url);
+    if(!response.ok)throw Error('Could not load '+url+' (HTTP '+response.status+')');
+    return response[format]();
   }
-  function empty(title){return `<div class="empty"><h2>${esc(title)}</h2><p>Point your agent at existing screens wherever they live. Follow the attached content folder’s AGENTS.md to extract and register this app’s tokens, components and previews. No screen copying or inbox is required.</p><p>Not attached yet? Run <code>node studio.js init --app /path/to/app</code>, then start with the generated <code>--config</code> path.</p><a href="?profile=demo#overview">Explore the populated sandbox ↗</a></div>`;}
-  async function render(){
-    if(!registry)return;
-    const id=++renderId,tab=tabs.find(t=>t[0]===location.hash.slice(1))||tabs[0];
-    $('title').textContent=tab[1];$('intro').textContent=tab[2];$('eyebrow').textContent=(profile==='demo'?'TOOL DEVELOPMENT':'PROJECT DESIGN SYSTEM')+' / '+tab[1].toUpperCase();
-    document.querySelector('nav').innerHTML=tabs.map((t,i)=>`<a href="#${t[0]}" ${tab===t?'aria-current="page"':''}><span class="nav-num">0${i+1}</span>${t[1]}</a>`).join('');
-    let html='';
-    if(tab[0]==='overview'){
-      html=`<div class="notice">${profile==='demo'?'Sandbox data is fictional. This catalog is for developing the framework; it never populates your project automatically.':'Project files belong to you. Framework releases update the tooling independently.'}</div><div class="metric-row">${[['components','Components'],['compositions','Compositions'],['patterns','Patterns'],['screens','Screens']].map(([key,label])=>`<div class="metric"><strong>${registry[key].length}</strong><span>${label}</span></div>`).join('')}</div><div class="grid">${registry.screens.map(entry=>card(entry)).join('')||empty('Ready for your first screens')}</div>`;
-      if(registry.knownGaps?.length)html+=`<article class="card section-space"><h2>Known gaps</h2><ul>${registry.knownGaps.map(g=>`<li>${esc(g)}</li>`).join('')}</ul></article>`;
-    }else if(tab[0]==='foundations'){
-      const files=await Promise.all(registry.tokenFiles.map(async file=>({file,text:await (await fetch(source(file))).text()})));
-      if(id!==renderId)return;
-      const rows=files.flatMap(({file,text})=>Array.from(text.replace(/\/\*[\s\S]*?\*\//g,'').matchAll(/(--[\w-]+)\s*:\s*([^;{}]+);/g),m=>({name:m[1],value:m[2],file})));
-      html=rows.length?`<input type="search" aria-label="Filter tokens" placeholder="Find a token, value or role…" id="token-filter"><div class="card"><table class="token-table"><thead><tr><th>Token</th><th>Definition</th><th>Source</th></tr></thead><tbody>${rows.map(r=>`<tr><td><code>${esc(r.name)}</code></td><td>${esc(r.value)}</td><td><a href="${esc(source(r.file))}">${esc(r.file)}</a></td></tr>`).join('')}</tbody></table></div>`:empty('No foundations extracted yet');
-    }else if(tab[0]==='moodboard'){
-      html='<div class="notice">References belong to the attached app’s content folder (or the standalone sandbox). Studio updates do not replace them. Profiles in this session share the board.</div>'+frame('/moodboard/','Reference moodboard','full-frame');
-    }else if(tab[0]==='directions'){
-      const entry=registry.screens[0]||registry.components[0];
-      html=entry&&registry.themes.length?`<div class="grid">${registry.themes.map(theme=>`<article class="card"><h2>${esc(theme.name)}</h2><p>${esc(theme.description||'Semantic overrides')}</p>${frame(previewURL(entry,theme.id),theme.name,'preview tall')}<a class="source-link" href="${esc(source(theme.file))}">Theme source</a></article>`).join('')}</div>`:empty('No theme comparisons registered');
-    }else{
-      const entries=tab[0]==='components'?[...registry.compositions,...registry.components]:registry[tab[0]]||[];
-      html=entries.length?`<div class="grid">${entries.map(entry=>card(entry)).join('')}</div>`:empty('No '+tab[1].toLowerCase()+' registered yet');
+  function sidebar(){
+    $('navigation').innerHTML=V.navigation(state.catalog,state.tokens,state.tab);
+    $('catalog-summary').innerHTML='<p><b>'+state.catalog.components.length+'</b> components · <b>'+state.catalog.patterns.length+'</b> patterns</p><p><b>'+
+      state.catalog.compositions.length+'</b> compositions · <b>'+state.catalog.icons.length+'</b> icon providers</p>';
+  }
+  function paintSamples(){
+    document.querySelectorAll('[data-sample-value]').forEach(sample=>{
+      const {sampleValue:value,sampleName:name,sampleFamily:family}=sample.dataset;
+      const child=sample.firstElementChild;
+      if(CSS.supports('color',value)){
+        sample.style.backgroundColor=value;child.textContent='';sample.title='Root literal: '+value;
+      }else if(family==='Spacing' && /^-?\d+(\.\d+)?(px|rem|em)$/.test(value)){
+        const px=parseFloat(value)*(value.endsWith('px')?1:16);
+        child.textContent='';child.style.cssText='display:block;height:6px;background:var(--studio-accent)';
+        child.style.width=Math.max(0,Math.min(46,px))+'px';
+        sample.title=value+' · scale sample capped to fit';
+      }else if(/radius/.test(name)&&CSS.supports('border-radius',value)){
+        sample.style.borderRadius=value;sample.style.backgroundColor='var(--studio-hover)';child.textContent='Aa';
+      }else if(/font|text|weight/.test(name)){
+        child.textContent='Aa';
+        if(/weight/.test(name)&&CSS.supports('font-weight',value))child.style.fontWeight=value;
+        else if(/^(\d+(\.\d+)?)(px|rem|em)$/.test(value)){
+          const px=parseFloat(value)*(value.endsWith('px')?1:16);child.style.fontSize=Math.min(px,32)+'px';
+        }else if(/font/.test(name)&&CSS.supports('font-family',value))child.style.fontFamily=value;
+      }
+    });
+  }
+  function bind(){
+    const filter=$('catalog-filter');
+    if(filter){
+      filter.addEventListener('input',()=>{
+        const query=filter.value.toLowerCase().trim();
+        let visible=0,total=0;
+        document.querySelectorAll('.wb-filterable').forEach(item=>{
+          item.hidden=!item.dataset.search.includes(query);total++;if(!item.hidden)visible++;
+        });
+        document.querySelectorAll('.wb-token-group,.wb-component-group').forEach(group=>{
+          group.hidden=![...group.querySelectorAll('.wb-filterable')].some(item=>!item.hidden);
+        });
+        $('filter-status').textContent=visible+' of '+total+' shown';
+      });
     }
-    if(id!==renderId)return;$('content').innerHTML=html;
-    $('token-filter')?.addEventListener('input',event=>document.querySelectorAll('.token-table tbody tr').forEach(row=>row.hidden=!row.textContent.toLowerCase().includes(event.target.value.toLowerCase())));
-    document.querySelectorAll('[data-width]').forEach(button=>button.onclick=()=>{const iframe=button.closest('.card').querySelector('iframe');iframe.style.width=button.dataset.width;iframe.style.maxWidth='100%';});
+    document.querySelectorAll('[data-width]').forEach(button=>button.addEventListener('click',()=>{
+      const tools=button.closest('.wb-width-tools'),parent=tools.parentElement;
+      parent.querySelector('iframe').style.width=button.dataset.width;
+      tools.querySelectorAll('button').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+    }));
+    paintSamples();
+  }
+  function render(){
+    if(!state.catalog)return;
+    const current=M.route(location.hash);
+    state.tab=V.tabs.some(tab=>tab[0]===current.tab)?current.tab:'overview';
+    document.body.dataset.view=state.tab;
+    const result=V.render(state);
+    $('title').textContent=result.title;$('intro').textContent=result.intro;
+    $('content').innerHTML=result.html;$('content').setAttribute('aria-busy','false');
+    $('theme').disabled=!state.catalog.themes.length||['foundations','directions','moodboard'].includes(state.tab);
+    sidebar();bind();
+    if(current.entry){
+      const entry=document.getElementById('entry-'+current.entry);
+      entry?.scrollIntoView({block:'start'});
+    }
+  }
+  function showError(error){
+    $('content').innerHTML='<div class="wb-error" role="alert">'+V.esc(error.message)+'</div>';
+    $('content').setAttribute('aria-busy','false');
   }
   async function load(){
     try{
-      const config=await (await fetch('/api/studio')).json();
-      profile=new URLSearchParams(location.search).get('profile')||config.defaultProfile;
-      if(!['demo','project'].includes(profile))profile='project';
-      base=profile==='demo'?'/demo/design-system/':'/design-system/';
-      registry=await (await fetch(source('registry.json'))).json();
-      $('profile').value=profile;$('catalog-name').textContent=registry.name;$('version').textContent='Framework '+config.version.version;
+      config=await fetchData('/api/studio');
+      const params=new URLSearchParams(location.search);
+      state.profile=params.get('profile')||config.defaultProfile;
+      if(!['demo','project'].includes(state.profile))state.profile='project';
+      state.base=new URL(state.profile==='demo'?'/demo/design-system/':'/design-system/',location.origin).href;
+      state.catalog=M.normalize(await fetchData(new URL('registry.json',state.base)));
+      state.theme=state.catalog.themes.some(theme=>theme.id===params.get('theme'))?params.get('theme'):'';
+      $('brand-name').textContent=state.profile==='demo'?'Studio':config.name;
+      $('catalog-name').textContent=state.catalog.name;
+      document.title=state.catalog.name+' · Design system';
+      $('version').textContent='v'+config.version.version;
+      $('profile').value=state.profile;
+      $('theme').innerHTML='<option value="">Base</option>'+state.catalog.themes.map(theme=>'<option value="'+V.esc(theme.id)+'">'+V.esc(theme.name)+'</option>').join('');
+      $('theme').value=state.theme;
+      $('profile').addEventListener('change',()=>{
+        const url=new URL(location.href);url.searchParams.set('profile',$('profile').value);
+        url.searchParams.delete('theme');url.hash='overview';location.href=url.href;
+      });
+      $('theme').addEventListener('change',()=>{
+        state.theme=$('theme').value;
+        const url=new URL(location.href);if(state.theme)url.searchParams.set('theme',state.theme);else url.searchParams.delete('theme');
+        history.replaceState(null,'',url);render();
+      });
       if(config.attachment){
-        const notice=document.createElement('p');notice.className='notice';
-        notice.textContent='App-owned content: '+config.attachment.content+' · Screens stay in '+config.attachment.appRoot;
-        document.querySelector('.page-head').append(notice);
+        $('attachment-info').hidden=false;
+        $('attachment-text').textContent='App content: '+config.attachment.content+' · Existing screens: '+config.attachment.appRoot;
       }
-      $('profile').onchange=()=>{const url=new URL(location.href);url.searchParams.set('profile',$('profile').value);location.href=url.href;};
-      await render();
-    }catch(error){$('content').innerHTML='<div class="error">Could not load the catalog: '+esc(error.message)+'</div>';}
+      render();
+      try {
+        const sources=await Promise.all(state.catalog.tokenFiles.map(async file=>({file,text:await fetchData(new URL(file,state.base),'text')})));
+        state.tokens=sources.flatMap(({file,text})=>M.parseTokens(text,file));
+      }catch(error){state.tokenError=error.message;}
+      // Do not destroy live previews/forms when delayed token indexing completes.
+      if(state.tab==='foundations')render();
+      else {
+        sidebar();
+        if($('foundation-count'))$('foundation-count').textContent=M.counts(state.catalog,state.tokens).foundations??'—';
+      }
+    }catch(error){showError(error);}
   }
-  addEventListener('hashchange',()=>render().catch(error=>{$('content').textContent=error.message;}));load();
+  addEventListener('hashchange',()=>{try{render();}catch(error){showError(error);}});
+  load();
 })();

@@ -86,6 +86,23 @@ Shared agent workflow is framework/AGENT-WORKFLOW.md. App AGENTS.md is only a lo
 plus app-specific guidance. Do not copy the shared workflow into app content or
 synchronize upstream templates over initialized content on updates.
 
+## Shared workbench presentation
+
+framework/workbench/presentation.css owns the studio’s visual tokens; studio.css
+owns its layout and display rules. Do not import app token/component/theme sheets
+into the shell. Registered preview URLs render actual app implementations in
+separate frames. Preview-theme controls and Directions affect those frames only.
+
+The overview ledger describes registered blocks, not measured adoption. Current
+counts use the app’s registry; icon tallies count providers, not inferred glyphs.
+Missing adoption measurements are explicit. No Titan-specific audit totals appear.
+Component and pattern contracts are rendered from existing v1 metadata; this UI
+update does not add a schema requirement or rewrite app-owned registry files.
+
+The foundation index records declared values, source and selector/conditional
+scope. Visual samples resolve simple unconditional :root/html aliases only.
+Conditional/local declarations and alias cycles are not guessed as computed values.
+
 ## Current inspector boundaries
 
 Spacing recognition currently expects token CSS under a URL containing

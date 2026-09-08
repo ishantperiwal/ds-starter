@@ -1,6 +1,38 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Design System Studio</title><link rel="stylesheet" href="/framework/workbench/studio.css"><script defer src="/framework/workbench/studio.js"></script></head>
-<body>
-<aside class="rail"><a class="brand" href="#overview"><span class="brand-mark">D</span>Design System<br><small>STUDIO / 01</small></a><label class="profile-label" for="profile">Working catalog</label><select id="profile"><option value="demo">Inspector sandbox</option><option value="project">Your project</option></select><nav aria-label="Workbench"></nav><div class="rail-footer"><span class="live-dot"></span> Local development<br><small id="version"></small></div></aside>
-<main><header class="topbar"><span id="catalog-name">Loading catalog…</span><a id="sandbox-link" href="/demo/screens/record.html?ds=true" target="_blank" rel="noopener">Open inspector playground ↗</a></header><div class="page-head"><p class="eyebrow" id="eyebrow">WORKBENCH</p><h1 id="title">Overview</h1><p id="intro"></p></div><div id="content" aria-live="polite"></div></main>
-</body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Design System Studio</title>
+  <link rel="stylesheet" href="/framework/workbench/presentation.css">
+  <link rel="stylesheet" href="/framework/workbench/studio.css">
+  <script defer src="/framework/workbench/model.js"></script>
+  <script defer src="/framework/workbench/views.js"></script>
+  <script defer src="/framework/workbench/studio.js"></script>
+</head>
+<body data-view="overview">
+  <a class="wb-skip" href="#main">Skip to content</a>
+  <aside class="wb-rail">
+    <a class="wb-mark" href="#overview"><b id="brand-name">Studio</b><span>Design system</span></a>
+    <nav id="navigation" class="wb-nav" aria-label="Design system sections"></nav>
+    <footer class="wb-rail-foot">
+      <div id="catalog-summary"></div>
+      <p id="version"></p>
+      <label for="profile">Working catalog</label>
+      <select id="profile"><option value="demo">Tool sandbox</option><option value="project">This app</option></select>
+      <a class="wb-playground-link" href="/demo/screens/record.html?ds=true" target="_blank" rel="noopener">Inspector playground ↗</a>
+    </footer>
+  </aside>
+  <main class="wb-main" id="main" tabindex="-1">
+    <header class="wb-top">
+      <span id="catalog-name" class="wb-crumb">Loading catalog…</span>
+      <div class="wb-controls"><label for="theme">Preview theme</label><select id="theme" disabled><option value="">Base</option></select></div>
+    </header>
+    <div class="wb-view">
+      <header class="wb-lede"><h1 id="title">Overview</h1><p id="intro"></p></header>
+      <div id="content" aria-busy="true"><p role="status">Loading the design system…</p></div>
+      <details class="wb-location" id="attachment-info" hidden><summary>App content &amp; shared workflow</summary><p id="attachment-text"></p><a href="/framework/AGENT-WORKFLOW.md" target="_blank" rel="noopener">Current shared instructions ↗</a></details>
+    </div>
+  </main>
+</body>
+</html>

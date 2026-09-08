@@ -1,6 +1,6 @@
 # Verification and release checklist
 
-## Automated checks for 0.2.0
+## Automated checks for 0.3.0
 
 Run from the starter directory:
 
@@ -31,14 +31,18 @@ The suite checks:
 - Checked Git update against a disposable local upstream: instructions and UI
   refresh while app files (including board data) stay byte-for-byte identical.
   Dry run/no-op, dirty checkout and incompatible-contract refusal are tested.
+- All eight shared presentation views with populated and empty catalogs, real
+  registry counts, explicit unknown adoption, component/pattern contracts and deep links.
+- Foundation declaration scopes, simple root aliases/cycles, theme isolation and
+  escaping of app-supplied labels. Shell CSS imports are studio-owned only.
 
 The HTTP checks need permission to bind a loopback port. Update tests use generated
 temporary directories and remove only their own fixtures. They never update this
 starter's installed framework or your app. Tests remain usable after your project
 catalog is populated; they compare the served catalog against its source.
 
-The live server was started on localhost:8020. Browser automation was unavailable
-in the creation session, so **visual layout, pointer/keyboard interactions, computed
+The local sandbox may use port 8030 when 8020 is occupied. Browser automation was
+unavailable for this presentation update, so **visual layout, pointer/keyboard interactions, computed
 CSS ownership and perceived performance have not been browser-verified**. Renderer
 tests use lightweight DOM stubs and do not substitute for these checks.
 
@@ -77,6 +81,10 @@ tests use lightweight DOM stubs and do not substitute for these checks.
     with its --config path. Verify the app-owned location notice, its empty catalog,
     registered screen previews and agent instruction link. Repeat for another app
     on a different port; references and tokens must remain isolated.
+14. Compare the shared presentation against the Titan workbench at desktop and
+    narrow widths: dark rail, ledger, foundations, component specimens and pattern
+    contracts. Check filtering, direct component links, preview width controls and
+    selected nav counts. Change preview themes; the studio shell must stay unchanged.
 
 ## Known boundaries
 

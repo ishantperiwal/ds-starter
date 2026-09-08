@@ -1,0 +1,30 @@
+/* Studio-owned visual language, derived from the Titan workbench.
+   Never import app tokens here. App styling is confined to preview frames. */
+:root {
+  --studio-rail-width: 216px;
+  --studio-measure: 1080px;
+  --studio-rail: #1c1c1c;
+  --studio-rail-ink: #adadad;
+  --studio-rail-active: #333333;
+  --studio-page: #f5f5f9;
+  --studio-surface: #ffffff;
+  --studio-recessed: #fafafa;
+  --studio-hover: #f3f3f6;
+  --studio-line: #e6e6eb;
+  --studio-hairline: #f1f1f4;
+  --studio-ink: #1c1c1c;
+  --studio-text: #444444;
+  --studio-muted: #707070;
+  --studio-accent: #386dff;
+  --studio-success: #2caa60;
+  --studio-radius: 8px;
+  --studio-small-radius: 4px;
+  --studio-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --studio-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  --studio-space-xs: 4px;
+  --studio-space-sm: 8px;
+  --studio-space-md: 12px;
+  --studio-space-lg: 16px;
+  --studio-space-xl: 24px;
+  --studio-space-2xl: 32px;
+}

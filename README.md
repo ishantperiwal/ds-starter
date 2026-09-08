@@ -83,6 +83,17 @@ engine. Screens provide evidence; behavior, states and accessibility need valida
 The workbench chrome is isolated from app styles. Real specimens load their own
 app styles inside separate frames.
 
+The shared presentation follows the Titan workbench: compact dark sidebar,
+centered workspace, ledger overview, grouped visual foundations, full-width
+component specimens and structured pattern contracts. Studio-only colors, type,
+spacing and layout are owned by framework/workbench/presentation.css and studio.css.
+App themes affect preview frames, never the sidebar or catalog layout.
+
+Counts come from the selected app registry and token sources. Registration is not
+adoption: the overview explicitly shows “Not measured” for product usage rather
+than reusing Titan’s percentages. Foundations show source declarations and scopes;
+their samples resolve only simple unconditional root aliases, not the full cascade.
+
 ## Update like software
 
 Stop the running studio. From the app folder:

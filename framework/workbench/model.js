@@ -1,0 +1,99 @@
+/* Pure catalog/presentation helpers; shared by the browser and regression tests. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.StudioModel = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+  const collections = ['components','compositions','patterns','visualizations','icons','screens','themes'];
+  function normalize(input) {
+    if (!input || input.contractVersion !== 1) throw Error('Unsupported catalog contract');
+    const catalog = {...input};
+    for (const key of [...collections,'tokenFiles']) {
+      if (!Array.isArray(input[key])) throw Error('Catalog needs an array: ' + key);
+      catalog[key] = input[key];
+    }
+    return catalog;
+  }
+  const blocks = catalog => [...catalog.components,...catalog.compositions];
+  function counts(catalog, tokens) {
+    return {
+      overview: blocks(catalog).length,
+      foundations: tokens === null ? null : new Set(tokens.map(token=>token.name)).size,
+      components: blocks(catalog).length,
+      patterns: catalog.patterns.length,
+      visualizations: catalog.visualizations.length,
+      icons: catalog.icons.length, // providers, not an invented glyph total
+      directions: catalog.themes.length,
+      moodboard: null
+    };
+  }
+  // Index declared CSS values with their scope. This is not computed cascade analysis.
+  function parseTokens(css, file) {
+    const rows=[], stack=[];
+    let segment='', quote='', escaped=false, comment=false, parens=0;
+    const flush=()=>{
+      const match=segment.trim().match(/^(--[\w-]+)\s*:\s*([\s\S]+)$/);
+      if(match && stack.length) rows.push({
+        name:match[1], value:match[2].trim(), file,
+        scope:stack.join(' / '),
+        isRoot:stack.length===1 && [':root','html'].includes(stack[0])
+      });
+      segment='';
+    };
+    for(let i=0;i<css.length;i++) {
+      const c=css[i],next=css[i+1];
+      if(comment){if(c==='*'&&next==='/'){comment=false;i++;}continue;}
+      if(quote){segment+=c;if(escaped)escaped=false;else if(c==='\\')escaped=true;else if(c===quote)quote='';continue;}
+      if(c==='/'&&next==='*'){comment=true;i++;continue;}
+      if(c==='"'||c==="'"){quote=c;segment+=c;continue;}
+      if(c==='(')parens++;if(c===')')parens--;
+      if(!parens && c==='{'){stack.push(segment.trim());segment='';}
+      else if(!parens && c==='}'){flush();stack.pop();}
+      else if(!parens && c===';'){flush();}
+      else segment+=c;
+    }
+    return rows;
+  }
+  function resolveLiteral(row, rows, seen=new Set()) {
+    if(!row.isRoot || seen.has(row.name) || /!important/.test(row.value))return null;
+    seen=new Set(seen);seen.add(row.name);
+    let unresolved=false;
+    const result=row.value.replace(/var\(\s*(--[\w-]+)\s*\)/g,(_,name)=>{
+      const candidates=rows.filter(token=>token.isRoot&&token.name===name);
+      const value=candidates.length ? resolveLiteral(candidates[candidates.length-1],rows,seen) : null;
+      if(value===null){unresolved=true;return '';}return value;
+    });
+    return unresolved || /var\(/.test(result) ? null : result;
+  }
+  function family(row) {
+    const name=row.name;
+    if(/color|surface|accent|text-(?:primary|secondary|muted|heading|disabled|inverse)|border-(?:subtle|default|focus)|gray|blue|green|red|yellow|purple|pink|orange|white|black/.test(name))return 'Color';
+    if(/space|gap|pad|inset|margin/.test(name))return 'Spacing';
+    if(/font|text|weight|leading|tracking|line-height/.test(name))return 'Typography';
+    if(/radius|shadow|elevation/.test(name))return 'Shape & elevation';
+    if(/dur-|duration|ease|motion|transition/.test(name))return 'Motion';
+    return 'Component controls';
+  }
+  function groups(entries, key) {
+    const groups=new Map();
+    for(const entry of entries){const name=key(entry);if(!groups.has(name))groups.set(name,[]);groups.get(name).push(entry);}
+    return [...groups];
+  }
+  function route(hash) {
+    const [tab,entry]=hash.replace(/^#/,'').split('/');
+    const aliases={dataviz:'visualizations','data-viz':'visualizations',mood:'moodboard'};
+    let id;
+    try{id=entry?decodeURIComponent(entry):null;}catch{id=null;}
+    return {tab:aliases[tab]||tab||'overview',entry:id};
+  }
+  function previewURL(entry, base, theme='', inspect=false) {
+    const url=new URL(entry.preview,base);
+    if(url.origin!==new URL(base).origin)throw Error('Catalog previews must be same-origin');
+    if(!['http:','https:'].includes(url.protocol))throw Error('Invalid preview URL');
+    if(theme)url.searchParams.set('theme',theme);
+    if(inspect)url.searchParams.set('ds','true');
+    return url.href;
+  }
+  return {normalize,blocks,counts,parseTokens,resolveLiteral,family,groups,route,previewURL};
+});

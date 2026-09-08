@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 — consistent Titan-style workbench presentation
+
+- Restore the compact dark sidebar, centered workspace and ledger-style overview.
+- Keep studio visual tokens/layout upstream-owned, independent of app themes.
+- Display foundations with visual samples, source/scope labels and filtering.
+- Use full-width component specimens with deep links, width controls and readable anatomy.
+- Render patterns with live examples, usage, structure and behavior requirements.
+- Retain live icon providers, chart previews, direction comparisons and app-owned boards.
+- Derive counts from each catalog; show missing adoption metrics as Not measured.
+- Add presentation/data-isolation tests; preserve catalog contract v1 and app content.
+
 ## 0.2.0 — plug-in studio and app-owned content
 
 - Initialize against existing apps without an inbox, screen copying or relocation.

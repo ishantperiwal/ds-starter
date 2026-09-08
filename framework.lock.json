@@ -1,9 +1,9 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "contractVersion": 1,
   "files": {
     "AGENT-WORKFLOW.md": "f645b87801a295e728b49bc333ddfcba7f896338ffbe1d2513f2f0c41b661eae",
-    "CONTRACTS.md": "4b17e023919b4860f2235424c5dd09e12253aab10b70ffd3aa7e51254a4199b4",
+    "CONTRACTS.md": "6f5a855181ab351a78a91299e0b3c56c2d2b958f49ff360562be805f1421eadf",
     "anatomy.css": "f6b481941daa719039b31ccd02f6b9afa5135de23c6cf845fd99348e555bf7b8",
     "anatomy.js": "86f2ae185b2d268533204881dbfe557bc59bb8e12c14fb96497b860760abb680",
     "catalog.schema.json": "db35db0725f0b4b069efd79c8c3c8ddfda4b7cfde0bb9ffd389a2803abc00d4a",
@@ -66,12 +66,16 @@
     "server.js": "5e06981d0dc69bb1bf909c4f85ef4cabe30cbae8913d5d946b179e34b711773e",
     "spacing-inspector.js": "c8b8bb2c97e6cbc769b6565adb72d4888013f174514fb1f806ea62db2045bb21",
     "tests/plugin.test.js": "f2a901b39e9c44b3fe88a01a5b5886777ec75265400d5f91bbc621e0b17d07cb",
+    "tests/presentation.test.js": "c2f8ceee2bf502aa4d733a72ab62cb2a3fe5200368d777cb58d83f024c995dd8",
     "tests/starter.test.js": "3a7c1b7543d26b794496dd621e7484f675fbf5b2ee37034021766b06ffe0ca8e",
     "update.js": "703e9ea93c9c68e63285425fe4c0e603297d7966359b69b554a62e5cda2ec9c8",
     "validate.js": "7bfdaffe3e0410d0afc30ec49e31f373ca2a42c1dbfa4199e40c0b493df7fa50",
-    "version.json": "e16fd5ac9f25edf143314236083249bd85b8ff5a0623134eb23d1667e304ce92",
-    "workbench/index.html": "d9bddf9306fbcc47899388f82d809c35d9d16e78d7f7bbd749a7af13d9154231",
-    "workbench/studio.css": "82b0288951d61e041499a7202122e45961971a79b6320a58a8d79b4597c484d7",
-    "workbench/studio.js": "e83e521156b632e616182dfb1a638afb1dc08f8d169eb23e2daa4ce0e29bea92"
+    "version.json": "1fb50d67fc5fc4854313b581fe259fc7b1160fabb1657ad7bb5040ea8fa4227f",
+    "workbench/index.html": "51068c6eafcb01c57d052afe4c00ce2762207d50914a6e325329b43cfc90f57c",
+    "workbench/model.js": "e142a143865d37aceea8807a76a76e702de9aa6664f859da06eaae2258565342",
+    "workbench/presentation.css": "afdf4f9d81a41566872040ff8e42b61ece6233be8626530f3bac2a15746f9bda",
+    "workbench/studio.css": "668d5d56879fd9a3a090e66fb00f1a3ff4e0caf0a4314fec733058cc907db5fe",
+    "workbench/studio.js": "fc721f2b78cbbfdac548aa1a419ea19d943dbae7151bd09e7a2095c50924be0a",
+    "workbench/views.js": "5d561fc45a0fca193eb5f15f80189b0e75587b63256cc4e30c553890cea619dd"
   }
 }
