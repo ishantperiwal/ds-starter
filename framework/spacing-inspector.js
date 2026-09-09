@@ -197,7 +197,7 @@
       if(owning){scope.add(new Option(owning.property.startsWith('--')?'Shared token owner (all consumers)':'Same CSS rule and property','owner'));scope.value='owner';}
       const scale=document.createElement('select');scale.setAttribute('aria-label','New spacing value');
       scale.add(new Option('Choose spacing…',''));
-      for(const name of [...known].filter(t=>/^--space-/.test(t))){
+      for(const name of [...known].filter(t=>/^--(?:[a-z0-9]+-)*space-\d+(?:-\d+)?$/.test(t))){
         const value=getComputedStyle(item.element).getPropertyValue(name).trim();
         if(value)scale.add(new Option(value+' · '+name,'var('+name+')'));
       }
@@ -238,8 +238,12 @@
         const count=shared?(visibleOwners.get(owning.key)?.size||0):1;
         const previous=edits.get(key);
         const edit=previous||{style,property,before:style.cssText,original:style.getPropertyValue(property),context:contextText(item),scope:shared?'Shared owner; other pages using this source may also change':'This instance only',label:shared?property+' at '+target.selector+' · '+target.source:elementPath(item.element)+' · '+property};
-        edit.next=scale.value;edit.count=count;edits.set(key,edit);
-        style.setProperty(property,scale.value,shared?style.getPropertyPriority(property):'important');
+        // A primitive scale owner must remain a literal, not reference itself or
+        // another primitive that may alias back to it.
+        const primitive=shared&&/^--(?:[a-z0-9]+-)*space-\d+(?:-\d+)?$/.test(property);
+        const nextValue=primitive?(steps.find(step=>step.value===scale.value)?.px+'px'):scale.value;
+        edit.next=nextValue;edit.count=count;edits.set(key,edit);
+        style.setProperty(property,nextValue,shared?style.getPropertyPriority(property):'important');
         updatePending();copyChanges.textContent='Copy changes prompt';
         current=parseFloat(getComputedStyle(item.element).getPropertyValue(item.prop))||0;
         status.textContent='Preview applied; refreshing highlights…';apply.disabled=true;busy=true;syncControls();
@@ -465,11 +469,14 @@
       if(classes.some(name=>/loading/.test(name)))state.push('loading class');
       const local=[],shared=new Set();
       const matched=rules.filter(rule=>{try{return el.matches(rule.selector);}catch{return false;}});
-      const typographyProps=['font-family','font-size','font-weight','line-height','letter-spacing','color'];
-      const typography=typographyProps.map(prop=>{
-        const result=trace(el,prop,cs);
-        return {prop,resolved:cs.getPropertyValue(prop),declaration:result.value,tokens:result.tokens||[],selector:result.selector||'',source:result.source||'',kind:result.kind};
-      });
+      const textAudit=window.DSTypography?.create({rules,known,opaque,getStyle:getComputedStyle,specificity,split,compare,makeStyle:()=>document.createElement('span').style});
+      const textParts=textAudit?textAudit.parts(el):[];
+      for(const part of textParts){
+        const owner=componentChain(part.element)[0]?.entry;
+        const definition=owner?.anatomy?.parts?.find(def=>{try{return part.element.matches(def.selector);}catch{return false;}});
+        part.name=(owner&&owner!==entry?owner.name+' / ':'')+(definition?.name||part.name);
+      }
+      const typography=textParts.flatMap(part=>part.rows.map(row=>({...row,part:part.name,declaration:row.raw||row.reason||'',tokens:row.tokens||[]})));
       matched.filter(rule=>rule.source.includes('/design-system/')).forEach(rule=>Array.from(rule.style).forEach(prop=>shared.add(prop)));
       for(const rule of matched.filter(rule=>!rule.source.includes('/design-system/'))){
         for(const prop of rule.style){
@@ -486,24 +493,29 @@
       if(label)add('p','Label: '+label);
       add('p',path);add('p','Variant classes: '+(variants.join(' ')||'default / none'));
       add('p','State: '+(state.join(', ')||'default'));
-      add('p','Resolved: font '+cs.fontSize+'; radius '+cs.borderRadius+'; padding '+cs.padding+'; gap '+cs.gap);
-      const counts={token:0,hard:0,unknown:0};typography.forEach(item=>counts[item.kind]++);
-      const verdict=counts.token===typography.length?'Typography: fully tokenized':counts.token?'Typography: partly tokenized':counts.hard?'Typography: no DS tokens detected':'Typography: ownership unresolved';
-      add('div',verdict).className='type-verdict';
-      add('p',`${counts.token} tokenized · ${counts.hard} hardcoded · ${counts.unknown} unresolved`);
-      const table=add('table','');table.className='type-table';table.setAttribute('aria-label','Typography token status');
-      const head=document.createElement('thead');head.innerHTML='<tr><th>Property</th><th>Value</th><th>Status</th></tr>';table.append(head);
-      const body=document.createElement('tbody');table.append(body);
-      const names={'font-family':'Font','font-size':'Size','font-weight':'Weight','line-height':'Line height','letter-spacing':'Letter spacing',color:'Color'};
-      typography.forEach(item=>{
-        const row=document.createElement('tr');
-        for(const text of [names[item.prop],item.resolved]){const cell=document.createElement('td');cell.textContent=text;cell.title=text;row.append(cell);}
-        const cell=document.createElement('td'),badge=document.createElement('span');badge.className='type-status '+item.kind;
-        badge.textContent={token:'Tokenized',hard:'Hardcoded',unknown:'Unresolved'}[item.kind];cell.append(badge);row.append(cell);body.append(row);
-      });
-      if(counts.unknown)add('p','Unresolved includes inherited values. It does not mean hardcoded.');
+      add('p','Container geometry: radius '+cs.borderRadius+'; padding '+cs.padding+'; gap '+cs.gap);
+      add('div','Typography by text part').className='type-verdict';
+      add('p','Actual visible text and editable fields, including nested controls. This is source tracing, not a visual-quality score.');
+      if(!textAudit)add('p','Unable to trace: typography helper did not load.');
+      else if(!textParts.length)add('p','No visible text parts. Typography is not applicable to this selection.');
+      const names=window.DSTypography?.names||{};
+      for(const part of textParts){
+        add('h4',part.name);
+        const table=add('table','');table.className='type-table';table.setAttribute('aria-label','Typography: '+part.name);
+        const head=document.createElement('thead');head.innerHTML='<tr><th>Property</th><th>Value</th><th>Status</th></tr>';table.append(head);
+        const body=document.createElement('tbody');table.append(body);
+        for(const item of part.rows){
+          const row=document.createElement('tr');
+          for(const text of [names[item.prop],item.resolved]){const cell=document.createElement('td');cell.textContent=text;cell.title=text;row.append(cell);}
+          const cell=document.createElement('td'),badge=document.createElement('span');badge.className='type-status '+item.kind;
+          badge.textContent={token:'Tokenized',hard:'Literal',default:'Browser default',unknown:'Unable to trace'}[item.kind];
+          cell.append(badge);if(item.inherited){const note=document.createElement('small');note.textContent=' · inherited';cell.append(note);}
+          cell.title=[item.raw,item.tokens?.join(', '),item.selector,item.source,item.reason].filter(Boolean).join(' · ');
+          row.append(cell);body.append(row);
+        }
+      }
       const typeDetails=add('details','');const typeSummary=document.createElement('summary');typeSummary.textContent='Typography source details';typeDetails.append(typeSummary);
-      typography.forEach(item=>{const p= document.createElement('p');p.textContent=`${item.prop}: ${item.resolved} ← ${item.declaration}${item.tokens.length?' · token '+item.tokens.join(', '):''}${item.selector?' · '+item.selector+' · '+item.source:''}`;typeDetails.append(p);});
+      typography.forEach(item=>{const p=document.createElement('p');p.textContent=`${item.part} / ${item.prop}: ${item.resolved} ← ${item.declaration}${item.tokens.length?' · token '+item.tokens.join(', '):''}${item.selector?' · '+item.selector+' · '+item.source:''}${item.inherited?' · inherited':''}`;typeDetails.append(p);});
       const chain=componentChain(el).reverse();
       add('p','Containing components');
       chain.forEach(parent=>{const button=add('button',parent.entry.name);button.onclick=()=>inspectComponent(parent);});
@@ -522,7 +534,7 @@
         'Component: '+(entry?.name||'Page-owned UI'), 'Element: '+path,'Label: '+label,'Classes: '+classes.join(' '),
         'Hierarchy: '+chain.map(x=>x.entry.name).join(' → '),'Variants: '+(variants.join(' ')||'default'),
         'State: '+(state.join(', ')||'default'),'Source: '+[entry?.css,entry?.module].filter(Boolean).join(', '),
-        'Typography ownership:\n'+typography.map(item=>`${item.prop}: ${item.resolved} ← ${item.declaration}${item.tokens.length?' · token '+item.tokens.join(', '):''}${item.selector?' · '+item.selector+' · '+item.source:''}`).join('\n'),
+        'Typography ownership:\n'+typography.map(item=>`${item.part} / ${item.prop}: ${item.resolved} ← ${item.declaration}${item.tokens.length?' · token '+item.tokens.join(', '):''}${item.selector?' · '+item.selector+' · '+item.source:''}`).join('\n'),
         'Viewport: '+innerWidth+' × '+innerHeight,'Local override candidates:\n'+(local.join('\n')||'None detected'),
         'Evaluate shared component, variant or instance scope before changing. Candidate overrides are not verified cascade winners.'
       ].join('\n');
@@ -535,6 +547,22 @@
       root.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
       root.querySelectorAll('label').forEach(label=>label.hidden=mode==='components');
       if(mode==='components')loadCatalog();render();
+    });
+    const shortcuts = {s: 'spacing', c: 'components'};
+    for (const [key, mode] of Object.entries(shortcuts)) {
+      const button = root.querySelector(`[data-mode="${mode}"]`);
+      button.textContent = `${mode === 'spacing' ? 'Spacing' : 'Components'} · ${key.toUpperCase()}`;
+      button.setAttribute('aria-keyshortcuts', key.toUpperCase());
+      button.title = `Switch to ${mode} (${key.toUpperCase()})`;
+    }
+    document.addEventListener('keydown', event => {
+      if (event.defaultPrevented || event.repeat || event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.composedPath().some(node => node instanceof Element &&
+        (node.matches('input, textarea, select, [role="textbox"]') || node.isContentEditable))) return;
+      const mode = shortcuts[event.key.toLowerCase()];
+      if (!mode) return;
+      event.preventDefault();
+      root.querySelector(`[data-mode="${mode}"]`).click();
     });
     let lastComponentTarget=null;
     document.addEventListener('pointermove',event=>{
@@ -588,5 +616,10 @@
     document.addEventListener('transitionend',schedule,true);
     document.fonts?.ready.then(schedule);render();
   };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+  const helperURL=new URL('typography-trace.js',document.currentScript.src).href;
+  const launch=()=>{if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();};
+  if(window.DSTypography)launch();else {
+    const helper=document.createElement('script');helper.src=helperURL;helper.onload=launch;
+    helper.onerror=()=>{console.error('Typography tracing unavailable');launch();};document.head.append(helper);
+  }
 })();

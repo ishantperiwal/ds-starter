@@ -22,6 +22,46 @@ remain authoritative for app decisions; the archived Titan guidance is historica
   Existing content is never overwritten. Load the resulting configuration.
 - Use fictional data for examples. Do not submit real app operations during testing.
 
+## Required component audit
+
+Before adding or changing a component/composition, load the attached content's
+component checklist when provided by its AGENTS.md or USAGE.md. Audit every supported
+variant's internal padding, gaps and margins against actual CSS and rendered selectors;
+verify the inspector supports those properties and measurements. Include nested
+component spacing and use shared renderers, never specimen-only copies. Separate
+parent-owned spacing and layout geometry from component spacing. Check optional/long
+content, resizing, accessibility and callbacks; record evidence and remaining
+verification limits in the app's decisions/. Catalog validation alone is insufficient.
+Apply this on first extraction and every later component change, including changes
+made while building a new screen. Follow the app's established presentation rules.
+This audit is part of authorized implementation work, not a separate approval gate.
+
+## Interaction ownership — required before registration
+
+For every component, classify each interaction as owned behavior, an internal part,
+a nested registered component, or caller-owned behavior. Inspect actual imports and
+renderers; visual similarity is not proof of reuse. Record this in
+`anatomy.interactionOwnership` and list actual nested component IDs in `dependencies`.
+
+- Reuse registered child renderers. A parent may compose components without owning
+  their hover, focus, pressed or disabled state demonstrations.
+- Show only owner-level states in the parent's Interactions sidebar. For example,
+  a message may demonstrate expansion; its nested reply Button states belong in Button.
+- Keep nested controls usable in Live, but do not repeat whole parent specimens
+  merely to demonstrate a child's state. Reference that dependency in metadata.
+- Internal parts of a single control (split-button segments, tabs, integrated filter
+  triggers) may have independent targets when that control owns their behavior.
+- Distinguish variants from dependencies and from grouped layout examples. A group
+  does not introduce a new button state. Do not infer states from generic conventions.
+- Annotate interaction targets with `owner` equal to the owning catalog ID. If a
+  target belongs to another registered component, document it there instead.
+- If the parent owns no interactions but reuses registered children, show Live and
+  links to child interaction owners. If neither exists, show “No interactions defined.” Do not invent
+  states to populate the sidebar. Audit source behavior, not just available CSS.
+
+Apply this on extraction, composition, variant additions and every interaction edit.
+Record gaps honestly when child reuse or browser verification is incomplete.
+
 ## First extraction
 
 1. Inventory supplied screens: routes, files, assets, viewports, typography, color,

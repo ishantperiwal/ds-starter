@@ -20,6 +20,8 @@ function createServer(options = {}) {
         if (!board) board = require('./moodboard/server').createBoardHandler({store: paths.board});
         return await board(req, res);
       }
+      if (pathname === '/api/search-tags') return await require('./search-tags').handle(req,res,paths.content);
+      if (pathname === '/api/icons') return await require('./icon-import').handle(req,res,paths.content);
       if (!['GET','HEAD'].includes(req.method)) return json(res,405,{error:'Read-only endpoint'});
       if (pathname === '/api/studio') return json(res,200,{
         name: config.name, defaultProfile: config.defaultProfile,

@@ -8,7 +8,8 @@
   <link rel="stylesheet" href="/framework/workbench/studio.css">
   <script defer src="/framework/workbench/model.js"></script>
   <script defer src="/framework/workbench/views.js"></script>
-  <script defer src="/framework/workbench/studio.js"></script>
+  <script defer src="/framework/workbench/component-inspector.js"></script>
+  <script defer src="/framework/workbench/tag-editor.js"></script><script defer src="/framework/workbench/group-reference.js"></script><script defer src="/framework/workbench/studio.js"></script>
 </head>
 <body data-view="overview">
   <a class="wb-skip" href="#main">Skip to content</a>
@@ -24,14 +25,9 @@
     </footer>
   </aside>
   <main class="wb-main" id="main" tabindex="-1">
-    <header class="wb-top">
-      <span id="catalog-name" class="wb-crumb">Loading catalog…</span>
-      <div class="wb-controls"><label for="theme">Preview theme</label><select id="theme" disabled><option value="">Base</option></select></div>
-    </header>
     <div class="wb-view">
       <header class="wb-lede"><h1 id="title">Overview</h1><p id="intro"></p></header>
       <div id="content" aria-busy="true"><p role="status">Loading the design system…</p></div>
-      <details class="wb-location" id="attachment-info" hidden><summary>App content &amp; shared workflow</summary><p id="attachment-text"></p><a href="/framework/AGENT-WORKFLOW.md" target="_blank" rel="noopener">Current shared instructions ↗</a></details>
     </div>
   </main>
 </body>

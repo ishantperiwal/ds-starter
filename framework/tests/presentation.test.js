@@ -27,21 +27,30 @@ test('all sections render populated and empty app catalogs without changing thei
   }
   assert.equal(JSON.stringify(catalog),before);
 });
-test('overview is a real catalog ledger and never invents adoption measurements',()=>{
+test('overview keeps catalog totals and screens without the removed adoption sheet',()=>{
   const result=V.render(state);
-  assert(result.html.includes('wb-ledger'));
-  assert(result.html.includes('Not measured'));
-  assert(result.html.includes('registration is not usage'));
-  for(const entry of M.blocks(catalog))assert(result.html.includes('#components/'+encodeURIComponent(entry.id)));
+  assert(!result.html.includes('wb-ledger'));
+  assert(!result.html.includes('Not measured'));
+  assert(!result.html.includes('product adoption'));
+  assert(!result.html.includes('Filter building blocks'));
+  assert(result.html.includes('foundation-count'));
+  assert(!result.html.includes('registration is not usage'));
+  assert.equal(result.intro,'');
+
   assert(!result.html.includes('28%'));
 });
 test('components expose real previews, width controls, source links and readable anatomy',()=>{
   const html=V.render({...state,tab:'components',theme:'soft'}).html;
   assert.equal((html.match(/<iframe /g)||[]).length,M.blocks(catalog).length);
   assert(html.includes('theme=soft'));
-  assert(html.includes('data-width="320px"'));
-  assert(html.includes('Spacing relationships'));
-  assert(html.includes('Spacing ownership'));
+  assert(!html.includes('Spacing ownership'));
+  assert(html.includes('aria-haspopup="dialog"'));
+  const details=V.componentDetails(catalog.components[0],state);
+  assert(!details.includes('data-width="320px"'));
+  assert(!details.includes('>Fluid<'));
+  assert(details.indexOf('class="wb-spec-body"')<details.indexOf('class="wb-spec-head"'));
+  assert(details.includes('Spacing relationships'));
+  assert(details.includes('Spacing ownership'));
   assert(html.includes('id="entry-'+catalog.components[0].id+'"'));
 });
 test('patterns show live examples and structure/behavior contracts instead of raw JSON alone',()=>{
@@ -85,4 +94,150 @@ test('app content is escaped, cross-origin previews fail and deep links round-tr
   assert.throws(()=>M.previewURL({preview:'javascript:alert(1)'},state.base));
   assert.deepEqual(M.route('#components/my%20component'),{tab:'components',entry:'my component'});
   assert.deepEqual(M.route('#components/%'),{tab:'components',entry:null});
+});
+
+test('foundation roles use appropriate visual families without changing declarations',()=>{
+  const rows=M.parseTokens(':root{--blue:#2170f4;--action:var(--blue);--type-body-size:14px;--card-spacing:12px;--card-radius:4px}','app.css');
+  assert.equal(M.family(rows[1],rows),'Color');assert.equal(M.family(rows[2],rows),'Typography');assert.equal(M.family(rows[3],rows),'Spacing');assert.equal(M.family(rows[4],rows),'Shape & elevation');
+  const cat={...catalog,foundationPresentation:{tokens:{'--type-body-size':{label:'Body',sample:'A readable sentence.',weight:400}}}};
+  const before=JSON.stringify(rows);
+  const types=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'typography'}).html;
+  assert(!types.includes('fd-details'));assert(types.includes('A readable sentence.'));assert(types.includes('fd-type-row'));assert(!types.includes('wb-token-sample'));
+  const publicCopy=types.replace(/<details class="fd-details">[\s\S]*?<\/details>/g,'').replace(/<[^>]+>/g,'');
+  assert(!publicCopy.includes('app.css'));assert(!publicCopy.includes(':root'));assert(publicCopy.includes('--type-body-size'));
+  const colors=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'colors'}).html.replace(/<details class="fd-details">[\s\S]*?<\/details>/g,'').replace(/<[^>]+>/g,'');
+  assert(colors.includes('--blue'));assert(colors.includes('--action'));assert(!colors.includes('app.css'));
+  const spacing=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'spacing'}).html;assert(spacing.includes('fd-space-distance'));
+  const radius=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'roundness'}).html;assert(radius.includes('fd-radius-object'));assert(!radius.includes('fd-corner-curve'));assert(!radius.includes('fd-status'));
+  assert.equal(JSON.stringify(rows),before);
+});
+
+test('explicit semantic layers stay out of Foundations while primitives remain visible',()=>{
+  const rows=M.parseTokens(':root{--font-size-14:14px;--body-size:var(--font-size-14)}','tokens.css');
+  const cat={...catalog,foundationPresentation:{tokens:{'--font-size-14':{layer:'primitive'},'--body-size':{layer:'semantic'}}}};
+  const html=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'typography'}).html;
+  assert(html.includes('--font-size-14'));assert(!html.includes('--body-size'));
+  assert.equal(M.resolveLiteral(rows[1],rows),'14px');
+});
+
+test('text styles expose shared primitive references and draft specimens',()=>{
+  const rows=M.parseTokens(':root{--font-size-14:14px;--font-weight-regular:400}','tokens.css');
+  const cat={...catalog,foundationPresentation:{textStyles:[{id:'body',name:'Body',sample:'Reading text',size:'--font-size-14',weight:'--font-weight-regular'},{id:'label',name:'Label',sample:'Short label',size:'--font-size-14'}]}};
+  const html=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'text-styles'}).html;
+  assert(html.includes('data-foundation-panel="text-styles" data-selected="true"'));
+  assert.equal((html.match(/data-token="--font-size-14"/g)||[]).length,1);
+  assert(html.includes('Reading text'));assert(!html.includes('Draft'));assert(html.includes('class="ts-links"'));
+});
+
+test('color relationships resolve existing aliases without displaying contrast ratios',()=>{
+  const rows=M.parseTokens(':root{--black:#000;--white:#fff;--text:var(--black);--surface:var(--white)}','colors.css');
+  const cat={...catalog,foundationPresentation:{colorRoles:[{token:'--text',label:'Primary text',kind:'text',background:'--surface'}]}};
+  const html=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'color-roles'}).html;
+  assert(html.includes('data-foundation-panel="color-roles" data-selected="true"'));
+  assert(html.includes('data-token="--black"'));assert(!html.includes('21.00:1'));assert(!html.includes('cm-pair'));
+  assert(html.includes('--text'));assert(!html.includes('class="cb-detail"'));
+});
+
+test('spacing relationships show measured gaps and insets with explicit references',()=>{
+ const rows=M.parseTokens(':root{--space-16:16px;--header-gap:var(--space-16);--panel-inset:var(--space-16)}','spacing.css');
+ const cat={...catalog,foundationPresentation:{spacingRoles:[{token:'--header-gap',primitive:'--space-16',kind:'gap',label:'Header gap'},{token:'--panel-inset',primitive:'--space-16',kind:'block',label:'Panel inset'}]}};
+ const html=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'spacing'}).html;
+ assert(html.includes('data-spacing-kind="gap" data-spacing-value="16px"'));
+ assert(html.includes('data-spacing-kind="block" data-spacing-value="16px"'));
+ assert(html.includes('data-token="--space-16"'));assert(html.includes('Vertical inset'));
+ assert.equal((html.match(/class="sm-value-group"/g)||[]).length,1);
+ assert.equal((html.match(/aria-expanded="false"/g)||[]).length,2);
+});
+
+test('text-stack spacing specimens measure the assigned gap',()=>{
+ const rows=M.parseTokens(':root{--space-3:3px;--text-gap:var(--space-3)}','spacing.css');
+ const cat={...catalog,foundationPresentation:{spacingRoles:[{token:'--text-gap',primitive:'--space-3',kind:'stack',preview:'text-stack',label:'Tight text'}]}};
+ const html=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'spacing'}).html;
+ assert(html.includes('data-spacing-kind="stack" data-spacing-value="3px"'));
+ assert(html.includes('sm-text-gap'));assert(html.includes('To you · 10:30 AM'));
+});
+test('component category controls include All and preserve categories on searchable cards',()=>{
+ const app=structuredClone(catalog);app.components=app.components.slice(0,2);app.compositions=[];
+ app.components[0].category='Buttons';app.components[1].category='Messages';
+ const html=V.render({...state,catalog:app,tab:'components',componentCategory:'Messages'}).html;
+ assert(html.includes('class="fd-tabs cg-tabs"'));
+ assert(html.includes('data-component-category="All"'));
+ assert(html.includes('data-component-category="Messages" aria-pressed="true"'));
+ assert(html.includes('data-category="Buttons"'));
+ assert.equal((html.match(/class="cg-card wb-filterable"/g)||[]).length,2);
+});
+test('detail spacing adapter mounts the reference inspector with a default root and cleans its load listener',()=>{
+ const vm=require('node:vm');
+ const source=fs.readFileSync(path.join(ROOT,'framework/workbench/studio.js'),'utf8');
+ const code=source.slice(source.indexOf('  function bindComponentSpacing('),source.indexOf('  let galleryPreviewCleanups='));
+ const events={},mounted=[],sheets=[];
+ const main={dataset:{},querySelector:()=>null,firstChild:null,append:()=>{}};
+ const doc={querySelector:()=>main,head:{append:el=>sheets.push(el)},createElement:()=>({append:()=>{}})};
+ const preview={isConnected:true,contentDocument:doc,contentWindow:{wbAnatomy:{mount:(...args)=>mounted.push(args)}},addEventListener:(name,fn)=>events[name]=fn,removeEventListener:name=>delete events[name]};
+ const bind=vm.runInNewContext(code+';bindComponentSpacing');
+ const cleanup=bind(preview,{name:'Button',class:'sample-button',anatomy:{parts:[],spacing:[]}});
+ assert.equal(mounted.length,1);assert.equal(mounted[0][1].anatomy.specimen,'.sample-button');
+ assert.equal(sheets[0].href,'/framework/workbench/component-spacing.css');
+ events.load();assert.equal(mounted.length,1);cleanup();assert(!events.load);
+});
+test('spacing geometry includes right margins at the correct edge',()=>{
+ const vm=require('node:vm');
+ const source=fs.readFileSync(path.join(ROOT,'framework/anatomy.js'),'utf8');
+ const code=source.slice(source.indexOf('  function spacingBands('),source.indexOf('  function activeToken('));
+ const bands=vm.runInNewContext(code+';spacingBands',{
+  rectangle:()=>({x:10,y:20,width:100,height:30}),
+  number:value=>parseFloat(value)||0,
+  getComputedStyle:()=>({getPropertyValue:()=> '10px'})
+ });
+ const r=bands({}, {},'margin-right')[0];
+ assert.deepEqual(JSON.parse(JSON.stringify(r)),{x:110,y:20,width:10,height:30});
+});
+test('external spacing controls set iframe inspector state directly, including a selection before load',()=>{
+ const vm=require('node:vm'),source=fs.readFileSync(path.join(ROOT,'framework/workbench/studio.js'),'utf8');
+ const code=source.slice(source.indexOf('  function bindComponentSpacing('),source.indexOf('  let galleryPreviewCleanups='));
+ const events={},modes=[],buttons=['preview','spacing','component'].map((mode,i)=>({dataset:{previewMode:mode},pressed:i===0,setAttribute(k,v){this.pressed=v==='true';},addEventListener(k,fn){this.click=fn;},removeEventListener(){}}));
+ const controls={querySelector:()=>buttons.find(b=>b.pressed),querySelectorAll:()=>buttons};
+ const main={dataset:{},querySelector:()=>null,firstChild:null,append:()=>{}};
+ let loaded=false;
+ const preview={isConnected:true,contentDocument:{querySelector:()=>loaded?main:null,head:{append:()=>{}},createElement:()=>({append:()=>{}})},contentWindow:{wbAnatomy:{mount:()=>{},setMode:(host,mode)=>modes.push(mode)}},addEventListener:(k,fn)=>events[k]=fn,removeEventListener:k=>delete events[k]};
+ const bind=vm.runInNewContext(code+';bindComponentSpacing'),cleanup=bind(preview,{class:'button',anatomy:{}},controls);
+ buttons[1].click();assert.equal(modes.length,0);
+ loaded=true;events.load();assert.deepEqual(modes,['spacing']);
+ buttons[2].click();assert.deepEqual(modes,['spacing','component']);
+ buttons[0].click();assert.deepEqual(modes,['spacing','component','preview']);cleanup();
+});
+
+test('gallery exposes the class reference and only the dedicated expand control opens details',()=>{
+ const html=V.render({...state,tab:'components'}).html;
+ assert(html.includes('class="cg-expand" data-component='));
+ assert(html.includes('class="cg-card-footer"'));
+ assert(html.includes('data-preview-mode="component"'));
+ assert(html.includes('<code>.'+catalog.components[0].class+'</code>'));
+ assert(!html.includes('class="cg-open"'));
+});
+
+test('registered screens offer full-page links to the same themed URL as their preview',()=>{
+ const themed={...state,theme:'soft'},html=V.render(themed).html;
+ for(const screen of catalog.screens){
+  const url=V.esc(M.previewURL(screen,state.base,'soft'));
+  assert(html.includes('class="wb-screen-open" href="'+url+'" target="_blank" rel="noopener noreferrer"'));
+ }
+});
+test('gallery widths are component-specific and bounded rather than interpolated as arbitrary CSS',()=>{
+ const app=structuredClone(catalog);app.components[0].galleryWidth=608;
+ let html=V.render({...state,catalog:app,tab:'components'}).html;
+ assert(html.includes('--gallery-width:608px'));
+ app.components[0].galleryWidth=2000;
+ assert(V.render({...state,catalog:app,tab:'components'}).html.includes('--gallery-width:960px'));
+ app.components[0].galleryWidth='1px;display:none';
+ html=V.render({...state,catalog:app,tab:'components'}).html;
+ assert(!html.includes('1px;display:none'));
+});
+test('interaction sidebar is optional and starts closed without loading its iframe',()=>{
+ const app=structuredClone(catalog);app.components[0].interactions={preview:app.components[0].preview,targets:[{id:'main',name:'Main',states:['default','hover']}]};
+ const html=V.render({...state,catalog:app,tab:'components'}).html;
+ assert(html.includes('data-interactions="'+app.components[0].id+'"'));
+ assert(html.includes('aria-controls="component-interactions" aria-expanded="false"'));
+ assert(html.includes('tabindex="-1" hidden></aside>'));
+ assert.equal((html.match(/<iframe /g)||[]).length,M.blocks(app).length);
 });

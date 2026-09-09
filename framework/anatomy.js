@@ -49,16 +49,20 @@
       host.classList.add('wb-visual-first');
     } else body.before(toolbar);
     state.toolbar=toolbar;
-    toolbar.querySelectorAll('.wb-inline-toggle button').forEach((button,index)=>button.addEventListener('click',()=>{
-      state.spacing=index===1;
-      state.groups.forEach(group=>{group.selectedToken=null;});
-      toolbar.querySelectorAll('.wb-inline-toggle button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
-      toolbar.querySelector('output').textContent='';
-      discover(state);
-      schedule();
-    }));
+    toolbar.querySelectorAll('.wb-inline-toggle button').forEach((button,index)=>button.addEventListener('click',()=>setMode(host,index===1?'spacing':'preview')));
     discover(state);
     schedule();
+  }
+  function setMode(host,mode){
+    const state=instances.get(host);if(!state)return false;
+    state.spacing=mode==='spacing';
+    document.querySelector('.wb-spacing-popover')?.remove();
+    state.groups.forEach(group=>{group.selectedToken=null;});
+    state.toolbar.querySelectorAll('.wb-inline-toggle button').forEach((button,index)=>button.setAttribute('aria-pressed',String(index===(state.spacing?1:0))));
+    state.toolbar.querySelector('output').textContent='';
+    discover(state);
+    if(state.spacing)state.groups.forEach(group=>draw(group,state.spec));
+    schedule();return true;
   }
   function discover(state) {
     state.groups=state.groups.filter(g=>g.host.isConnected);
@@ -80,17 +84,36 @@
             item.selectedToken=hit.dataset.token;
             item.overlay.querySelectorAll('[data-token]').forEach(el=>el.classList.toggle('is-selected',el.dataset.token===hit.dataset.token));
           });
-          const output=toolbar.querySelector('output');
-          output.innerHTML='<span>'+esc(hit.dataset.measure)+'</span> <button type="button" class="wb-copy-token" aria-label="Copy spacing variable">Copy variable</button>';
-          output.querySelector('button').addEventListener('click',async event=>{
+          document.querySelector('.wb-spacing-popover')?.remove();
+          const output=document.createElement('div');output.className='wb-spacing-popover';output.setAttribute('role','dialog');output.setAttribute('aria-label','Spacing measurement');
+          output.innerHTML='<button type="button" class="wb-spacing-close" aria-label="Close measurement">×</button><div>'+esc(hit.dataset.measure)+'</div><code>'+esc(hit.dataset.token)+'</code><button type="button" class="wb-copy-token">Copy reference</button>';
+          document.body.append(output);
+          const r=hit.getBoundingClientRect(),box=output.getBoundingClientRect();
+          output.style.left=Math.max(8,Math.min(r.left,innerWidth-box.width-8))+'px';
+          output.style.top=Math.max(8,Math.min(r.bottom+8,innerHeight-box.height-8))+'px';
+          output.querySelector('.wb-spacing-close').addEventListener('click',()=>output.remove());
+          output.querySelector('.wb-copy-token').addEventListener('click',async event=>{
             const button=event.currentTarget;
-            try {
-              await navigator.clipboard.writeText(hit.dataset.token);
-              if(button.isConnected) button.textContent='Copied';
-            } catch(error) {
-              if(button.isConnected) button.textContent='Copy failed — try again';
+            const text=[
+              'Design-system change reference: I want to discuss or change the variable below. The component identifies the usage I am referring to. Update the owning DS definition rather than adding a local override; check its other uses before changing a shared value. My accompanying message specifies the intended change.',
+              '',
+              'Component: '+state.spec.name+' ('+(state.spec.id||state.spec.class)+')',
+              'Class: .'+state.spec.class,
+              'Measurement: '+hit.dataset.measure,
+              'Token: '+hit.dataset.token,
+              'Selector: '+hit.dataset.selector,
+              'Property / geometry: '+hit.dataset.property,
+              state.spec.css?'CSS: '+state.spec.css:'',
+              'Preview: '+location.href
+            ].filter(Boolean).join('\n');
+            let copied=false;
+            try{await navigator.clipboard.writeText(text);copied=true;}catch{
+              const input=document.createElement('textarea');input.value=text;input.style.cssText='position:fixed;left:0;top:0;opacity:0';document.body.append(input);input.select();
+              try{copied=document.execCommand('copy');}catch{}input.remove();button.focus();
             }
+            if(button.isConnected)button.textContent=copied?'Copied':'Copy failed';
           });
+
         }
       });
       overlay.addEventListener('keydown',event=>{
@@ -125,6 +148,7 @@
     if (property === 'margin-top') return [{...r, y:r.y-value, height:Math.abs(value)}];
     if (property === 'margin-bottom') return [{...r, y:r.y+r.height, height:Math.abs(value)}];
     if (property === 'margin-left') return [{...r, x:r.x-Math.max(0,value), width:Math.abs(value)}];
+    if (property === 'margin-right') return [{...r, x:r.x+r.width+Math.min(0,value), width:Math.abs(value)}];
     const children = Array.from(el.children).filter(visible).map(child => rectangle(child, origin));
     const before = getComputedStyle(el,'::before');
     if (before.content !== 'none' && before.content !== 'normal' && number(before.width)) {
@@ -168,13 +192,31 @@
       spec.anatomy.parts.forEach(part=>matches(root,part.selector).forEach(el=>{
         drawing+=box(partRectangle(el,part,origin),'wb-inline-outline');
       }));
+      (spec.anatomy.geometry||[]).forEach(geometry=>matches(root,geometry.selector).forEach(el=>{
+        const r=el.getBoundingClientRect();if(!r.width||!r.height)return;
+        const label=geometry.label,token=geometry.token;
+        let rects=[];
+        if(geometry.kind==='fluid')rects=[{x:r.left-origin.left,y:r.top-origin.top,width:r.width,height:r.height}];
+        else {
+          const parent=matches(root,geometry.container).find(item=>item.contains(el));if(!parent)return;
+          const p=parent.getBoundingClientRect(),css=getComputedStyle(parent);
+          const left=p.left+parseFloat(css.borderLeftWidth||0),right=p.right-parseFloat(css.borderRightWidth||0),top=p.top+parseFloat(css.borderTopWidth||0),bottom=p.bottom-parseFloat(css.borderBottomWidth||0);
+          if(geometry.axis!=='vertical')rects.push({x:left-origin.left,y:r.top-origin.top,width:r.left-left,height:r.height},{x:r.right-origin.left,y:r.top-origin.top,width:right-r.right,height:r.height});
+          if(geometry.axis!=='horizontal')rects.push({x:r.left-origin.left,y:top-origin.top,width:r.width,height:r.top-top},{x:r.left-origin.left,y:r.bottom-origin.top,width:r.width,height:bottom-r.bottom});
+        }
+        rects.filter(r=>r.width>0&&r.height>0).forEach(rect=>{
+          const info=label+': '+round(rect.width)+' × '+round(rect.height)+'px · '+(geometry.kind==='fluid'?'available width':'alignment space, not margin');
+          drawing+='<g tabindex="0" role="button" data-selector="'+esc(geometry.selector)+'" data-property="'+esc(geometry.kind==='fluid'?'fluid width':'centering ('+geometry.axis+')')+'" data-measure="'+esc(info)+'" data-token="'+esc(token)+'" aria-label="'+esc(info)+'">'+box(rect,geometry.kind==='fluid'?'wb-inline-fluid':'wb-inline-alignment')+'<title>'+esc(info)+'</title></g>';
+          measurements.add(info);
+        });
+      }));
       spec.anatomy.spacing.forEach(space=>matches(root,space.selector).forEach(el=>{
         const value=getComputedStyle(el).getPropertyValue(space.property),token=activeToken(space,el);
         spacingBands(el,origin,space.property).forEach(rect=>{
           const key=[rect.x,rect.y,rect.width,rect.height,token].join(':');
           if(measurements.has(key)) return;measurements.add(key);
           const label=space.label+': '+value+' · '+token;
-          drawing+='<g class="'+(group.selectedToken===token?'is-selected':'')+'" tabindex="0" role="button" aria-label="'+esc(label)+'" data-measure="'+esc(label)+'" data-token="'+esc(token)+'">'+box(rect,'wb-inline-band')+'<title>'+esc(label)+'</title>';
+          drawing+='<g class="'+(group.selectedToken===token?'is-selected':'')+'" tabindex="0" role="button" aria-label="'+esc(label)+'" data-selector="'+esc(space.selector)+'" data-property="'+esc(space.property)+'" data-measure="'+esc(label)+'" data-token="'+esc(token)+'">'+box(rect,'wb-inline-band')+'<title>'+esc(label)+'</title>';
           // Repeated geometry is not a new control. Preserve distinct resolved values
           // for size/theme exceptions, even when they share the same token name.
           const labelKey=token+'|'+value;
@@ -187,7 +229,7 @@
       }));
     });
     group.overlay.innerHTML='<svg preserveAspectRatio="none" width="100%" height="100%" viewBox="0 0 '+origin.width+' '+origin.height+'" aria-label="Measured spacing for '+esc(spec.name)+'">'+drawing+'</svg>';
-    if(!measurements.size) group.toolbar.querySelector('output').textContent=spec.anatomy.implementation==='workbench-svg'?'SVG geometry · no CSS spacing tokens':'No internal spacing in this specimen';
+    if(!measurements.size) group.toolbar.querySelector('output').textContent=spec.anatomy.implementation==='workbench-svg'?'SVG geometry · no CSS spacing tokens':'No declared spacing in this specimen';
   }
   // Route references, not copied markup: examples follow their CRM implementation.
   const sourceExamples={
@@ -417,5 +459,5 @@
   window.addEventListener('hashchange',schedule);
   document.fonts?.ready.then(schedule);
   document.getElementById('theme-link')?.addEventListener('load',schedule);
-  window.wbAnatomy = {render, mount:attach, foundations, compositions, exampleCode, refresh:schedule};
+  window.wbAnatomy = {render, mount:attach, setMode, foundations, compositions, exampleCode, refresh:schedule};
 }());

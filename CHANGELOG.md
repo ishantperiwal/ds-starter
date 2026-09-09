@@ -1,5 +1,158 @@
 # Changelog
 
+## Unreleased
+
+- Add heading copy references for catalog groups and foundation sections.
+
+- Add editable search tags with persistent catalog saving and success/error feedback.
+
+- Add hidden searchTags and ranked, debounced search for phrases, words and partial words.
+
+- Bound Component inspection to real registered component instances and their
+  descendants; exclude specimen captions, mounts and variant-grid wrappers.
+
+- Remove the Overview adoption sheet and unmeasured adoption statistic; retain
+  catalog totals and registered screen previews.
+
+- Distinguish inspected components with badges and blue outlines; use quiet
+  structural labels and hide wrappers under Show layout layers. Support explicit
+  data-inspector-variant labels without changing catalog IDs.
+
+- Label basic inspected elements simply as Text, Row, Container or Icon, without
+  implying that a missing catalog registration needs fixing.
+
+- Add Component inspection alongside Preview and Spacing: real-element hover,
+  pinned selection, Control-click ancestry cycling, clickable hierarchy and copyable
+  references. Registered nodes use catalog identity; other nodes retain structural
+  labels and selectors. Inspection captures actions without changing app components.
+
+- Place preview controls below component specimens and above their identity footer;
+  remove the redundant Interactions footer label while keeping preview selection.
+
+- Give component preview toolbars a 64px header with more vertical inset and a
+  clearer separator. Share header height between frame fitting and click overlays.
+
+- Require interaction ownership audits for component registration; document nested
+  dependencies and keep child state previews with their owning component.
+
+- Fit gallery previews to all supplied examples and clean up resize observers
+  on navigation. Include the app’s existing secondary-disabled split state.
+
+- Show all supplied action variants/states in compact labelled gallery previews.
+
+- Allow same-origin component detail previews to fit their content and resize
+  when the preview width changes, avoiding empty space below short controls.
+
+- Lead Components with categorized preview tiles and reveal states/contracts in
+  an accessible floating dialog on selection; support dismissal and deep links.
+
+- Clarify component sheets with distinct name/description headers, specimen areas
+  and contract footers; remove implementation class names from visual headers.
+
+- Remove inspector/source/renderer links from visual specimens; retain source
+  metadata in the registry for implementation workflows.
+
+- Support bounded optional component preview heights for compact live specimens.
+
+- Scope Draft-label styling to column headings so sample metadata has no unintended left offset.
+
+- Support evidence-backed text-stack, icon-label and action-group spacing specimens;
+  remove the unassigned 4px preview text gap and accept explicit text-gap references.
+
+- Replace the basic Colors tab with Color roles when relationship data exists;
+  retain compatibility with old Colors links.
+
+- Extend grouped expandable relationships to roundness, using existing aliases
+  and actual-radius content previews without redundant tags.
+
+- Remove redundant descriptive tags from expanded spacing previews.
+
+- Keep spacing expansion indicators beside the value on the same row.
+
+- Stop spacing connection arrows at the outer value-group border.
+
+- Fix the spacing preview wrapper so collapsed rows retain their token names and values.
+
+- Render spacing value groups as outline-only fieldsets with inset legends;
+  frame expanded examples separately from token rows.
+
+- Group spacing roles by resolved distance, with click-expanded examples and
+  related-role expansion from primitives; outside click and Escape collapse them.
+
+- Show readable message headers, mail rows and message text in spacing specimens
+  while preserving the measured token-controlled gaps and insets.
+
+- Add spacing relationships with aligned primitive bars and measured gap, horizontal
+  inset and vertical inset diagrams backed by existing app tokens.
+
+- Show exact semantic token names directly in grouped color rows.
+
+- Replace the color connection map with grouped primitive/use rows and a fixed
+  detail panel; outside click, Escape and the close button dismiss selection.
+
+- Use Text styles in place of the separate Typography tab when recipes exist;
+  retain every typography primitive, including unconnected values, in the map.
+
+- Compact color-role cards with capped width, tighter padding and shorter samples.
+
+- Add Color roles with primitive/semantic connections, contextual text samples,
+  explicit background tokens and contrast ratios for opaque hex color pairs.
+
+- Distinguish text style names from specimens with compact neutral tags.
+
+- Align semantic names, arrows and resolved values in shared grid columns.
+
+- Show resolved values directly beside semantic token names with arrows and a
+  distinct value color; remove the duplicate typography property block.
+
+- Expose complete font fallback stacks, named numeric weights and labelled text
+  style properties; distinguish unassigned line heights from explicit values.
+
+- Show explicit semantic token names alongside draft text styles and resolve
+  specimen properties through those aliases when provided.
+
+- Add an optional Text styles relationship view with shared primitives, draft
+  specimens, hover/focus highlighting and click-to-pin connections.
+
+- Remove Review notes from the overview presentation.
+
+- Place foundation search beside the tabs and search across all foundation categories,
+  preserving the query when switching tabs.
+
+- Stack spacing tokens in aligned rows with fixed-height, actual-width bars for
+  direct comparison from a shared starting point.
+
+- Replace More values with visible typography categories and multiline line-height
+  specimens; support letter spacing, style, decoration and case when present.
+
+- Respect explicit token layers in Foundations; show primitive scales first and
+  keep typography weights/leading in More values.
+
+- Remove the global top bar and its preview theme control.
+
+- Remove the app attachment paths and shared workflow footer from the studio UI.
+
+- Remove per-token Details and hover expansion. Keep additional values in a
+  separate accordion with a stable, explicit toggle.
+
+- Follow the supplied reference with compact color cells, unboxed type rows and
+  simple blue spacing/radius specimens. Keep token names and values visible.
+
+- Keep token names visible, simplify spacing to a compact scale and roundness to
+  plain shape/value samples; remove radius status and magnification commentary.
+
+- Present foundations with readable typography specimens, color swatches and
+  spacing/radius samples; keep source/scope in closed Details.
+- Support optional app-owned foundation labels/examples without changing tokens
+  or requiring a catalog migration. Improve type-role and resolved-color grouping.
+
+- Remove repetitive section introductions and instructional copy; retain concise
+  labels, actionable errors and expandable review/contract details.
+
+- Let Moodboard fill the available workspace, hiding catalog headers, theme controls,
+  and attachment details and removing the canvas frame and outer spacing.
+- Preserve sidebar navigation and canvas controls; constrain scrolling to the canvas.
+
 ## 0.3.0 — consistent Titan-style workbench presentation
 
 - Restore the compact dark sidebar, centered workspace and ledger-style overview.
@@ -33,3 +186,52 @@
 - Same-process persistent moodboard.
 - Contract/source validation, regression tests and hash-checked framework releases.
 - Retained original Titan DS snapshot for reference; no CRM database copied.
+
+## Local component gallery refinement
+
+- Catalog-driven category filters with All, integrated with component search.
+- Equal-height gallery rows and flexible columns as component families grow.
+
+- Component details now reuse the reference Preview / Spacing measurement toggle
+  inside isolated live specimens, replacing width controls for components.
+
+- Preview / Spacing controls are available on gallery cards and outside detail
+  frames. Frames fit their content without a height cap or internal page scrollbar.
+
+- Spacing inspector now draws right-margin bands as well as left margins.
+
+- Component details lead with the visual, followed by the heading. Gallery modal
+  activation is limited to the bottom name button, without a full-card hit overlay.
+
+- External gallery spacing controls now set inspector state directly instead of
+  synthesizing clicks inside inert thumbnails; pre-load selections are retained.
+
+- Gallery footers show larger names and class references, with view toggles on the
+  right. Only the dedicated top-right preview expand control opens component details.
+
+- Spacing status sits in a reserved top-right row above the specimen rather than
+  floating over component previews.
+
+- Registered screens include an Open full page button that opens the actual preview
+  URL in a new tab, preserving the selected preview theme.
+
+- Component gallery cards use bounded catalog widths and wrap without stretching.
+
+- Gallery specimens are vertically centered within their preview stage; action
+  specimens center controls beneath their variant labels.
+
+- Optional catalog-driven Interactions sidebar with live and held state previews,
+  per-control targets, Escape/outside dismissal and focus return on explicit close.
+
+### Unreleased — text-part typography inspection
+
+- Replace root-level tokenization verdicts with named text-part reports.
+- Trace inherited styles and property-specific tokens in font shorthands; distinguish
+  literal values, browser defaults and unsupported cascade cases with source details.
+- Keep component instance copy context aligned with the text-part report.
+- Add typography provenance tests. No component styling, catalog schema or release
+  lock changes are included in this inspector update.
+
+- Shared inspector now supports S for Spacing and C for Components, with visible
+  shortcut hints. Typing, composition, held keys and modified shortcuts are excluded.
+  Removed the App sidebar's duplicate shortcut registration.

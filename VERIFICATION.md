@@ -98,3 +98,25 @@ tests use lightweight DOM stubs and do not substitute for these checks.
   archived component state or every chart contract.
 - Release integrity checks are not publisher authentication. Remote hosting,
   signing, CI publication and automated update discovery are not configured.
+
+## Component inspection tab (local development)
+
+Added a third Component view using the same specimen DOM, alongside Preview and
+Spacing. The inspector highlights real element bounds and intercepts pointer
+activation while enabled. Registered class matches use actual catalog entries;
+other DOM nodes have explicit structural labels, selectors, and nearest registered
+owners. Ancestors outside registered roots are labeled specimen layout. The panel
+supports clickable ancestry, Control-click (pointerdown for macOS), Cycle layer,
+Control+ArrowUp, reference copying, and Escape/close to Preview. Listeners, overlays,
+resize observers and panel are disposed with the preview binding.
+
+Browser checks in attached Titan: selected Bold's image, Control-clicked to its
+registered Icon button, and checked the source/selector. The specimen action result
+remained empty. Clipboard readback confirmed element-reference text, the icon-button
+ID and composer variant selector. In App switcher, selected Titan Labs text and
+cycled through its row to the registered Launcher item. Screenshots checked outlines,
+hierarchy and panel layout. Closing and navigation removed the inspector panel.
+37 studio tests pass, including new identity/reference tests; attachment and sandbox
+validation have no errors. Hover behavior is implemented but was not independently
+visually checked because the browser automation locator lacks hover. Narrow bottom
+sheet and expanded-dialog inspection have not been visually certified.

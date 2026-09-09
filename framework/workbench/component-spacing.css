@@ -1,0 +1,45 @@
+/* Studio-only controls, injected into a detail preview. No app token overrides. */
+.wb-component-content{position:relative;display:grid;gap:24px;min-width:0}
+.wb-inline-specimen{position:relative}
+.wb-component-toggle{position:relative;display:flex;justify-content:flex-end;align-items:center;margin:0 0 16px;gap:8px}
+.wb-inline-toggle{display:inline-flex;gap:2px;padding:3px;border:1px solid #dedee5;border-radius:6px;background:#fff}
+.wb-inline-toggle button{appearance:none;border:0;border-radius:4px;padding:7px 12px;background:transparent;color:#666;font:500 12px/1.3 system-ui;cursor:pointer}
+.wb-inline-toggle button[aria-pressed=true]{background:#f1f2f5;color:#222}
+.wb-inline-toggle button:focus-visible{outline:2px solid #2170f4;outline-offset:2px}
+.wb-inline-readout{font:12px/1.5 system-ui;color:#555}
+.wb-inline-readout:empty{display:none}
+.wb-inline-readout:not(:empty){position:absolute;top:100%;right:0;z-index:6;max-width:100%;padding:8px 12px;background:#fff;border:1px solid #dedee5;border-radius:4px;overflow-wrap:anywhere;box-shadow:0 3px 12px #0001}
+.wb-copy-token{border:0;background:transparent;color:#2170f4;font:inherit;cursor:pointer}
+.wb-inline-overlay{position:absolute;inset:0;pointer-events:none;z-index:3}
+.wb-inline-overlay[hidden]{display:none}
+.wb-inline-overlay svg{display:block;overflow:visible}
+.wb-inline-outline{fill:none;stroke:#2170f4;stroke-width:1;stroke-dasharray:3 2;opacity:.45}
+.wb-inline-band{fill:#fce6ad;fill-opacity:.8;stroke:#b78017;stroke-width:.5}
+.wb-inline-overlay [data-measure]{pointer-events:auto;cursor:pointer}
+.wb-inline-overlay [data-measure]:focus .wb-inline-band,.wb-inline-overlay .is-selected .wb-inline-band{stroke:#2170f4;stroke-width:2;fill:#dbe9ff}
+.wb-inline-value{text-anchor:middle;dominant-baseline:central;fill:#333;font:9px system-ui;pointer-events:none}
+main[data-spacing-mounted]{display:block}
+/* The parent catalog owns view controls. Content sets the frame height. */
+html,body{overflow:hidden}
+.wb-component-toggle{height:0;margin:0;padding:0;min-height:0}
+.wb-component-toggle>.wb-inline-toggle{display:none}
+.wb-inline-readout:not(:empty){top:0}
+/* Keep status in a dedicated top-right row, never over the specimen. */
+.wb-component-toggle{height:auto;min-height:28px;margin:0 0 8px;justify-content:flex-end;align-items:flex-start}
+.wb-inline-readout:not(:empty){position:static;max-width:100%;margin-left:auto;padding:4px 0;border:0;background:transparent;box-shadow:none;text-align:right;font-size:11px;line-height:20px}
+
+/* Gallery status lives in the existing expand-control row in the parent. */
+body[data-gallery] .wb-component-toggle{height:0;min-height:0;margin:0;padding:0}
+body[data-gallery] .wb-inline-readout{display:none!important}
+/* Transparent specimen canvas reveals the studio's off-white dot grid. */
+html,body{background:transparent!important}
+
+.wb-inline-alignment{fill:#b9d9fa;fill-opacity:.55;stroke:#79a9df;stroke-width:.5}
+.wb-inline-fluid{fill:none;stroke:#79a9df;stroke-width:1;stroke-dasharray:5 3}
+
+.wb-spacing-popover{position:fixed;z-index:100;box-sizing:border-box;width:260px;max-width:calc(100vw - 16px);padding:14px;background:white;border:1px solid #dedee5;border-radius:8px;box-shadow:0 6px 24px #0002;color:#333;font:12px/1.5 system-ui;overflow-wrap:anywhere}
+.wb-spacing-popover>div{padding-right:18px}.wb-spacing-popover code{display:block;margin:8px 0;font-size:11px}
+.wb-spacing-popover .wb-copy-token{display:block;min-height:34px;padding:7px 12px;border:1px solid #d5d9e0;border-radius:5px;background:#f5f5f2;color:#245cb1;font:500 12px system-ui;cursor:pointer}
+.wb-spacing-close{position:absolute;right:6px;top:4px;border:0;background:transparent;font-size:20px;color:#777;cursor:pointer}
+
+.wb-spacing-popover{max-height:calc(100vh - 16px);overflow:auto}.wb-spacing-popover button:focus-visible{outline:2px solid #2170f4;outline-offset:2px}

@@ -66,11 +66,17 @@
     });
     return unresolved || /var\(/.test(result) ? null : result;
   }
-  function family(row) {
+  function family(row, rows=[]) {
     const name=row.name;
+    const literal=rows.length?resolveLiteral(row,rows):row.value;
+    if(literal && /^(?:#[\da-f]{3,8}\b|rgba?\(|hsla?\(|oklch\(|transparent$)/i.test(literal))return 'Color';
+    if(/font|type-|weight|leading|tracking|line-height|letter-spacing|text-decoration|text-transform/.test(name))return 'Typography';
+    if(/stroke|border-width|divider-width|focus-ring-width/.test(name))return 'Strokes';
+    if(/radius|shadow|elevation/.test(name))return 'Shape & elevation';
     if(/color|surface|accent|text-(?:primary|secondary|muted|heading|disabled|inverse)|border-(?:subtle|default|focus)|gray|blue|green|red|yellow|purple|pink|orange|white|black/.test(name))return 'Color';
-    if(/space|gap|pad|inset|margin/.test(name))return 'Spacing';
+    if(/space|spacing|gap|pad|inset|margin/.test(name))return 'Spacing';
     if(/font|text|weight|leading|tracking|line-height/.test(name))return 'Typography';
+    if(/stroke|border-width|divider-width|focus-ring-width/.test(name))return 'Strokes';
     if(/radius|shadow|elevation/.test(name))return 'Shape & elevation';
     if(/dur-|duration|ease|motion|transition/.test(name))return 'Motion';
     return 'Component controls';
@@ -95,5 +101,17 @@
     if(inspect)url.searchParams.set('ds','true');
     return url.href;
   }
-  return {normalize,blocks,counts,parseTokens,resolveLiteral,family,groups,route,previewURL};
+  function searchText(value){return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+  function searchMetadata(entry){return [entry.name,entry.id,entry.class,entry.category,entry.summary,entry.usage,...(entry.searchTags||[])].filter(Boolean).join(' ');}
+  function searchScore(text,query){
+    const hay=searchText(text),needle=searchText(query);
+    if(!needle)return 1;
+    if(hay===needle)return 10000;
+    if(hay.includes(needle))return 8000;
+    const words=[...new Set(needle.split(' '))],available=hay.split(' ');
+    const matched=words.map(word=>available.includes(word)?3:available.some(candidate=>candidate.startsWith(word))?2:available.some(candidate=>candidate.includes(word))?1:0);
+    const count=matched.filter(Boolean).length;
+    return count?(count===words.length?4000:1000)+count/words.length*100+matched.reduce((a,b)=>a+b,0):0;
+  }
+  return {searchText,searchMetadata,searchScore,normalize,blocks,counts,parseTokens,resolveLiteral,family,groups,route,previewURL};
 });

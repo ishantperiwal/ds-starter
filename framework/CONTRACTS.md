@@ -93,9 +93,9 @@ owns its layout and display rules. Do not import app token/component/theme sheet
 into the shell. Registered preview URLs render actual app implementations in
 separate frames. Preview-theme controls and Directions affect those frames only.
 
-The overview ledger describes registered blocks, not measured adoption. Current
-counts use the app’s registry; icon tallies count providers, not inferred glyphs.
-Missing adoption measurements are explicit. No Titan-specific audit totals appear.
+The overview shows catalog totals and registered screen previews, without an
+adoption sheet or adoption statistic. Current counts use the app’s registry;
+icon tallies count providers, not inferred glyphs.
 Component and pattern contracts are rendered from existing v1 metadata; this UI
 update does not add a schema requirement or rewrite app-owned registry files.
 
@@ -118,3 +118,142 @@ Previews are document-local CSSOM edits. They reset on reload and are persisted 
 through a copied prompt/source edit. Counts are visible highlighted elements, not a
 whole-app dependency report. A shared token change can affect offscreen/hidden uses
 and consumers on other routes after source changes are applied.
+
+## Optional foundation presentation
+
+Catalog v1 may include foundationPresentation.tokens, keyed by token name. Optional
+label, sample, kind (family/weight/leading/size), weight, lineHeight and status fields
+customize the foundation specimens only. Tokens and screen CSS remain authoritative.
+These fields do not create typography/component contracts or assert adoption.
+The workbench keeps source/value/scope metadata under closed Details. Referenced
+base values remain under More values; they are not removed from the catalog.
+
+Foundation token presentation metadata may include `layer: "primitive"` or
+`layer: "semantic"`. Foundations shows primitive and unclassified entries; semantic
+entries remain available in token sources and resolution without appearing there.
+
+`foundationPresentation.textStyles` optionally defines draft typography recipes.
+Each entry supplies `id`, `name`, `sample` and token references in `family`, `size`,
+`weight`, and optionally `leading`. The relationship view resolves these references
+without adopting the draft styles into app components. Missing properties are left
+at the preview default rather than implying an established token assignment.
+
+`foundationPresentation.colorRoles` optionally supplies existing semantic `token`,
+`label`, `kind` (text, link, surface, color), and `background` for text/link examples.
+Connections follow simple aliases to primitives. Contrast is calculated for the
+explicit opaque hex foreground/background pair, not the entire product or theme.
+
+`foundationPresentation.spacingRoles` optionally lists existing `token`, `primitive`,
+`label`, and `kind` (`gap`, `inline`, `block`). Diagrams use resolved role values
+for actual gap or inset dimensions; these examples do not establish generic roles.
+
+Spacing roles may specify `preview` as `text-stack`, `icon-label`, `actions` or
+`inline-text`, and `kind: "stack"` for a vertical text gap. An optional `textGap`
+token references incidental text spacing inside inset examples. Missing text-gap
+metadata adds no arbitrary gap. Preview geometry does not imply app adoption.
+
+Components may supply numeric `previewHeight`; the workbench bounds it to 160–800px.
+Omitting it retains the default preview height.
+
+The component gallery appends `gallery=1` to preview URLs. Specimens may use this
+mode to show a single compact representative example; normal previews retain their
+full states and interactions. The gallery opens full previews/contracts on selection.
+
+Component categories are catalog-driven filters with an All view. Gallery previews
+may show every supported variant; auto-height specimens keep detail frames fitted
+to content. Gallery cards stretch to equal heights within each category grid.
+
+Component details mount framework/anatomy.js inside the same-origin specimen frame.
+Preview / Spacing uses registry selectors and computed geometry; selecting a band
+reveals its token and measured value. This is inspection only, with no saved edits.
+The default specimen root selector is the registered component class. Gallery frames
+remain untouched. Detail specimens should provide a main element for this adapter.
+
+Optional component galleryWidth specifies a preferred card width in CSS pixels
+(default 360, bounded 280–960). Cards wrap and shrink to available space, never grow
+to fill a category. This is presentation metadata, not a component width constraint.
+Specimens own representative inner layout widths in both gallery and detail views.
+
+Optional interactions metadata enables the component's Interactions sidebar:
+`{preview, targets:[{id,name,states:[]}]}`. The preview is a same-origin URL resolved
+like component previews; the sidebar supplies `target` and `state` query parameters.
+`live` permits normal interaction. Other states are held by the app specimen using
+its actual implementation. Targets list only supported states; split actions may
+have separate targets. This metadata does not create product states or behavior.
+
+## Interaction ownership metadata
+
+`anatomy.interactionOwnership` records parent, internal-part and child ownership.
+Optional `dependencies` lists actual reused catalog component IDs. Interaction
+targets may include `owner`; when supplied it must identify the current entry for
+that entry’s state list. Nested child states belong in the child's catalog entry.
+Legacy entries without `owner` remain supported; new registrations should supply it.
+
+Optional `anatomy.geometry` entries describe derived layout space: `selector`,
+`container`, `axis` (vertical/horizontal/both), `label`, and a related sizing `token`.
+`kind: "fluid"` outlines the flexible element allocation instead. Geometry is
+measured from rendered rectangles, not represented as additional CSS margins.
+
+## Component inspection
+
+Component preview controls include Preview, Spacing and Component. Component mode
+inspects real same-origin specimen elements without executing their click actions.
+Catalog class matches identify registered components; other nodes are labeled as basic structural elements; they do not require separate
+component registration. References contain the selected selector, ancestry,
+nearest registered owner and its source files, and the preview URL. Layout nodes
+outside a registered root are reported as specimen layout, not component-owned.
+Control-click cycles ancestors; the hierarchy and Cycle layer button provide an
+alternative. Closing the inspector returns to Preview. No catalog schema change.
+
+Inspector names distinguish Component, Basic element and Layout container. Generic
+wrappers appear under Show layout layers, while cycling still reaches every layer.
+Renderers may set data-inspector-variant on registered roots to provide an explicit
+variant name; the inspector does not guess variants from arbitrary class names.
+
+Inspection stops at the outermost registered component instance in a specimen.
+Captions, mount wrappers and variant grids outside that boundary are excluded from
+hover, selection and ancestor cycling. Layout layers inside the component remain
+inspectable. Full selectors may still include specimen ancestors to identify a
+specific rendered instance unambiguously.
+
+## Search metadata
+
+Entries may supply `searchTags: ["alias", "related task"]`. These search-only
+keywords never appear as labels. Existing entries need no migration. Search stays
+within the current tab/category, normalizes case, accents and punctuation, and
+ranks phrases before all-word matches, then fewer-word matches. Partial words
+are supported; semantic search and typo correction are not. Input waits 120ms.
+Results rank within groups; clearing restores catalog order. Icon providers can
+reuse StudioModel.searchMetadata/searchScore from /framework/workbench/model.js.
+
+Search tags are editable in component details and pattern Search tags sections.
+StudioTagEditor.mount(host, entry, collection, onSave) supports provider sidebars.
+Saving POSTs to /api/search-tags and updates only the selected entry's searchTags
+in the attached catalog; icon-assets targets icons/catalog.json. The endpoint
+requires same-origin localhost requests, validates limits, deduplicates tags and
+replaces the catalog atomically.
+
+Group headings expose copy-reference buttons via StudioGroupReference. Component
+and icon group references enumerate all member IDs, including filtered-out items,
+so the reference remains stable while searching. Foundation headings reference the
+section and available token IDs. Copy feedback is visible beside the heading.
+
+## Text-part typography provenance
+
+The full-page inspector reports typography per visible descendant with direct text,
+plus editable fields. Catalog anatomy names identify parts where available; nested
+registered controls retain their owning component name. No-text selections have no
+text verdict. Container geometry is reported separately.
+
+`typography-trace.js` follows inherited author declarations, inline styles,
+importance and simple selector specificity. It expands font shorthands in detached
+CSS declarations and attributes a token only to the longhand it affects. Statuses
+are Tokenized, Literal, Browser default and Unable to trace, with inherited origin
+and source details. This is provenance, not a visual-quality or component-wide
+compliance score. Literal fallbacks do not count as tokenization.
+
+Inaccessible stylesheets, unsupported selector specificity/layers/scopes, rollback,
+active animation/transition, unknown custom properties and ambiguous native-control
+inheritance remain explicitly uncertain. Generated pseudo-element text, shadow-root
+stylesheets and user-origin styles are not comprehensively traced. Do not claim
+universal CSS coverage. The existing spacing-edit trace remains separate.

@@ -6,7 +6,8 @@ framework/CONTRACTS.md before making changes.
 ## If working on an app’s design system
 
 Read the attached app’s studio.config.json and AGENTS.md, then
-framework/AGENT-WORKFLOW.md in full. The configuration locates appRoot and the
+framework/AGENT-WORKFLOW.md in full, including its required component audit and interaction ownership rules.
+Follow any component checklist linked by the attached content’s AGENTS.md or USAGE.md. The configuration locates appRoot and the
 app-owned content folder. Use existing screens in place; no inbox is required.
 
 If no attachment exists, initialize with:

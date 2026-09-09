@@ -2,38 +2,216 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Design System Studio catalog v1",
   "type": "object",
-  "required": ["contractVersion", "name", "version", "components", "compositions", "patterns", "visualizations", "themes", "screens", "icons", "tokenFiles"],
+  "required": [
+    "contractVersion",
+    "name",
+    "version",
+    "components",
+    "compositions",
+    "patterns",
+    "visualizations",
+    "themes",
+    "screens",
+    "icons",
+    "tokenFiles"
+  ],
   "properties": {
-    "contractVersion": {"const": 1},
-    "name": {"type": "string", "minLength": 1},
-    "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
-    "description": {"type": "string"},
-    "components": {"type": "array", "items": {"$ref": "#/definitions/component"}},
-    "compositions": {"type": "array", "items": {"$ref": "#/definitions/component"}},
-    "patterns": {"type": "array", "items": {"$ref": "#/definitions/entry"}},
-    "visualizations": {"type": "array", "items": {"$ref": "#/definitions/entry"}},
-    "screens": {"type": "array", "items": {"$ref": "#/definitions/entry"}},
-    "icons": {"type": "array", "items": {"$ref": "#/definitions/entry"}},
-    "themes": {"type": "array", "items": {"type": "object", "required": ["id", "name", "file"], "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "file": {"type": "string"}}}},
-    "tokenFiles": {"type": "array", "items": {"type": "string"}},
-    "knownGaps": {"type": "array", "items": {"type": "string"}},
-    "decisions": {"type": "array", "items": {"type": "string"}}
+    "contractVersion": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/component"
+      }
+    },
+    "compositions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/component"
+      }
+    },
+    "patterns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/entry"
+      }
+    },
+    "visualizations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/entry"
+      }
+    },
+    "screens": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/entry"
+      }
+    },
+    "icons": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/entry"
+      }
+    },
+    "themes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "file"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tokenFiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "knownGaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
   },
   "definitions": {
     "entry": {
-      "type": "object", "required": ["id", "name", "preview"],
-      "properties": {"id": {"type": "string", "minLength": 1}, "name": {"type": "string", "minLength": 1}, "preview": {"type": "string", "minLength": 1}, "usage": {"type": "string"}, "css": {"type": "string"}, "module": {"type": "string"}}
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "preview"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "preview": {
+          "type": "string",
+          "minLength": 1
+        },
+        "usage": {
+          "type": "string"
+        },
+        "css": {
+          "type": "string"
+        },
+        "module": {
+          "type": "string"
+        },
+        "searchTags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "component": {
-      "allOf": [{"$ref": "#/definitions/entry"}, {"type": "object", "required": ["class", "css", "states", "anatomy"], "properties": {
-        "class": {"type": "string", "pattern": "^[a-zA-Z_][a-zA-Z0-9_-]*$"},
-        "states": {"type": "array", "minItems": 1, "items": {"type": "string"}},
-        "anatomy": {"type": "object", "required": ["parts", "spacing", "ownership", "behavior"], "properties": {
-          "parts": {"type": "array", "items": {"type": "object", "required": ["name", "selector"]}},
-          "spacing": {"type": "array", "items": {"type": "object", "required": ["label", "token", "selector", "property"]}},
-          "ownership": {"type": "string"}, "behavior": {"type": "string"}
-        }}
-      }}]
+      "allOf": [
+        {
+          "$ref": "#/definitions/entry"
+        },
+        {
+          "type": "object",
+          "required": [
+            "class",
+            "css",
+            "states",
+            "anatomy"
+          ],
+          "properties": {
+            "class": {
+              "type": "string",
+              "pattern": "^[a-zA-Z_][a-zA-Z0-9_-]*$"
+            },
+            "states": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              }
+            },
+            "anatomy": {
+              "type": "object",
+              "required": [
+                "parts",
+                "spacing",
+                "ownership",
+                "behavior"
+              ],
+              "properties": {
+                "parts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "selector"
+                    ]
+                  }
+                },
+                "spacing": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "label",
+                      "token",
+                      "selector",
+                      "property"
+                    ]
+                  }
+                },
+                "ownership": {
+                  "type": "string"
+                },
+                "behavior": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
