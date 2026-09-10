@@ -163,14 +163,37 @@
     const sample=value=>'<span class="fd-stroke-sample" aria-hidden="true"><span style="border-top-width:'+esc(value)+'"></span></span>';
     return '<div class="ts-map stroke-map"><svg class="ts-links" aria-hidden="true"></svg><div class="ts-column"><h2>Primitives</h2>'+primitives.map(name=>'<button type="button" class="ts-node sm-primitive" data-token="'+esc(name)+'" aria-pressed="false"><code>'+esc(name)+'</code><span>'+esc(resolve(name))+'</span>'+sample(resolve(name))+'</button>').join('')+'</div><div class="ts-column"><h2>Border &amp; divider roles</h2>'+roles.map(role=>'<button type="button" class="ts-node ts-style sm-role stroke-role" data-style="'+esc(role.token)+'" data-refs="'+esc(JSON.stringify([role.primitive]))+'" aria-pressed="false" aria-expanded="false"><strong>'+esc(role.label)+'</strong>'+sample(resolve(role.token))+'<span class="ts-token-value"><code>'+esc(role.token)+'</code><span> → '+esc(resolve(role.token))+'</span></span></button>').join('')+'</div></div>';
   }
+  function elevationMap(state){
+    const roles=state.catalog.foundationPresentation.elevationRoles||[];
+    const resolve=name=>{const row=state.tokens.find(row=>row.name===name);return row?M.resolveLiteral(row,state.tokens):null;};
+    const levels=state.catalog.foundationPresentation.elevationLevels||[];
+    const primitives=[...new Set(roles.filter(role=>!role.level).map(role=>role.primitive).filter(Boolean))];
+    const bases=[...levels,...primitives.map(token=>({token,kind:roles.find(role=>role.primitive===token)?.kind}))];
+    const sample=(value,role={})=>{
+      const shadow=value?(role.kind==='drop-shadow'?'filter:drop-shadow('+esc(value)+')':'box-shadow:'+esc(value)):'';
+      const style=shadow+(role.border&&resolve(role.border)?(role.placement==='right'?';border-left:':';border:')+esc(resolve(role.border)):'');
+      const placement=['right','bottom'].includes(role.placement)?role.placement:'center';
+      return '<span class="fd-elevation-sample" data-placement="'+placement+'"><span class="fd-elevation-surface" style="'+style+'" aria-hidden="true"></span></span>';
+    };
+    const roleNode=role=>'<button type="button" class="ts-node ts-style elevation-node'+(role.level&&!role.placement?' elevation-role-compact':'')+'" data-style="'+esc(role.token)+'" data-refs="'+esc(JSON.stringify(role.level?[role.level]:role.primitive?[role.primitive]:[]))+'" aria-pressed="false"><strong>'+esc(role.label||role.token)+'</strong>'+(role.level&&!role.placement?'':sample(resolve(role.token),role))+'<code>'+esc(role.token)+'</code>'+(role.border?'<code>'+esc(role.border)+'</code>':'')+(role.level?'<small>→ '+esc(levels.find(level=>level.token===role.level)?.label||role.level)+'</small>':role.primitive?'<small>→ '+esc(role.primitive)+'</small>':'')+'</button>';
+    const overview=levels.length?'<aside class="elevation-overview" aria-label="Elevation overview"><h2>Elevation stack</h2><nav aria-label="Jump to elevation level"><svg viewBox="0 0 240 330" class="elevation-stack">'+levels.map((level,index)=>{
+      const y=260-index*46;
+      return '<a role="link" tabindex="0" href="#elevation-level-'+index+'" data-elevation-jump="'+index+'" aria-label="Go to '+esc(level.label)+'"><path class="elevation-stack-edge" d="M 20 '+y+' L 110 '+(y+40)+' L 200 '+y+' L 200 '+(y+5)+' L 110 '+(y+45)+' L 20 '+(y+5)+' Z"/><path class="elevation-stack-plane" d="M 20 '+y+' L 110 '+(y-40)+' L 200 '+y+' L 110 '+(y+40)+' Z"/><text x="217" y="'+(y+5)+'">'+index+'</text></a>';
+    }).join('')+'</svg></nav><p>Choose a surface to jump to its level.</p></aside>':'';
+    return '<div class="elevation-workspace"><div class="ts-map elevation-map"><svg class="ts-links" aria-hidden="true"></svg><div class="ts-column"><h2>'+(levels.length?'Elevation levels':'Primitives')+'</h2>'+bases.map(base=>{
+      const name=base.token;
+      return '<div class="elevation-primitive"><button type="button" class="ts-node elevation-node" data-token="'+esc(name)+'"'+(levels.includes(base)?' id="elevation-level-'+levels.indexOf(base)+'"':'')+' aria-pressed="false">'+(base.label?'<strong>'+esc(base.label)+'</strong>':'')+'<code>'+esc(name)+'</code>'+(levels.includes(base)||!levels.length?sample(resolve(name),base):'')+'</button></div>';
+    }).join('')+'</div><div class="ts-column"><h2>Elevation roles</h2>'+roles.map(role=>'<div class="elevation-role">'+roleNode(role)+'</div>').join('')+'</div></div>'+overview+'</div>';
+  }
+
   function foundations(state){
     if(state.tokens===null)return {title:'Foundations',intro:'',html:state.tokenError?empty('Unable to load foundations',state.tokenError):'<p role="status">Loading…</p>'};
     if(!state.tokens.length)return {title:'Foundations',intro:'',html:empty('No foundations yet')};
     const foundationTokens=state.tokens.filter(row=>{const layer=state.catalog.foundationPresentation?.tokens?.[row.name]?.layer;return !layer||layer==='primitive';});
-    if(!foundationTokens.length)return {title:'Foundations',intro:'',html:empty('No foundations yet')};
-    const sections=[['typography','Typography','Typography'],['colors','Colors','Color'],['spacing','Spacing','Spacing'],['strokes','Borders & dividers','Strokes'],['roundness','Roundness','Shape & elevation'],['other','Other','Component controls']];
+    if(!foundationTokens.length&&!state.catalog.foundationPresentation?.elevationRoles?.length)return {title:'Foundations',intro:'',html:empty('No foundations yet')};
+    const sections=[['typography','Typography','Typography'],['colors','Colors','Color'],['spacing','Spacing','Spacing'],['strokes','Borders & dividers','Strokes'],['roundness','Roundness','Shape & elevation'],['elevation','Elevation','Shape & elevation'],['other','Other','Component controls']];
     const groupOf=row=>M.family(row,state.tokens);
-    const available=sections.filter(s=>!(s[0]==='colors'&&state.catalog.foundationPresentation?.colorRoles?.length)&&!(s[0]==='typography'&&state.catalog.foundationPresentation?.textStyles?.length)&&foundationTokens.some(row=>s[0]==='other'?['Component controls','Motion'].includes(groupOf(row)):groupOf(row)===s[2]));
+    const available=sections.filter(s=>s[0]==='elevation'?state.catalog.foundationPresentation?.elevationRoles?.length:!(s[0]==='colors'&&state.catalog.foundationPresentation?.colorRoles?.length)&&!(s[0]==='typography'&&state.catalog.foundationPresentation?.textStyles?.length)&&foundationTokens.some(row=>s[0]==='other'?['Component controls','Motion'].includes(groupOf(row)):groupOf(row)===s[2]));
     if(state.catalog.foundationPresentation?.colorRoles?.length)available.push(['color-roles','Color roles','Color roles']);
     if(state.catalog.foundationPresentation?.textStyles?.length)available.unshift(['text-styles','Text styles','Text styles']);
     const otherIndex=available.findIndex(section=>section[0]==='other');
@@ -179,13 +202,14 @@
     const selected=available.find(s=>s[0]===requested)||(state.catalog.foundationPresentation?.textStyles?.length?available.find(s=>s[0]==='text-styles'):available[0]);
     const panels=available.map(current=>{
     const category=current[0];
-    const rows=foundationTokens.filter(row=>category==='other'?['Component controls','Motion'].includes(groupOf(row)):groupOf(row)===current[2]);
+    const rows=category==='elevation'?[]:foundationTokens.filter(row=>category==='other'?['Component controls','Motion'].includes(groupOf(row)):groupOf(row)===current[2]);
     const section=(items,extra=false)=>'<div class="fd-'+(category==='typography'?'type-list':category==='spacing'?'spacing-list':'grid')+' wb-token-group'+(extra?' fd-additional':'')+'">'+items.map(row=>foundationItem(row,state,category)).join('')+'</div>';
     let content;
     if(category==='text-styles')content=textStyleMap(state);
     else if(category==='color-roles')content=colorMap(state);
     else if(category==='spacing'&&state.catalog.foundationPresentation?.spacingRoles?.length)content=spacingMap(state);
     else if(category==='strokes'&&state.catalog.foundationPresentation?.strokeRoles?.length)content=strokeMap(state);
+    else if(category==='elevation')content=elevationMap(state);
     else if(category==='roundness'&&state.catalog.foundationPresentation?.radiusRoles?.length)content=spacingMap(state,true);
     else if(category==='typography'){
       const groups=[['family','Font family'],['size','Font sizes'],['weight','Font weights'],['leading','Line heights'],['tracking','Letter spacing'],['style','Font styles'],['decoration','Text decoration'],['transform','Text case']];

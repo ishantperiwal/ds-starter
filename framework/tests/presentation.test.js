@@ -149,6 +149,16 @@ test('spacing relationships show measured gaps and insets with explicit referenc
  assert.equal((html.match(/aria-expanded="false"/g)||[]).length,2);
 });
 
+test('elevation roles render in their own Foundations panel without exposing semantic tokens as primitives',()=>{
+ const rows=M.parseTokens(':root{--elevation-card:0 1px 2px rgba(0,0,0,.02);--elevation-flyout:0 3px 8px #0001}','elevation.css');
+ const cat={...catalog,foundationPresentation:{tokens:{'--elevation-card':{layer:'semantic'},'--elevation-flyout':{layer:'semantic'}},elevationRoles:[{token:'--elevation-card',label:'Card',kind:'box-shadow'},{token:'--elevation-flyout',label:'Flyout',kind:'drop-shadow'}]}};
+ const html=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'elevation'}).html;
+ assert(html.includes('href="#foundations/elevation"'));
+ assert(html.includes('data-foundation-panel="elevation" data-selected="true"'));
+ assert(html.includes('--elevation-card'));assert(html.includes('box-shadow:0 1px 2px rgba(0,0,0,.02)'));
+ assert(html.includes('filter:drop-shadow(0 3px 8px #0001)'));
+});
+
 test('text-stack spacing specimens measure the assigned gap',()=>{
  const rows=M.parseTokens(':root{--space-3:3px;--text-gap:var(--space-3)}','spacing.css');
  const cat={...catalog,foundationPresentation:{spacingRoles:[{token:'--text-gap',primitive:'--space-3',kind:'stack',preview:'text-stack',label:'Tight text'}]}};
@@ -240,4 +250,30 @@ test('interaction sidebar is optional and starts closed without loading its ifra
  assert(html.includes('aria-controls="component-interactions" aria-expanded="false"'));
  assert(html.includes('tabindex="-1" hidden></aside>'));
  assert.equal((html.match(/<iframe /g)||[]).length,M.blocks(app).length);
+});
+
+test('elevation aliases share a primitive and preserve resolved samples',()=>{
+ const rows=M.parseTokens(':root{--shadow-soft:0 1px 2px #0001;--elevation-card:var(--shadow-soft);--elevation-menu:var(--shadow-soft)}','elevation.css');
+ const cat={...catalog,foundationPresentation:{elevationRoles:[{token:'--elevation-card',primitive:'--shadow-soft',label:'Card'},{token:'--elevation-menu',primitive:'--shadow-soft',label:'Menu',placement:'right'}]}};
+ const html=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'elevation'}).html;
+ assert.equal((html.match(/data-token="--shadow-soft"/g)||[]).length,1);
+ assert.equal((html.match(/data-refs="\[&quot;--shadow-soft&quot;\]"/g)||[]).length,2);
+ assert(html.includes('data-placement="right"'));
+ assert(html.includes('box-shadow:0 1px 2px #0001'));
+});
+
+test('numbered elevation levels render borders and connect roles to level tokens',()=>{
+ const rows=M.parseTokens(':root{--shadow:0 2px 4px #0001;--border:1px solid #ddd;--level-2:var(--shadow);--role:var(--level-2)}','elevation.css');
+ const cat={...catalog,foundationPresentation:{elevationLevels:[{token:'--level-2',label:'Level 2',primitive:'--shadow',border:'--border'}],elevationRoles:[{token:'--role',label:'Raised',level:'--level-2',border:'--border'}]}};
+ const html=V.render({...state,catalog:cat,tokens:rows,tab:'foundations',foundationSection:'elevation'}).html;
+ assert(html.includes('Elevation levels'));
+ assert(html.includes('data-token="--level-2"'));
+ assert(html.includes('data-refs="[&quot;--level-2&quot;]"'));
+ assert(html.includes('box-shadow:0 2px 4px #0001;border:1px solid #ddd'));
+ assert(html.includes('→ Level 2'));
+ assert(!html.includes('Level -1'));
+ assert(html.includes('data-elevation-jump="0"'));
+ assert(html.includes('id="elevation-level-0"'));
+ assert(html.includes('aria-label="Go to Level 2"'));
+ assert(html.includes('role="link" tabindex="0"'));
 });

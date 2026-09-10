@@ -95,7 +95,7 @@
           output.querySelector('.wb-copy-token').addEventListener('click',async event=>{
             const button=event.currentTarget;
             const text=[
-              'Design-system change reference: I want to discuss or change the variable below. The component identifies the usage I am referring to. Update the owning DS definition rather than adding a local override; check its other uses before changing a shared value. My accompanying message specifies the intended change.',
+              'DS spacing reference — inspect the shared owner before editing.',
               '',
               'Component: '+state.spec.name+' ('+(state.spec.id||state.spec.class)+')',
               'Class: .'+state.spec.class,

@@ -152,6 +152,20 @@ Spacing roles may specify `preview` as `text-stack`, `icon-label`, `actions` or
 token references incidental text spacing inside inset examples. Missing text-gap
 metadata adds no arbitrary gap. Preview geometry does not imply app adoption.
 
+`foundationPresentation.elevationRoles` optionally lists existing semantic
+elevation `token`, `label`, `kind` (`box-shadow` or `drop-shadow`) and optional
+`description`. The Foundations → Elevation panel renders the resolved value on a
+neutral surface; it does not infer a numeric scale or promote unlisted shadows.
+Optional `border` references a border shorthand token, rendered together with the
+role shadow. Primitive samples remain shadow-only.
+Optional `primitive` references the underlying shadow recipe token. When supplied,
+the view shows selectable primitives and roles with their shared relationship links.
+Legacy roles without primitives remain visible.
+Optional `placement` (`right` or `bottom`) anchors the sample to a docking edge;
+omission centers it. Labels and token names remain visible. Elevation uses one sample per level,
+compact role mappings, and distinct unnumbered treatment previews. Raw values and
+source notes remain in token files and catalog metadata rather than disclosures.
+
 Components may supply numeric `previewHeight`; the workbench bounds it to 160–800px.
 Omitting it retains the default preview height.
 
@@ -257,3 +271,13 @@ active animation/transition, unknown custom properties and ambiguous native-cont
 inheritance remain explicitly uncertain. Generated pseudo-element text, shadow-root
 stylesheets and user-origin styles are not comprehensively traced. Do not claim
 universal CSS coverage. The existing spacing-edit trace remains separate.
+
+Optional `foundationPresentation.elevationLevels` lists ordered `token`, `border`,
+`primitive`, `label`, and `class` entries. Elevation roles may reference one through
+`level`. The relationship view links levels to roles; specialized unnumbered roles
+retain their primitive entries. Older catalogs without levels keep their view.
+
+Catalogs with elevationLevels receive an isometric sidebar navigator. Each layer
+scrolls to and selects its matching level without changing the catalog route.
+At narrow widths it precedes the level map. It uses the existing level metadata
+and adds no schema requirement.

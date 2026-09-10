@@ -16,7 +16,7 @@ function main(args = process.argv.slice(2)) {
       const result = require('./initialize').initialize(options);
       console.log(JSON.stringify(result, null, 2));
       console.log('Start: node studio.js start --config ' + JSON.stringify(result.configFile));
-      console.log('Agent entry point: ' + path.join(result.content, 'AGENTS.md'));
+      console.log('Agent entry point: ' + path.join(result.content, require('node:fs').existsSync(path.join(result.content, 'run-ds.md')) ? 'run-ds.md' : 'AGENTS.md'));
     } else if (command === 'start') {
       require('./server').start({configFile: options.config, port: options.port});
     } else if (command === 'check') {

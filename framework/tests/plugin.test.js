@@ -37,6 +37,12 @@ test('initialization attaches in place, is repeat-safe, and preserves existing f
     assert.equal(fs.existsSync(path.join(result.content,'inbox')),false);
     const instructions=fs.readFileSync(path.join(result.content,'AGENTS.md'),'utf8');
     assert(instructions.includes('<studioRoot>/framework/AGENT-WORKFLOW.md'));
+    const entry=path.join(result.content,'run-ds.md');
+    assert(fs.readFileSync(entry,'utf8').includes('No extra “follow the DS” instruction'));
+    assert(!fs.readFileSync(entry,'utf8').includes('Titan'));
+    write(entry,'App-owned customized entry point');
+    assert.equal(initialize({app}).created,false);
+    assert.equal(fs.readFileSync(entry,'utf8'),'App-owned customized entry point');
     assert.equal(runtimePaths(ROOT,result.configFile).content,result.content);
     assert.deepEqual(validate(ROOT,result.configFile).errors,[]);
     const occupied=path.join(app,'existing-ds');
@@ -56,7 +62,7 @@ test('CLI works from an app directory and initialization supports a nested studi
   try {
     const app=fixture(base,'cli-app');
     const cli=(...args)=>execFileSync(process.execPath,[path.join(ROOT,'studio.js'),...args],{cwd:app,encoding:'utf8'});
-    assert(cli('init','--app','.').includes('Agent entry point:'));
+    assert(cli('init','--app','.').includes('run-ds.md'));
     const report=JSON.parse(cli('check','--config','app-design-system/studio.config.json'));
     assert.deepEqual(report.errors,[]);
     assert(cli('init','--app','.').includes('"created": false'));

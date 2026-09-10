@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+- Allow docked elevation role previews to retain placement while linking to a level.
+
+- Remove elevation Details disclosures and duplicate level-backed role samples.
+
+- Add an isometric elevation stack navigator with keyboard-accessible level links
+  and reduced-motion scrolling.
+
+- Support ordered elevation levels and level-to-role relationships alongside
+  specialized recipes; retain older elevation catalogs.
+
+- Support border-and-shadow elevation previews and full-height docked side panels.
+
+- Generate an app-owned run-ds.md entry point on initialization: follow the attached
+  DS for tasks or start/reuse its studio. Preserve existing attachments and customizations.
+
+- Show elevation primitives and semantic roles with selectable relationship links.
+  Preserve legacy roles without primitive metadata.
+
+- Simplify elevation samples, move values into Details, and support optional
+  right/bottom docking previews without changing shadow tokens.
+
 - Add heading copy references for catalog groups and foundation sections.
 
 - Add editable search tags with persistent catalog saving and success/error feedback.

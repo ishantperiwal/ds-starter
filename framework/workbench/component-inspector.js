@@ -43,7 +43,7 @@ function selector(el,body){
  }
  return steps.join(' > ');
 }
-function reference(info){return ['Design-system element reference', 'Selected: '+info.name,'Kind: '+info.kind,info.variant?'Variant: '+info.variant:'',info.id?'Component ID: '+info.id:'Basic element within the composition; no separate catalog component is required.', 'Selector: '+info.selector,'Hierarchy: '+info.hierarchy,'Owning component: '+info.owner,info.css?'CSS: '+info.css:'',info.module?'Module: '+info.module:'','Preview: '+info.preview,'Inspect the actual owner and its usages before changing shared definitions.'].filter(Boolean).join('\n');}
+function reference(info){return ['Design-system element reference', 'Selected: '+info.name,'Kind: '+info.kind,info.variant?'Variant: '+info.variant:'',info.id?'Component ID: '+info.id:'Basic element within the composition', 'Selector: '+info.selector,'Hierarchy: '+info.hierarchy,'Owning component: '+info.owner,info.css?'CSS: '+info.css:'',info.module?'Module: '+info.module:'','Preview: '+info.preview].filter(Boolean).join('\n');}
 function mount(frame,entry,catalog,onClose){
  const doc=frame.contentDocument,win=frame.contentWindow,body=doc?.querySelector('.wb-component-content')||doc?.querySelector('main');
  if(!body)return {setActive(){},destroy(){}};
@@ -63,7 +63,8 @@ function mount(frame,entry,catalog,onClose){
   Object.assign(outline.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'});
   tip.textContent=label(el)+(registered(el,entries)?' · Component':'');
   const color=registered(el,entries)?'#2170f4':'#67717d';tip.style.background=color;outline.style.borderColor=color;outline.style.borderStyle=isLayout(el)?'dashed':'solid';
-  Object.assign(tip.style,{left:Math.max(0,Math.min(r.left,win.innerWidth-180))+'px',top:Math.max(0,r.top-25)+'px'});
+  const box=tip.getBoundingClientRect();const position=root.DSLabelPlacement?.place(r,box.width,box.height,win.innerWidth,win.innerHeight);
+  if(position)Object.assign(tip.style,{left:position.left+'px',top:position.top+'px'});else tip.hidden=true;
  }
  function schedule(){if(!raf)raf=win.requestAnimationFrame(paint);}
  function show(el){

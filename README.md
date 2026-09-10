@@ -28,6 +28,7 @@ existing-app/
   ds-studio/                   Independent upstream Git checkout: software
   app-design-system/           App-owned content: created once
     studio.config.json         Relative paths and compatibility contract
+    run-ds.md                  Entry point: follow this DS and start its studio
     AGENTS.md                  Small loader for current shared instructions
     BRIEF.md                   App-specific constraints
     registry.json              This app’s catalog
@@ -57,9 +58,18 @@ it for the same attachment is a no-op.
 
 ## Tell your agent what to build
 
+Reference the generated `app-design-system/run-ds.md` with your task. “Run DS”
+means follow that attachment’s components, tokens and instructions for the task
+and related follow-ups. A standalone reference asks the agent to start/reuse the
+studio and return its URL. This is an agent instruction, not a new CLI command.
+
+New initializations create this app-owned file. Existing attachments are left
+unchanged, including on repeated initialization; they can keep using AGENTS.md
+or add an equivalent entry point explicitly.
+
 Point to the actual screens, for example:
 
-> Read app-design-system/AGENTS.md. Build/expand this app’s DS from
+> Follow app-design-system/run-ds.md. Build/expand this app’s DS from
 > pages/opportunities/record.html and settings/editor.html. Work with the screens
 > in place, put shared app content in the configured DS folder, and register real
 > previews. Keep the studio checkout unchanged.

@@ -93,6 +93,28 @@
     const observer=new ResizeObserver(draw);observer.observe(map);mapObservers.push(observer);draw();
     });
   }
+  function bindElevationOverview(){
+    document.querySelectorAll('[data-elevation-jump]').forEach(link=>{
+      link.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();link.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));}});
+      link.addEventListener('click',event=>{
+        event.preventDefault();
+        const workspace=link.closest('.elevation-workspace');
+        const target=workspace?.querySelector('#elevation-level-'+link.dataset.elevationJump);
+        if(!target)return;
+        // Search can hide the requested level. Clear it through its normal handler.
+        const search=document.getElementById('catalog-filter');
+        if(search?.value){search.value='';search.dispatchEvent(new Event('input',{bubbles:true}));}
+        requestAnimationFrame(()=>{
+          target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+          target.focus({preventScroll:true});
+          if(target.getAttribute('aria-pressed')!=='true')target.click();
+          workspace.querySelectorAll('[data-elevation-jump]').forEach(item=>{
+            if(item===link)item.setAttribute('aria-current','true');else item.removeAttribute('aria-current');
+          });
+        });
+      });
+    });
+  }
   function bindColorBrowser(){}
   function bindComponentSpacing(preview,entry,controls){
     let disposed=false,statusObserver,statusNode,componentInspector;
@@ -284,7 +306,7 @@
     });
     document.querySelectorAll('[data-copy-component], [data-copy-pattern]').forEach(button=>button.addEventListener('click',async()=>{
       const isPattern=!!button.dataset.copyPattern;const entry=isPattern?state.catalog.patterns.find(item=>item.id===button.dataset.copyPattern):M.blocks(state.catalog).find(item=>item.id===button.dataset.copyComponent);if(!entry)return;
-      const text=isPattern?['Design-system pattern reference: use this registered pattern as context for my accompanying request. Read its contract before implementing or changing it; check existing usages before shared changes.','Pattern: '+entry.name,'ID: '+entry.id,'Type: '+entry.category,entry.css?'Shared CSS: '+entry.css:'Implementation: documented guidance; inspect the registry for its requirements.','Catalog: '+location.origin+location.pathname+'#patterns/'+encodeURIComponent(entry.id),'Preview: '+M.previewURL(entry,state.base,state.theme)].join('\n'):['Design-system component reference: use this component as the context for my accompanying request. Change its shared DS definition when requested, and check other usages before making shared changes.',
+      const text=isPattern?['Pattern reference','Pattern: '+entry.name,'ID: '+entry.id,'Type: '+entry.category,entry.css?'Shared CSS: '+entry.css:'Implementation: documented guidance; inspect the registry for its requirements.','Catalog: '+location.origin+location.pathname+'#patterns/'+encodeURIComponent(entry.id),'Preview: '+M.previewURL(entry,state.base,state.theme)].join('\n'):['Component reference',
         'Component: '+entry.name,'ID: '+entry.id,'Class: .'+entry.class,'CSS: '+entry.css,entry.module?'Renderer: '+entry.module:'',
         'Catalog: '+location.origin+location.pathname+'#components/'+encodeURIComponent(entry.id),
         'Preview: '+M.previewURL(entry,state.base,state.theme)].filter(Boolean).join('\n');
@@ -353,6 +375,7 @@
       if(sample.dataset.spacingKind==='radius'&&CSS.supports('border-radius',value))sample.querySelector('.rm-example').style.borderRadius=value;
     });
     bindTextStyles();
+    bindElevationOverview();
     bindColorBrowser();
     bindComponentGallery();
   }

@@ -406,9 +406,11 @@ body[data-view="components"] .cg-dialog .wb-spec-body{padding:20px 24px 0}
 
 .ci-empty{padding:20px 16px;color:var(--studio-muted);font-size:13px}
 
-.ci-variants{display:flex;flex-wrap:wrap;gap:16px;padding:0 16px;border-bottom:1px solid var(--studio-hairline);background:#fff}
-.ci-variants button{border:0;border-bottom:2px solid transparent;background:transparent;padding:10px 0;font-size:12px;color:var(--studio-muted)}
-.ci-variants button[aria-selected=true]{color:var(--studio-text);border-bottom-color:var(--studio-accent)}
+.ci-variants{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--studio-hairline);background:#fff}
+.ci-variants button{border:1px solid var(--studio-hairline);border-radius:999px;background:transparent;padding:7px 12px;font-size:12px;line-height:18px;color:var(--studio-muted);cursor:pointer}
+.ci-variants button:hover{background:color-mix(in srgb,var(--studio-accent) 6%,white)}
+.ci-variants button[aria-selected=true]{color:#fff;background:var(--studio-accent);border-color:var(--studio-accent)}
+.ci-variants button:focus-visible{outline:2px solid var(--studio-accent);outline-offset:2px}
 
 /* Keep live controls visible; only the state list scrolls. */
 .ci-panel{display:flex;flex-direction:column;overflow:hidden}
@@ -472,9 +474,77 @@ body[data-view="icons"] .wb-lede{display:none}
 .stroke-map .sm-primitive{grid-template-columns:minmax(0,170px) 40px 80px;gap:12px;justify-content:start}
 .stroke-map .sm-primitive .fd-stroke-sample{width:80px;margin:4px 0}
 @media(max-width:720px){.stroke-map{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}.stroke-map .sm-primitive{grid-template-columns:minmax(0,1fr) 36px;gap:8px}.stroke-map .sm-primitive .fd-stroke-sample{grid-column:1/-1}}
+/* Keep shadow samples quiet; labels and disclosure never compete for width. */
+.fd-panel[data-foundation-panel="elevation"] .fd-elevation-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:32px 28px;max-width:1040px;background:transparent;border:0;box-shadow:none;padding:0;align-items:start}
+.fd-elevation-card{display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:0}
+.fd-elevation-sample{display:grid;place-items:center;height:176px;padding:32px;background:var(--studio-recessed);border-radius:6px;margin-bottom:8px}
+.fd-elevation-surface{width:144px;max-width:100%;height:80px;border:0;border-radius:5px;background:var(--studio-surface)}
+.fd-elevation-sample[data-placement="right"]{padding:24px 0 24px 40px}
+.fd-elevation-sample[data-placement="right"] .fd-elevation-surface{justify-self:end;height:128px;border-radius:5px 0 0 5px}
+.fd-elevation-sample[data-placement="bottom"]{padding:40px 32px 0}
+.fd-elevation-sample[data-placement="bottom"] .fd-elevation-surface{align-self:end;width:180px;height:96px;border-radius:5px 5px 0 0}
+.fd-elevation-card h3{margin:0;font-size:13px;line-height:1.5;font-weight:500}
+.fd-elevation-card .fd-token-name{padding:0;font-size:11px;line-height:1.6;color:var(--studio-muted);overflow-wrap:anywhere}
+.fd-elevation-details{font-size:12px;color:var(--studio-muted);min-width:0}
+.fd-elevation-details summary{cursor:pointer;width:fit-content;padding:4px 0}
+.fd-elevation-details summary:focus-visible{outline:2px solid var(--studio-muted);outline-offset:3px}
+.fd-elevation-details code{display:block;white-space:normal;overflow-wrap:anywhere;font-size:11px;line-height:1.7;margin-top:8px}
+.fd-elevation-details p{margin:8px 0 0;font-size:12px;line-height:1.6}
 /* Miscellaneous foundations use compact vertical rows, not a stretched grid. */
 .fd-panel[data-foundation-panel="other"] .fd-grid{display:flex;flex-direction:column;gap:12px;max-width:720px;border:0;background:transparent;padding:0;box-shadow:none}
 .fd-item--other{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:16px 20px;border:1px solid var(--studio-line);border-radius:8px;background:var(--studio-surface)}
 .fd-item--other .fd-label{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:0}
 .fd-item--other .fd-label h3{margin:0;font-size:13px;font-weight:500}
 .fd-item--other .fd-token-name{padding:0;font-size:11px;color:var(--studio-muted);overflow-wrap:anywhere}
+
+/* Elevation uses the shared selectable primitive → role relationship map. */
+.elevation-map{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:80px;max-width:1040px}
+.elevation-primitive,.elevation-role{margin-bottom:24px;min-width:0}
+.elevation-node{min-height:220px;display:flex;flex-direction:column;gap:8px}
+.elevation-node code,.elevation-node small{font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.elevation-node small{color:var(--studio-muted)}
+.elevation-node strong{font-size:13px;font-weight:500}
+.elevation-node .fd-elevation-sample{width:100%;height:128px;min-height:128px;margin:0;padding:24px}
+.elevation-node .fd-elevation-surface{height:64px;width:128px}
+.elevation-node .fd-elevation-sample[data-placement="right"]{padding:16px 0 16px 32px}
+.elevation-node .fd-elevation-sample[data-placement="right"] .fd-elevation-surface{height:96px}
+.elevation-node .fd-elevation-sample[data-placement="bottom"]{padding:32px 24px 0}
+.elevation-node .fd-elevation-sample[data-placement="bottom"] .fd-elevation-surface{height:80px}
+.elevation-map .fd-elevation-details{padding:0 12px}
+@media(max-width:900px){.elevation-map{gap:32px}.elevation-node{padding:8px}.elevation-node .fd-elevation-sample{padding:20px 12px}}
+
+/* Docked panel fills its containing viewport; only its exposed edge casts depth. */
+.elevation-node .fd-elevation-sample[data-placement="right"]{padding:0 0 0 32px}
+.elevation-node .fd-elevation-sample[data-placement="right"] .fd-elevation-surface{height:100%;border-radius:0;align-self:stretch}
+.elevation-node .fd-elevation-surface{box-sizing:border-box}
+
+/* Persistent elevation navigation; the stack illustrates order, not pixel distance. */
+.elevation-workspace{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:32px;align-items:start}
+.elevation-workspace .elevation-map{gap:48px}
+.elevation-overview{position:sticky;top:24px;padding:20px 8px 16px;border-left:1px solid var(--studio-line);min-width:0}
+.elevation-overview h2{font-size:13px;font-weight:500;margin:0 12px 8px}
+.elevation-overview p{font-size:11px;line-height:1.6;color:var(--studio-muted);margin:0 12px}
+.elevation-stack{display:block;width:100%;overflow:visible}
+.elevation-stack a{cursor:pointer;outline:none}
+.elevation-stack-plane{fill:var(--studio-surface);stroke:#aeb9c8;stroke-width:1;transition:fill .15s,stroke .15s;filter:drop-shadow(0 5px 5px #1d33551a)}
+.elevation-stack-edge{fill:#dbe2ec;stroke:#aeb9c8;stroke-width:1}
+.elevation-stack text{fill:var(--studio-muted);font:12px ui-monospace,monospace}
+.elevation-stack a:hover .elevation-stack-plane,.elevation-stack a:focus .elevation-stack-plane,.elevation-stack a[aria-current] .elevation-stack-plane{fill:#e3efff;stroke:#2170f4;stroke-width:2}
+.elevation-stack a:focus text,.elevation-stack a[aria-current] text{fill:#2170f4;font-weight:700}
+.elevation-node[id]{scroll-margin-top:24px}
+@media(max-width:1100px){.elevation-workspace{grid-template-columns:minmax(0,1fr) 160px;gap:16px}.elevation-workspace .elevation-map{gap:28px}}
+@media(max-width:900px){.elevation-workspace{grid-template-columns:minmax(0,1fr)}.elevation-overview{position:static;grid-row:1;border-left:0;border-bottom:1px solid var(--studio-line);padding:0 0 16px}.elevation-overview nav{max-width:200px}.elevation-overview h2,.elevation-overview p{margin-left:0}}
+@media(prefers-reduced-motion:reduce){.elevation-stack-plane{transition:none}}
+
+/* Roles are mappings, not duplicate specimens of the level surface. */
+.elevation-node.elevation-role-compact{min-height:0;padding:16px;gap:8px}
+.elevation-map .elevation-primitive:has(.elevation-node:not([id])) .elevation-node{min-height:0}
+
+/* Shared tag editor: modal owns the outer inset; fields own their internal inset. */
+.studio-tag-editor{display:grid;gap:12px;padding:16px 0;margin:0}
+.studio-tag-editor label{display:grid;gap:8px;font-weight:600}
+.studio-tag-editor textarea{display:block;width:100%;box-sizing:border-box;min-height:84px;padding:12px;border:1px solid var(--studio-line);border-radius:6px;background:var(--studio-surface);color:var(--studio-text);font:inherit;resize:vertical}
+.studio-tag-editor button{justify-self:start;padding:8px 14px;min-height:36px;border:1px solid var(--studio-line);border-radius:6px;background:var(--studio-recessed);color:var(--studio-text);font:inherit;cursor:pointer}
+.studio-tag-editor [role=status]:empty{display:none}
+.cg-dialog .studio-tag-editor{padding:24px;border-top:1px solid var(--studio-line)}
+@media(max-width:720px){.cg-dialog .studio-tag-editor{padding:16px}}

@@ -1,9 +1,9 @@
 (()=>{
 window.StudioTagEditor={mount(host,entry,collection,onSave){
- const form=document.createElement('form');form.style.cssText='padding:16px 0;display:grid;gap:8px';
- const label=document.createElement('label');label.textContent='Search tags';label.style.cssText='display:grid;gap:8px;font-weight:600';
- const input=document.createElement('textarea');input.rows=3;input.value=(entry.searchTags||[]).join(', ');input.placeholder='Add tags, separated by commas';input.style.cssText='width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:6px;font:inherit';label.append(input);
- const button=document.createElement('button');button.type='submit';button.textContent='Save tags';button.style.cssText='justify-self:start;padding:8px 12px';
+ const form=document.createElement('form');form.className='studio-tag-editor';
+ const label=document.createElement('label');label.textContent='Search tags';
+ const input=document.createElement('textarea');input.rows=3;input.value=(entry.searchTags||[]).join(', ');input.placeholder='Add tags, separated by commas';label.append(input);
+ const button=document.createElement('button');button.type='submit';button.textContent='Save tags';
  const status=document.createElement('span');status.setAttribute('role','status');
  form.append(label,button,status);host.append(form);
  form.onsubmit=async event=>{event.preventDefault();button.disabled=true;status.textContent='Saving…';try{

@@ -27,11 +27,11 @@
       .tip p{margin:0 0 7px}.tip code{white-space:normal}.tip button{margin-right:6px}.tip[hidden]{display:none}
       .swatch{display:inline-block;width:10px;height:10px;background:#ffc96b;margin-right:4px}.swatch.red{background:#efaaaa}.swatch.gray{background:#aeb3ba}
       .component-outline{position:fixed;border:2px solid #246bff;background:#246bff08;pointer-events:none}
-      .component-name{position:absolute;top:0;left:0;background:#246bff;color:white;padding:3px 7px;white-space:nowrap}
-      .component-panel{right:16px;top:16px;max-height:calc(100vh - 110px);overflow:auto;width:380px}
+      .component-name{position:fixed;max-width:calc(100vw - 8px);overflow:hidden;text-overflow:ellipsis;top:0;left:0;background:#246bff;color:white;padding:3px 7px;white-space:nowrap}
+      .component-panel{right:16px;top:16px;max-height:calc(100vh - 110px);overflow:auto;width:460px;max-width:calc(100vw - 32px)}
       .component-panel button,.component-panel a{margin:3px}.component-panel a{color:#185ac5;display:inline-block}
       .component-panel summary{cursor:pointer;margin:8px 0}.component-panel h3{margin:0 0 8px}
-      .type-verdict{padding:10px;border-radius:7px;background:#fff3dc;margin:12px 0 6px;font-weight:650}
+      .panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.panel-heading h3{margin:0}.panel-caption{color:#686873;font-size:12px}.panel-actions{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.component-panel .panel-actions button,.component-panel .panel-actions a{margin:0;padding:8px 11px;border:1px solid #d9d9df;border-radius:8px;text-decoration:none;font-weight:550}.panel-actions button:first-child{background:#edf3ff;color:#185ac5;border-color:#cfddfb}.panel-preview iframe{width:100%;border:1px solid #e8e8ec;border-radius:6px;background:#fff}.component-panel details{border-top:1px solid #eeeef2;padding-top:4px;margin-top:10px}.component-panel .type-verdict{border:0;padding:12px}.type-verdict>summary{margin:0;font-weight:650}.type-verdict .type-table{font-weight:400}.type-verdict.is-clear{background:#e5f4ec;color:#246143}.type-verdict{padding:10px;border-radius:7px;background:#fff3dc;margin:12px 0 6px;font-weight:650}
       .type-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;table-layout:fixed}
       .type-table th,.type-table td{text-align:left;padding:8px 4px;border-bottom:1px solid #e8e8ec;vertical-align:top}
       .type-table th{font-weight:600;color:#62626b}.type-table td:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -290,6 +290,7 @@
       }
       const copy=document.createElement('button');copy.textContent='Copy spacing context';
       copy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item));copy.textContent='Copied';}catch{copy.textContent='Copy unavailable';}};tip.append(copy);
+      const detailedCopy=document.createElement('button');detailedCopy.textContent='Copy detailed context';detailedCopy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item,true));detailedCopy.textContent='Copied';}catch{detailedCopy.textContent='Copy unavailable';}};tip.append(detailedCopy);
       const close=document.createElement('button');close.textContent='Close';close.onclick=dismiss;tip.append(close);
       const rect=button.getBoundingClientRect();const size=tip.getBoundingClientRect();
       tip.style.left=Math.max(12,Math.min(rect.left,innerWidth-size.width-12))+'px';tip.style.top=Math.max(12,Math.min(rect.bottom+6,innerHeight-size.height-12))+'px';
@@ -304,7 +305,7 @@
       }
       return parts.join(' > ');
     }
-    function contextText(item) {
+    function contextText(item, detailed=false) {
       const el=item.element;
       const short=text=>(text||'').replace(/\s+/g,' ').trim().slice(0,140);
       const label=node=>{
@@ -322,6 +323,16 @@
       const section=el.closest('.ds-card,section,[role="dialog"],.ps-pane');
       const heading=section?.querySelector('h1,h2,h3,h4,.ps-card-title,.ds-card-title');
       const url=new URL(location.href);url.searchParams.delete('ds');
+      if(!detailed)return [
+        'Spacing reference', 'Page: '+document.title+' — '+url.href,
+        'Element: '+elementPath(el), 'Property: '+item.prop+'; computed: '+item.px+'px',
+        'Token: '+(item.tokens?.join(', ')||'(none)'),
+        'Declaration: '+(item.declaration||item.prop)+': '+item.value,
+        'Source: '+item.source+'; selector: '+(item.selector||'(unresolved)'),
+        states.length?'State: '+states.join(' | '):'',
+        'Viewport: '+innerWidth+' × '+innerHeight+'; theme: '+(document.documentElement.getAttribute('data-theme')||document.body.getAttribute('data-theme')||'default'),
+        item.between?'Between: '+item.between.map(elementPath).join(' → '):''
+      ].filter(Boolean).join('\n');
       return [
         'Spacing adjustment context',
         'Page: '+document.title+' — '+url.href,
@@ -453,13 +464,15 @@
       outline.style.cssText=`left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`;
       outline.replaceChildren();const name=document.createElement('span');name.className='component-name';
       name.textContent=item.entry?.name||'Page-owned · '+item.el.localName;outline.append(name);
-      if(r.top>28)name.style.top='-25px';
+      const box=name.getBoundingClientRect();const position=window.DSLabelPlacement?.place(r,box.width,box.height,innerWidth,innerHeight);
+      if(position){name.style.left=position.left+'px';name.style.top=position.top+'px';}else name.hidden=true;
     }
     function closeComponent(){componentSelection=null;hovered=null;componentPanel.hidden=true;outline.hidden=true;}
     function inspectComponent(item){
       componentSelection=item;drawComponent(item);collect();componentPanel.replaceChildren();componentPanel.hidden=false;
       const {el,entry}=item;
-      const add=(tag,text)=>{const node=document.createElement(tag);node.textContent=text;componentPanel.append(node);return node;};
+      let contentTarget=componentPanel;
+      const add=(tag,text)=>{const node=document.createElement(tag);node.textContent=text;contentTarget.append(node);return node;};
       const path=elementPath(el),classes=Array.from(el.classList),cs=getComputedStyle(el);
       const label=(el.getAttribute('aria-label')||el.labels?.[0]?.textContent||el.querySelector('.ds-field-label')?.textContent||'').trim();
       const variants=entry?classes.filter(name=>name.startsWith(entry.class+'--')):[];
@@ -488,16 +501,36 @@
         const tokens=Array.from(parent.style).filter(prop=>prop.startsWith('--'));
         if(tokens.length)local.push('Ancestor token overrides at '+elementPath(parent)+': '+tokens.map(prop=>prop+': '+parent.style.getPropertyValue(prop)).join('; '));
       }
-      add('h3',entry?.name||'Page-owned UI');
-      add('p',entry?'Shared class: .'+entry.class:'No registered component matches this element. Use the hierarchy to inspect a containing component.');
-      if(label)add('p','Label: '+label);
-      add('p',path);add('p','Variant classes: '+(variants.join(' ')||'default / none'));
-      add('p','State: '+(state.join(', ')||'default'));
-      add('p','Container geometry: radius '+cs.borderRadius+'; padding '+cs.padding+'; gap '+cs.gap);
-      add('div','Typography by text part').className='type-verdict';
-      add('p','Actual visible text and editable fields, including nested controls. This is source tracing, not a visual-quality score.');
-      if(!textAudit)add('p','Unable to trace: typography helper did not load.');
-      else if(!textParts.length)add('p','No visible text parts. Typography is not applicable to this selection.');
+      const heading=add('div','');heading.className='panel-heading';
+      const title=document.createElement('h3');title.textContent=entry?.name||'Page-owned UI';heading.append(title);
+      const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','Close component panel');close.onclick=closeComponent;heading.append(close);
+      add('p',(label||el.textContent.trim().replace(/\s+/g,' ').slice(0,70)||el.localName)+(variants.length?' · '+variants.map(v=>v.slice(entry.class.length+2)).join(', '):'')).className='panel-caption';
+      const actions=add('div','');actions.className='panel-actions';
+      if(entry){
+        const link=document.createElement('a');link.textContent='View in design system ↗';
+        const target=new URL(workbenchURL,location.href);target.hash='components/'+encodeURIComponent(entry.id);
+        link.href=target.href;link.target='_blank';link.rel='noopener';actions.append(link);
+      }
+      const copyActions=add('div','');copyActions.className='panel-actions';
+      if(entry?.preview){
+        const preview=add('details','');preview.className='panel-preview';preview.open=true;componentPanel.insertBefore(preview,actions);
+        const summary=document.createElement('summary');summary.textContent='Registered preview';preview.append(summary);
+        const frame=document.createElement('iframe');frame.title=entry.name+' registered preview';
+        frame.height=Math.min(Math.max(entry.previewHeight||320,320),600);
+        frame.addEventListener('load',()=>{
+          const fit=()=>{try{const doc=frame.contentDocument;if(!doc?.body)return;frame.style.height='1px';frame.style.height=Math.min(Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight,160),600)+'px';}catch{/* Cross-origin previews retain their registered height and native scrolling. */}};
+          fit();frame.contentDocument?.fonts?.ready.then(fit);
+        });
+        frame.src=new URL(entry.preview,sourceBase).href;preview.append(frame);
+      }
+      const unresolved=typography.filter(row=>row.kind==='unknown').length;
+      const literals=typography.filter(row=>row.kind==='hard').length;
+      const statusBox=add('details','');statusBox.className='type-verdict';const status=document.createElement('summary');statusBox.append(status);
+      if(!entry)status.textContent='Not registered in the design system';
+      else if(!textAudit)status.textContent='Typography check unavailable';
+      else if(unresolved||literals)status.textContent='Typography: '+[unresolved?unresolved+' unresolved':null,literals?literals+' literal values':null].filter(Boolean).join(' · ');
+      else {status.textContent=textParts.length?'Typography: no issues detected':'Registered component · no text to check';statusBox.classList.add('is-clear');}
+      contentTarget=statusBox;
       const names=window.DSTypography?.names||{};
       for(const part of textParts){
         add('h4',part.name);
@@ -516,6 +549,12 @@
       }
       const typeDetails=add('details','');const typeSummary=document.createElement('summary');typeSummary.textContent='Typography source details';typeDetails.append(typeSummary);
       typography.forEach(item=>{const p=document.createElement('p');p.textContent=`${item.part} / ${item.prop}: ${item.resolved} ← ${item.declaration}${item.tokens.length?' · token '+item.tokens.join(', '):''}${item.selector?' · '+item.selector+' · '+item.source:''}${item.inherited?' · inherited':''}`;typeDetails.append(p);});
+      contentTarget=componentPanel;
+      const diagnostics=add('details','');const diagnosticSummary=document.createElement('summary');diagnosticSummary.textContent='Token and source details';diagnostics.append(diagnosticSummary);
+      contentTarget=diagnostics;
+      add('p','Typography source tracing only. Page override candidates are not confirmed issues.');
+      add('p',path);add('p','State: '+(state.join(', ')||'default'));
+      add('p','Container: radius '+cs.borderRadius+'; padding '+cs.padding+'; gap '+cs.gap);
       const chain=componentChain(el).reverse();
       add('p','Containing components');
       chain.forEach(parent=>{const button=add('button',parent.entry.name);button.onclick=()=>inspectComponent(parent);});
@@ -523,7 +562,7 @@
         for(const source of [entry.css,entry.module].filter(Boolean)){
           const link=add('a',source);link.href=new URL(source,sourceBase).href;link.target='_blank';link.rel='noopener';
         }
-        const link=add('a','Open workbench');link.href=workbenchURL;link.target='_blank';link.rel='noopener';
+        
       }
       const details=add('details','');const summary=document.createElement('summary');summary.textContent='Local override candidates ('+local.length+')';details.append(summary);
       const note=document.createElement('p');note.textContent='Matching page declarations can override shared styles. These are candidates, not proven cascade winners; inherited and complex rules may be incomplete.';details.append(note);
@@ -538,9 +577,17 @@
         'Viewport: '+innerWidth+' × '+innerHeight,'Local override candidates:\n'+(local.join('\n')||'None detected'),
         'Evaluate shared component, variant or instance scope before changing. Candidate overrides are not verified cascade winners.'
       ].join('\n');
-      const copy=(label,value)=>{const button=add('button',label);button.onclick=async()=>{try{await navigator.clipboard.writeText(value);button.textContent='Copied';}catch{button.textContent='Copy unavailable';}};};
-      if(entry)copy('Copy component',entry.name+' (.'+entry.class+')');copy('Copy instance context',context);
-      add('button','Close').onclick=closeComponent;
+      const copy=(label,value)=>{const button=document.createElement('button');button.textContent=label;copyActions.append(button);button.onclick=async()=>{try{await navigator.clipboard.writeText(value);button.textContent='Copied ✓';setTimeout(()=>{button.textContent=label;},1800);}catch{button.textContent='Copy unavailable';}};};
+      const concise=['Component reference','Page: '+document.title+' — '+url.href,
+        'Component: '+(entry?entry.name+' ('+entry.id+')':'Page-owned UI'),
+        'Element: '+path,classes.length?'Classes: '+classes.join(' '):'',
+        label?'Label: '+label.slice(0,120):'',
+        'Variant/state: '+(variants.join(' ')||'default')+' / '+(state.join(', ')||'default'),
+        entry?'Source: '+[entry.css,entry.module].filter(Boolean).join(', '):'',
+        'Viewport: '+innerWidth+' × '+innerHeight+'; theme: '+(document.documentElement.getAttribute('data-theme')||document.body.getAttribute('data-theme')||'default')].filter(Boolean).join('\n');
+      if(entry)copy('Copy component',['Component: '+entry.name+' ('+entry.id+')','Class: .'+entry.class,'Source: '+[entry.css,entry.module].filter(Boolean).join(', '),'Page: '+url.href].join('\n'));
+      copy('Copy instance context',concise);copy('Copy detailed context',context);
+      const detailedButton=copyActions.lastElementChild;diagnostics.append(detailedButton);
     }
     root.querySelectorAll('[data-mode]').forEach(button=>button.onclick=()=>{
       mode=button.dataset.mode;dismiss();closeComponent();bands.replaceChildren();
@@ -617,7 +664,8 @@
     document.fonts?.ready.then(schedule);render();
   };
   const helperURL=new URL('typography-trace.js',document.currentScript.src).href;
-  const launch=()=>{if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();};
+  const placementURL=new URL('label-placement.js',document.currentScript.src).href;
+  const launch=()=>{if(!window.DSLabelPlacement){const script=document.createElement('script');script.src=placementURL;script.onload=launch;script.onerror=()=>console.error('Inspector label placement unavailable');document.head.append(script);return;}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();};
   if(window.DSTypography)launch();else {
     const helper=document.createElement('script');helper.src=helperURL;helper.onload=launch;
     helper.onerror=()=>{console.error('Typography tracing unavailable');launch();};document.head.append(helper);
