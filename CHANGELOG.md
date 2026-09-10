@@ -2,6 +2,42 @@
 
 ## Unreleased
 
+- Remove stacked minimum heights from variant specimen wrappers and let fluid
+  specimen hosts use the available preview width, reducing excess empty space.
+
+- Focus the first variant on opening and add variant navigation chips above
+  Contract & Anatomy that select and pan to their corresponding preview.
+
+- Restore the selected variant’s live preview above interaction states, including
+  components without registered state targets.
+
+- Place component and variant copy controls beside their names and add a subtle
+  dot matrix to the variant preview canvas.
+
+- Give single-preview components a named Default tile and variant copy action;
+  preserve registered target names and show the same name in interactions.
+
+- Restore the Component preview toggle with in-place inspection highlights while
+  keeping the separate inspector sidebar closed and interaction states visible.
+
+- Fit full-width variant tiles inside bounded pan/zoom canvases with Recenter;
+  size the right-hand interaction panel from its specimen width.
+
+- Select registered variant targets directly from bordered preview tiles, with
+  contextual copy controls and a state-only interaction panel.
+
+- Use a shared top-center toast for copy feedback, including inspector frames,
+  without changing button labels or inserting inline layout messages.
+
+- Size canvas cards from registered preview widths and measured specimen heights;
+  reflow mixed-size cards without fixed thumbnail crops.
+
+- Make the component canvas full-bleed with floating glass pill navigation, bottom
+  zoom controls, animated focus transitions and a right-side interaction panel.
+
+- Add a pannable, zoomable component canvas with search, Fit All, focused dependency
+  previews, ancestry navigation and the existing interaction/inspection tools.
+
 - Allow docked elevation role previews to retain placement while linking to a level.
 
 - Remove elevation Details disclosures and duplicate level-backed role samples.
@@ -244,7 +280,28 @@
 - Optional catalog-driven Interactions sidebar with live and held state previews,
   per-control targets, Escape/outside dismissal and focus return on explicit close.
 
-### Unreleased — text-part typography inspection
+### Unreleased
+
+- Remove stacked minimum heights from variant specimen wrappers and let fluid
+  specimen hosts use the available preview width, reducing excess empty space.
+
+- Focus the first variant on opening and add variant navigation chips above
+  Contract & Anatomy that select and pan to their corresponding preview.
+
+- Restore the selected variant’s live preview above interaction states, including
+  components without registered state targets.
+
+- Place component and variant copy controls beside their names and add a subtle
+  dot matrix to the variant preview canvas.
+
+- Give single-preview components a named Default tile and variant copy action;
+  preserve registered target names and show the same name in interactions.
+
+- Restore the Component preview toggle with in-place inspection highlights while
+  keeping the separate inspector sidebar closed and interaction states visible.
+
+- Fit full-width variant tiles inside bounded pan/zoom canvases with Recenter;
+  size the right-hand interaction panel from its specimen width. — text-part typography inspection
 
 - Replace root-level tokenization verdicts with named text-part reports.
 - Trace inherited styles and property-specific tokens in font shorthands; distinguish

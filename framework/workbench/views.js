@@ -49,9 +49,9 @@
       '<details><summary>Registry source</summary><pre>'+esc(JSON.stringify(entry,null,2))+'</pre></details></div></details>';
   }
   function specimen(entry,state,kind='component'){
-    const heading='<header class="wb-spec-head"><div><h2>'+esc(entry.name)+'</h2>'+((entry.usage||entry.summary)?'<p class="wb-description">'+esc(entry.usage||entry.summary)+'</p>':'')+'</div></header>';
-    const visual='<div class="wb-spec-body">'+(kind==='component'?componentTools():kind==='screen'?'<div class="wb-screen-tools">'+widthTools()+'<a class="wb-screen-open" href="'+esc(M.previewURL(entry,state.base,state.theme))+'" target="_blank" rel="noopener noreferrer" aria-label="Open '+esc(entry.name)+' full page in a new tab">Open full page ↗</a></div>':widthTools())+frame(entry,state,kind==='icon provider'?'wb-preview--icons':kind==='screen'?'wb-preview--screen':'')+'</div>';
-    return '<article class="wb-spec wb-filterable" id="entry-'+esc(entry.id)+'" data-search="'+esc(M.searchMetadata(entry))+'">'+(kind==='component'?visual+heading:heading+visual)+contract(entry)+'</article>';
+    const heading='<header class="wb-spec-head"><div><h2>'+esc(entry.name)+'</h2>'+(kind!=='component'&&(entry.usage||entry.summary)?'<p class="wb-description">'+esc(entry.usage||entry.summary)+'</p>':'')+'</div>'+(kind==='component'?componentTools():'')+'</header>';
+    const visual='<div class="wb-spec-body">'+(kind==='component'?'':kind==='screen'?'<div class="wb-screen-tools">'+widthTools()+'<a class="wb-screen-open" href="'+esc(M.previewURL(entry,state.base,state.theme))+'" target="_blank" rel="noopener noreferrer" aria-label="Open '+esc(entry.name)+' full page in a new tab">Open full page ↗</a></div>':widthTools())+frame(entry,state,kind==='icon provider'?'wb-preview--icons':kind==='screen'?'wb-preview--screen':'')+'</div>';
+    return '<article class="wb-spec wb-filterable" id="entry-'+esc(entry.id)+'" data-search="'+esc(M.searchMetadata(entry))+'">'+(heading+visual)+contract(entry)+'</article>';
   }
   const search=(label,placeholder)=>'<div class="wb-toolbar"><input class="wb-search" type="search" id="catalog-filter" aria-label="'+esc(label)+'" placeholder="'+esc(placeholder)+'"><span id="filter-status" role="status"></span></div>';
   function overview(state){

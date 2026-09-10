@@ -48,7 +48,8 @@ test('components expose real previews, width controls, source links and readable
   const details=V.componentDetails(catalog.components[0],state);
   assert(!details.includes('data-width="320px"'));
   assert(!details.includes('>Fluid<'));
-  assert(details.indexOf('class="wb-spec-body"')<details.indexOf('class="wb-spec-head"'));
+  assert(details.indexOf('class="wb-spec-head"')<details.indexOf('class="wb-spec-body"'));
+  assert(details.indexOf('class="cg-view-toggle"')<details.indexOf('</header>'));
   assert(details.includes('Spacing relationships'));
   assert(details.includes('Spacing ownership'));
   assert(html.includes('id="entry-'+catalog.components[0].id+'"'));
@@ -222,6 +223,7 @@ test('gallery exposes the class reference and only the dedicated expand control 
  assert(html.includes('class="cg-expand" data-component='));
  assert(html.includes('class="cg-card-footer"'));
  assert(html.includes('data-preview-mode="component"'));
+ assert(html.includes('data-preview-mode="spacing"'));
  assert(html.includes('<code>.'+catalog.components[0].class+'</code>'));
  assert(!html.includes('class="cg-open"'));
 });

@@ -94,8 +94,8 @@ The workbench chrome is isolated from app styles. Real specimens load their own
 app styles inside separate frames.
 
 The shared presentation follows the Titan workbench: compact dark sidebar,
-centered workspace, ledger overview, grouped visual foundations, full-width
-component specimens and structured pattern contracts. Studio-only colors, type,
+centered workspace, ledger overview, grouped visual foundations, spatial
+component exploration and structured pattern contracts. Studio-only colors, type,
 spacing and layout are owned by framework/workbench/presentation.css and studio.css.
 App themes affect preview frames, never the sidebar or catalog layout.
 

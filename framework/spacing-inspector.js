@@ -2,6 +2,8 @@
    Intentionally conservative: unsupported cascade/geometry is unknown, not hardcoded. */
 (() => {
   'use strict';
+
+  const copyNotice=message=>import('/framework/workbench/toast.js').then(()=>globalThis.StudioToast.show(message));
   const config=window.dsInspectorConfig||{};
   const registryURL=config.registryUrl||'/design-system/registry.json';
   const sourceBase=new URL('.',new URL(registryURL,location.href)).href;
@@ -184,7 +186,7 @@
     }
     copyChanges.onclick=async()=>{
       const prompt='Apply these spacing changes in source code. These are temporary browser previews only. Preserve the specified owner/scope and unrelated local/theme overrides. Do not change spacing primitives. Verify the original source before editing.\n\n'+Array.from(edits.values(),edit=>edit.context+'\nChosen scope: '+edit.scope+'\nOwner: '+edit.label+'\nOriginal owner declaration: '+(edit.original||'(no inline declaration)')+'\nRequested declaration: '+edit.property+': '+edit.next+'\nAffected elements on this page at preview: '+edit.count).join('\n\n---\n\n');
-      try{await navigator.clipboard.writeText(prompt);copyChanges.textContent='Copied changes';}catch{copyChanges.textContent='Copy unavailable';}
+      try{await navigator.clipboard.writeText(prompt);copyNotice('Copied spacing changes');}catch{copyNotice('Could not copy spacing changes');}
     };
     resetChanges.onclick=()=>{
       for(const edit of Array.from(edits.values()).reverse())edit.style.cssText=edit.before;
@@ -295,12 +297,12 @@
       if(item.tokens?.length){
         const variable=document.createElement('button');
         variable.textContent=item.tokens.length===1?'Copy variable':'Copy variables';
-        variable.onclick=async()=>{try{await navigator.clipboard.writeText(item.tokens.join('\n'));variable.textContent='Copied';}catch{variable.textContent='Copy unavailable';}};
+        variable.onclick=async()=>{try{await navigator.clipboard.writeText(item.tokens.join('\n'));copyNotice('Copied '+item.tokens.join(', '));}catch{copyNotice('Could not copy tokens');}};
         tip.append(variable);
       }
       const copy=document.createElement('button');copy.textContent='Copy spacing context';
-      copy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item));copy.textContent='Copied';}catch{copy.textContent='Copy unavailable';}};tip.append(copy);
-      const detailedCopy=document.createElement('button');detailedCopy.textContent='Copy detailed context';detailedCopy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item,true));detailedCopy.textContent='Copied';}catch{detailedCopy.textContent='Copy unavailable';}};tip.append(detailedCopy);
+      copy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item));copyNotice('Copied element context');}catch{copyNotice('Could not copy element context');}};tip.append(copy);
+      const detailedCopy=document.createElement('button');detailedCopy.textContent='Copy detailed context';detailedCopy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item,true));copyNotice('Copied detailed element context');}catch{copyNotice('Could not copy detailed element context');}};tip.append(detailedCopy);
       const close=document.createElement('button');close.textContent='Close';close.onclick=dismiss;tip.append(close);
       const rect=button.getBoundingClientRect();const size=tip.getBoundingClientRect();
       tip.style.left=Math.max(12,Math.min(rect.left,innerWidth-size.width-12))+'px';tip.style.top=Math.max(12,Math.min(rect.bottom+6,innerHeight-size.height-12))+'px';
@@ -587,7 +589,7 @@
         'Viewport: '+innerWidth+' × '+innerHeight,'Local override candidates:\n'+(local.join('\n')||'None detected'),
         'Evaluate shared component, variant or instance scope before changing. Candidate overrides are not verified cascade winners.'
       ].join('\n');
-      const copy=(label,value)=>{const button=document.createElement('button');button.textContent=label;copyActions.append(button);button.onclick=async()=>{try{await navigator.clipboard.writeText(value);button.textContent='Copied ✓';setTimeout(()=>{button.textContent=label;},1800);}catch{button.textContent='Copy unavailable';}};};
+      const copy=(label,value)=>{const button=document.createElement('button');button.textContent=label;copyActions.append(button);button.onclick=async()=>{try{await navigator.clipboard.writeText(value);copyNotice('Copied '+label.replace(/^Copy\s+/i,''));}catch{copyNotice('Could not copy '+label.replace(/^Copy\s+/i,''));}};};
       const concise=['Component reference','Page: '+document.title+' — '+url.href,
         'Component: '+(entry?entry.name+' ('+entry.id+')':'Page-owned UI'),
         'Element: '+path,classes.length?'Classes: '+classes.join(' '):'',

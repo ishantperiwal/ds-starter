@@ -2,6 +2,8 @@
    change product styles, or persist edits. Registry selectors are the anatomy contract. */
 (function () {
   'use strict';
+
+  const copyNotice=message=>import('/framework/workbench/toast.js').then(()=>globalThis.StudioToast.show(message));
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const instances = new Map();
   let roles = null;
@@ -111,7 +113,7 @@
               const input=document.createElement('textarea');input.value=text;input.style.cssText='position:fixed;left:0;top:0;opacity:0';document.body.append(input);input.select();
               try{copied=document.execCommand('copy');}catch{}input.remove();button.focus();
             }
-            if(button.isConnected)button.textContent=copied?'Copied':'Copy failed';
+            copyNotice(copied?'Copied '+state.spec.name+' reference':'Could not copy reference');
           });
 
         }
@@ -277,7 +279,7 @@
     const caption=controls.querySelector('.wb-focus-caption');
     caption.addEventListener('click',async()=>{
       if(!focus.token)return;
-      try {await navigator.clipboard.writeText(focus.token);caption.textContent='Copied '+focus.token;} catch(error){caption.textContent='Could not copy — try again';}
+      try {await navigator.clipboard.writeText(focus.token);copyNotice('Copied '+focus.token);} catch(error){copyNotice('Could not copy token');}
     });
     function paintFocus() {
       if(!dialog.isConnected)return;
@@ -387,8 +389,8 @@
         tooltip.innerHTML='<span>'+esc(value+' · '+token)+'</span><button type="button" class="wb-copy-token">Copy variable</button>';
         hit.closest('.wb-role-demo').append(tooltip);
         tooltip.querySelector('button').addEventListener('click',async event=>{
-          try { await navigator.clipboard.writeText(token);event.target.textContent='Copied'; }
-          catch(error) {event.target.textContent='Copy failed — try again';}
+          try { await navigator.clipboard.writeText(token);copyNotice('Copied '+token); }
+          catch(error) {copyNotice('Could not copy token');}
         });
       };
       hit.addEventListener('click',show);
@@ -445,11 +447,8 @@
     const target=event.target.closest('[data-copy-token]');if(!target) return;
     if(event.type==='keydown' && !['Enter',' '].includes(event.key)) return;
     event.preventDefault();event.stopPropagation();
-    let toast=document.querySelector('.wb-copy-toast');
-    if(!toast){toast=document.createElement('div');toast.className='wb-copy-toast';toast.setAttribute('role','status');document.body.append(toast);}
-    try {await navigator.clipboard.writeText(target.dataset.copyToken);toast.textContent='Copied '+target.dataset.copyToken;}
-    catch(error){toast.textContent='Could not copy. Please try again.';}
-    clearTimeout(toastTimer);toast.hidden=false;toastTimer=setTimeout(()=>{toast.hidden=true;},2000);
+    try {await navigator.clipboard.writeText(target.dataset.copyToken);copyNotice('Copied '+target.dataset.copyToken);}
+    catch(error){copyNotice('Could not copy token');}
   }
   document.addEventListener('click',copyToken);
   document.addEventListener('keydown',copyToken);

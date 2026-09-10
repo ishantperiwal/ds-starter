@@ -43,3 +43,8 @@ html,body{background:transparent!important}
 .wb-spacing-close{position:absolute;right:6px;top:4px;border:0;background:transparent;font-size:20px;color:#777;cursor:pointer}
 
 .wb-spacing-popover{max-height:calc(100vh - 16px);overflow:auto}.wb-spacing-popover button:focus-visible{outline:2px solid #2170f4;outline-offset:2px}
+
+/* Center the specimen host, without changing any component-owned styles. */
+body[data-studio-variant] main[data-spacing-mounted]{position:relative}
+body[data-studio-variant] .wb-component-content{width:100%;min-height:0;display:grid;place-items:center;align-content:center;gap:0}
+body[data-studio-variant] .wb-component-toggle{position:absolute;inset:0 0 auto auto;min-height:0;margin:0;z-index:5}

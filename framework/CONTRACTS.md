@@ -281,3 +281,27 @@ Catalogs with elevationLevels receive an isometric sidebar navigator. Each layer
 scrolls to and selects its matching level without changing the catalog route.
 At narrow widths it precedes the level map. It uses the existing level metadata
 and adds no schema requirement.
+
+
+## Component canvas navigation
+
+The Components catalog presents cards on an unbounded pan surface. Drag or scroll
+pans; Ctrl/Command-scroll and zoom buttons zoom around the pointer or viewport
+center. The keyboard-focusable canvas supports arrow-key panning and +/- zoom.
+Search and category filters repack visible cards; Fit All frames the current result.
+
+Selecting a card opens a vertically scrolling context with unchanged specimen
+renderers and direct registered dependencies below it. Selecting a child extends
+ancestry; revisiting an ancestor truncates it, so cycles do not recurse infinitely.
+Missing dependency IDs appear as unavailable, never inferred components. Back to
+All restores the current canvas transform. Existing component hash URLs open the
+focused view directly. Interaction and inspection tools retain their existing
+contracts; narrower windows place the interaction panel below the explorer.
+No catalog migration or app-content edits are required.
+
+### Component preview navigation
+
+The interaction sidebar must retain an interactive Live preview of the selected
+variant above its state previews. Layout changes must not remove this preview.
+Variant chips above Contract & Anatomy select and focus their preview tile;
+opening a component focuses its first variant. Recenter fits all variants.

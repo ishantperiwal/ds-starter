@@ -44,7 +44,7 @@ function selector(el,body){
  return steps.join(' > ');
 }
 function reference(info){return ['Design-system element reference', 'Selected: '+info.name,'Kind: '+info.kind,info.variant?'Variant: '+info.variant:'',info.id?'Component ID: '+info.id:'Basic element within the composition', 'Selector: '+info.selector,'Hierarchy: '+info.hierarchy,'Owning component: '+info.owner,info.css?'CSS: '+info.css:'',info.module?'Module: '+info.module:'','Preview: '+info.preview].filter(Boolean).join('\n');}
-function mount(frame,entry,catalog,onClose){
+function mount(frame,entry,catalog,onClose,options={}){
  const doc=frame.contentDocument,win=frame.contentWindow,body=doc?.querySelector('.wb-component-content')||doc?.querySelector('main');
  if(!body)return {setActive(){},destroy(){}};
  let enabled=false,pinned=null,hover=null,chain=[],index=0,panel=null,outline=null,tip=null,raf=0;
@@ -68,7 +68,7 @@ function mount(frame,entry,catalog,onClose){
  }
  function schedule(){if(!raf)raf=win.requestAnimationFrame(paint);}
  function show(el){
-  pinned=el;hover=null;paint();const data=info(el),content=panel.querySelector('.ce-content');content.replaceChildren();
+  pinned=el;hover=null;paint();if(!panel)return;const data=info(el),content=panel.querySelector('.ce-content');content.replaceChildren();
   const crumb=document.createElement('nav');crumb.className='ce-breadcrumb';crumb.setAttribute('aria-label','Selected element hierarchy');
   const layouts=document.createElement('details');layouts.className='ce-layout-layers';const summary=document.createElement('summary');summary.textContent='Show layout layers';layouts.append(summary);
   layers(el).reverse().forEach(node=>{const b=document.createElement('button');b.type='button';b.className=registered(node,entries)?'ce-component-node':'ce-basic-node';b.textContent=label(node);if(registered(node,entries)){const badge=document.createElement('small');badge.textContent='Component';b.append(badge);}b.setAttribute('aria-current',String(node===el));b.onclick=()=>{chain=layers(el);index=chain.indexOf(node);show(node);};if(isLayout(node)){layouts.append(b);if(node===el)layouts.open=true;}else crumb.append(b);});
@@ -77,18 +77,20 @@ function mount(frame,entry,catalog,onClose){
   const code=document.createElement('code');code.textContent=data.selector;
   const owner=document.createElement('p');owner.textContent='Owner: '+data.owner;
   const cycle=document.createElement('button');cycle.type='button';cycle.textContent='Cycle layer';cycle.onclick=()=>{if(chain.length){index=(index+1)%chain.length;show(chain[index]);}};
-  const copy=document.createElement('button');copy.type='button';copy.textContent='Copy reference';copy.onclick=async()=>{let ok=false;const text=reference(data);try{await navigator.clipboard.writeText(text);ok=true;}catch{const input=document.createElement('textarea');input.value=text;input.style.cssText='position:fixed;opacity:0';document.body.append(input);input.select();try{ok=document.execCommand('copy');}catch{}input.remove();copy.focus();}copy.textContent=ok?'Reference copied':'Copy failed — retry';};
+  const copy=document.createElement('button');copy.type='button';copy.textContent='Copy reference';copy.onclick=async()=>{let ok=false;const text=reference(data);try{await navigator.clipboard.writeText(text);ok=true;}catch{const input=document.createElement('textarea');input.value=text;input.style.cssText='position:fixed;opacity:0';document.body.append(input);input.select();try{ok=document.execCommand('copy');}catch{}input.remove();copy.focus();}import('/framework/workbench/toast.js').then(()=>StudioToast.show(ok?'Copied '+data.name+' reference':'Could not copy '+data.name+' reference'));};
   const actions=document.createElement('div');actions.className='ce-actions';actions.append(cycle,copy);content.append(crumb);if(layouts.children.length>1)content.append(layouts);content.append(title,kind,code,owner,actions);
  }
  function setActive(value){
   if(value===enabled)return;enabled=value;
   if(!value){panel?.remove();outline?.remove();tip?.remove();panel=outline=tip=null;pinned=hover=null;chain=[];if(active===api)active=null;return;}
+  if(options.sidebar!==false){
   if(active&&active!==api)active.exit();active=api;
   document.querySelector('#component-interactions:not([hidden]) .ci-close')?.click();
   panel=document.createElement('aside');panel.className='ce-panel';panel.setAttribute('aria-label','Component inspector');
   panel.innerHTML='<header><h2>Component</h2><button type="button" aria-label="Close component inspector">×</button></header><p class="ce-help">Hover to inspect. Click to select. Control-click cycles through nested layers. Escape closes.</p><div class="ce-content"><p>Select an element, or start with the outer component.</p></div>';
   panel.querySelector('header button').onclick=()=>api.exit();(frame.closest('dialog')||document.body).append(panel);
   const start=document.createElement('button');start.type='button';start.textContent='Select outer component';start.onclick=()=>{const el=body.querySelector('.'+CSS.escape(entry.class));if(el){chain=layers(el);index=0;show(el);}};panel.querySelector('.ce-content').append(start);
+  }
   outline=doc.createElement('div');outline.dataset.componentInspector='';outline.style.cssText='position:fixed;z-index:2147483646;pointer-events:none;border:2px solid #2170f4;background:#2170f40c;box-sizing:border-box';outline.hidden=true;
   tip=doc.createElement('div');tip.dataset.componentInspector='';tip.style.cssText='position:fixed;z-index:2147483647;pointer-events:none;background:#2170f4;color:white;padding:4px 7px;border-radius:3px;font:11px/16px system-ui;white-space:nowrap';tip.hidden=true;doc.body.append(outline,tip);
  }
