@@ -194,7 +194,7 @@
       const owning=owner(item),box=document.createElement('div');box.style.cssText='margin:12px 0;display:grid;gap:8px';
       const scope=document.createElement('select');scope.setAttribute('aria-label','Spacing change scope');
       scope.add(new Option('This instance only','instance'));
-      if(owning){scope.add(new Option(owning.property.startsWith('--')?'Shared token owner (all consumers)':'Same CSS rule and property','owner'));scope.value='owner';}
+      if(owning)scope.add(new Option(owning.property.startsWith('--')?'Shared token owner (all consumers)':'Same CSS rule and property','owner'));
       const scale=document.createElement('select');scale.setAttribute('aria-label','New spacing value');
       scale.add(new Option('Choose spacing…',''));
       for(const name of [...known].filter(t=>/^--(?:[a-z0-9]+-)*space-\d+(?:-\d+)?$/.test(t))){
@@ -221,11 +221,21 @@
         valueLabel.textContent=current+'px';
         less.disabled=busy||!steps.some(step=>step.px<current);more.disabled=busy||!steps.some(step=>step.px>current);
       }
+      function discardScope(dropShared){
+        for(const [key,edit] of Array.from(edits)){
+          if(!!edit.shared!==dropShared || edit.item!==item)continue;
+          if(edit.original)edit.style.setProperty(edit.property,edit.original,edit.priority);
+          else edit.style.removeProperty(edit.property);
+          edits.delete(key);
+        }
+        updatePending();
+      }
       function chooseScope(value){
+        if(scope.value!==value)discardScope(value!=='owner');
         scope.value=value;
         current=parseFloat(getComputedStyle(item.element).getPropertyValue(item.prop))||0;
-        status.textContent=value==='owner'?'Shared: all consumers of this owner. Existing local overrides remain.':'Local: only this element. Previous previews remain in the changes list.';
-        syncControls();
+        status.textContent=value==='owner'?'Shared: all consumers of this owner. Switching back to Local discards it.':'Local: only this element. Any shared preview for it has been discarded.';
+        render();syncControls();
       }
       sharedButton.onclick=()=>chooseScope('owner');localButton.onclick=()=>chooseScope('instance');
       const apply=document.createElement('button');apply.textContent='Preview spacing';apply.disabled=true;
@@ -237,12 +247,12 @@
         const key=styleId(style)+'|'+property;
         const count=shared?(visibleOwners.get(owning.key)?.size||0):1;
         const previous=edits.get(key);
-        const edit=previous||{style,property,before:style.cssText,original:style.getPropertyValue(property),context:contextText(item),scope:shared?'Shared owner; other pages using this source may also change':'This instance only',label:shared?property+' at '+target.selector+' · '+target.source:elementPath(item.element)+' · '+property};
+        const edit=previous||{style,property,before:style.cssText,original:style.getPropertyValue(property),priority:style.getPropertyPriority(property),context:contextText(item),scope:shared?'Shared owner; other pages using this source may also change':'This instance only',label:shared?property+' at '+target.selector+' · '+target.source:elementPath(item.element)+' · '+property};
         // A primitive scale owner must remain a literal, not reference itself or
         // another primitive that may alias back to it.
         const primitive=shared&&/^--(?:[a-z0-9]+-)*space-\d+(?:-\d+)?$/.test(property);
         const nextValue=primitive?(steps.find(step=>step.value===scale.value)?.px+'px'):scale.value;
-        edit.next=nextValue;edit.count=count;edits.set(key,edit);
+        edit.next=nextValue;edit.count=count;edit.shared=shared;edit.item=item;edits.set(key,edit);
         style.setProperty(property,nextValue,shared?style.getPropertyPriority(property):'important');
         updatePending();copyChanges.textContent='Copy changes prompt';
         current=parseFloat(getComputedStyle(item.element).getPropertyValue(item.prop))||0;
