@@ -37,7 +37,7 @@
       if(match && stack.length) rows.push({
         name:match[1], value:match[2].trim(), file,
         scope:stack.join(' / '),
-        isRoot:stack.length===1 && [':root','html'].includes(stack[0])
+        isRoot:stack.length===1 && [':root',':root:root','html'].includes(stack[0])
       });
       segment='';
     };

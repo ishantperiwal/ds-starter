@@ -125,18 +125,35 @@
   }
   function colorMap(state){
     const roles=state.catalog.foundationPresentation.colorRoles;
-    const row=name=>state.tokens.find(token=>token.name===name);
-    const value=name=>row(name)?M.resolveLiteral(row(name),state.tokens):null;
-    const primitive=name=>{
+    const base=state.baseTokens||state.tokens;
+    const themes=state.catalog.themes.length?state.catalog.themes:[{id:'default',name:'Default'}];
+    const rowsFor=theme=>state.themeTokens?.[theme.id]||state.tokens;
+    const primitive=(name,rows)=>{
       const seen=new Set();
-      while(row(name)&&!seen.has(name)){seen.add(name);const alias=row(name).value.match(/^var\(\s*(--[\w-]+)\s*\)$/);if(!alias)return name;name=alias[1];}
+      while(!seen.has(name)){seen.add(name);const row=rows.find(token=>token.name===name);if(!row)return null;
+        const alias=row.value.match(/^var\(\s*(--[\w-]+)\s*\)$/);if(!alias)return name;name=alias[1];}
       return null;
     };
-    const names=[...new Set([...state.tokens.filter(token=>M.family(token,state.tokens)==='Color'&&state.catalog.foundationPresentation?.tokens?.[token.name]?.layer==='primitive').map(token=>token.name),...roles.map(role=>primitive(role.token)).filter(Boolean)])];
-    return '<div class="color-browser"><div class="cb-head"><span>Primitive</span><span>Semantic uses</span></div>'+names.map((name,index)=>{
-      const uses=roles.filter(role=>primitive(role.token)===name);
-      return '<div class="cb-row wb-filterable" data-search="'+esc([name,value(name),...uses.flatMap(role=>[role.label,role.token])].join(' ').toLowerCase())+'" data-token="'+esc(name)+'" data-color-group="'+index+'"><span class="cb-primitive"><span class="cm-swatch" data-visual-kind="color" data-visual-value="'+esc(value(name))+'"></span><span><code>'+esc(name)+'</code><small>'+esc(value(name))+'</small></span></span><span class="cb-uses">'+(uses.length?uses.map(role=>'<code>'+esc(role.token)+'</code>').join(''):'<span class="cb-unused">No semantic uses</span>')+'</span></div>';
-    }).join('')+'</div>';
+    const names=[...new Set([...base.filter(token=>M.family(token,base)==='Color'&&state.catalog.foundationPresentation?.tokens?.[token.name]?.layer==='primitive').map(token=>token.name),...themes.flatMap(theme=>roles.map(role=>primitive(role.token,rowsFor(theme))).filter(name=>name&&!roles.some(role=>role.token===name)&&state.catalog.foundationPresentation?.tokens?.[name]?.layer!=='semantic'))])];
+    const columnThemes=[...themes].sort((a,b)=>a.id==='light'?-1:b.id==='light'?1:a.id==='dark'?-1:b.id==='dark'?1:0);
+    const groups=new Map();
+    names.forEach(name=>{const family=state.catalog.foundationPresentation.tokens?.[name]?.colorFamily||'Other colors';if(!groups.has(family))groups.set(family,[]);groups.get(family).push(name);});
+    const ordered=[...groups].sort(([a],[b])=>a==='Neutrals'?-1:b==='Neutrals'?1:a.localeCompare(b));
+    const importance=name=>roles.filter(role=>themes.some(theme=>primitive(role.token,rowsFor(theme))===name)).length;
+    const families=[['Red','#d86167'],['Orange','#df9851'],['Yellow','#d6bd56'],['Green','#67a675'],['Cyan','#59acb8'],['Blue','#628ed8'],['Purple','#9a78c8'],['Pink','#c778ad']];
+    const point=(r,a)=>[110+r*Math.cos(a),110+r*Math.sin(a)].join(' ');
+    const selected=state.colorFamily||'All';
+    const wedges=families.map(([name,color],i)=>{const start=(i*45-90)*Math.PI/180,end=((i+1)*45-90)*Math.PI/180,outerGap=Math.asin(2/98),innerGap=Math.asin(2/48),a=start+outerGap,b=end-outerGap,innerA=start+innerGap,innerB=end-innerGap;return '<path role="button" tabindex="0" data-color-family="'+name+'" aria-label="'+name+' colors" aria-pressed="'+String(selected===name)+'" fill="'+color+'" d="M '+point(98,a)+' A 98 98 0 0 1 '+point(98,b)+' L '+point(48,innerB)+' A 48 48 0 0 0 '+point(48,innerA)+' Z"><title>'+name+'</title></path>';}).join('');
+    const wheel='<aside class="cb-classifier" aria-label="Color classifier"><svg viewBox="0 0 220 220" aria-label="Color families">'+wedges+'<circle cx="110" cy="110" r="37" fill="var(--studio-muted)" role="button" tabindex="0" data-color-family="Neutrals" aria-label="Neutral colors" aria-pressed="'+String(selected==='Neutrals')+'"/><text x="110" y="114" text-anchor="middle" pointer-events="none">Gray</text></svg></aside>';
+    return '<div class="cb-palette-workspace"><div class="cb-family-list">'+ordered.map(([family,members])=>{
+    members.sort((a,b)=>importance(b)-importance(a)||(state.catalog.foundationPresentation.tokens?.[a]?.colorOrder??0)-(state.catalog.foundationPresentation.tokens?.[b]?.colorOrder??0));
+    return '<section class="cb-family wb-token-group"><h3>'+esc(family)+' <small>'+members.length+' shades</small></h3>'+'<div class="color-browser cb-theme-columns" style="--cb-theme-count:'+columnThemes.length+'"><div class="cb-head"><span>Primitive</span>'+columnThemes.map(theme=>'<span class="cb-theme-column" data-inactive="'+String(theme.id!==state.theme)+'">Semantic uses · '+esc(theme.name)+'</span>').join('')+'</div><div class="cb-rows">'+members.map(name=>{
+      const source=base.find(row=>row.name===name)||state.tokens.find(row=>row.name===name);
+      const resolved=source?M.resolveLiteral(source,base):null;
+      const uses=columnThemes.map(theme=>({theme,roles:roles.filter(role=>primitive(role.token,rowsFor(theme))===name)}));
+      return '<div class="cb-row wb-filterable" data-color-family-row="'+esc(family)+'" data-search="'+esc([family,name,resolved,...uses.flatMap(use=>[use.theme.name,...use.roles.flatMap(role=>[role.label,role.token])])].join(' ').toLowerCase())+'" data-token="'+esc(name)+'"><span class="cb-primitive"><span class="cm-swatch" data-visual-kind="color" data-visual-value="'+esc(resolved||'transparent')+'"></span><span><code>'+esc(name)+'</code><small>'+esc(resolved||'Contextual')+'</small></span></span>'+uses.map(use=>'<span class="cb-uses cb-theme-column" data-inactive="'+String(use.theme.id!==state.theme)+'">'+(use.roles.length?use.roles.map(role=>'<code>'+esc(role.token)+'</code>').join(''):'<span class="cb-unused" aria-label="No registered semantic uses">—</span>')+'</span>').join('')+'</div>';
+    }).join('')+'</div></div></section>';
+    }).join('')+'</div>'+wheel+'</div>';
   }
 
   function spacingExample(role){

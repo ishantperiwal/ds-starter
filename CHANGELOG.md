@@ -401,3 +401,6 @@
 - Shared inspector now supports S for Spacing and C for Components, with visible
   shortcut hints. Typing, composition, held keys and modified shortcuts are excluded.
   Removed the App sidebar's duplicate shortcut registration.
+
+- Add a persistent catalog theme picker in Foundations, index active theme token
+  overrides, and adapt preview framing to the registered color scheme.

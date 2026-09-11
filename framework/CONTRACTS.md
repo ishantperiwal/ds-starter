@@ -376,3 +376,9 @@ Optional `previewLayout.columns` is a positive column count for the expanded var
 canvas. Omitted values retain automatic layout. App gallery adapters may consume
 the same metadata and `previewConfigurations` order for consistent comparisons.
 This changes specimen arrangement only, never component internals or state ownership.
+
+Themes may declare `colorScheme: "light" | "dark"` to set the preview framing
+scheme. Foundations offers the registered themes and persists selection per
+catalog. The selected theme's root tokens override matching base root tokens in
+the foundation index; scoped declarations remain contextual. Theme selection is
+passed to every preview URL. App fixtures own loading their approved theme file.

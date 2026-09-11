@@ -9,6 +9,19 @@
     return response[format]();
   }
   function sidebar(){
+    let toggle=$('studio-theme-toggle');
+    if(!toggle){toggle=document.createElement('button');toggle.id='studio-theme-toggle';toggle.type='button';document.querySelector('.wb-rail').append(toggle);}
+    const dark=state.catalog.themes.find(theme=>theme.id==='dark'),light=state.catalog.themes.find(theme=>theme.id==='light');
+    toggle.hidden=!(dark&&light);
+    const isDark=state.theme==='dark';
+    toggle.setAttribute('aria-label',isDark?'Switch to light theme':'Switch to dark theme');toggle.title=toggle.getAttribute('aria-label');
+    toggle.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(isDark?'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5"/>':'<path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z"/>')+'</svg>';
+    toggle.onclick=async()=>{
+      toggle.disabled=true;state.theme=isDark?'light':'dark';
+      const url=new URL(location.href);url.searchParams.set('theme',state.theme);history.replaceState(null,'',url);
+      try{localStorage.setItem('studio-theme:'+state.base,state.theme);}catch{}
+      try{await loadThemeTokens();render();}catch(error){showError(error);}finally{toggle.disabled=false;}
+    };
     $('navigation').innerHTML=V.navigation(state.catalog,state.tokens,state.tab);
     $('catalog-summary').innerHTML='<p><b>'+state.catalog.components.length+'</b> components · <b>'+state.catalog.patterns.length+'</b> patterns</p><p><b>'+
       state.catalog.compositions.length+'</b> compositions · <b>'+state.catalog.icons.length+'</b> icon providers</p>';
@@ -115,7 +128,13 @@
       });
     });
   }
-  function bindColorBrowser(){}
+  function bindColorBrowser(){
+    document.querySelectorAll('[data-color-family]').forEach(button=>{
+      const select=()=>{state.colorFamily=state.colorFamily===button.dataset.colorFamily?'All':button.dataset.colorFamily;document.querySelectorAll('[data-color-family]').forEach(item=>item.setAttribute('aria-pressed',String(item.dataset.colorFamily===state.colorFamily)));$('catalog-filter')?.dispatchEvent(new Event('input',{bubbles:true}));};
+      button.addEventListener('click',select);
+      if(button.tagName.toLowerCase()!=='button')button.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();select();}});
+    });
+  }
   function bindComponentSpacing(preview,entry,controls){
     let disposed=false,statusObserver,statusNode,componentInspector;
     const apply=()=>{
@@ -310,7 +329,8 @@
           const panel=item.closest('.fd-panel');
           const active=!panel||!!query||panel.dataset.selected==='true';
           const categoryMatch=state.tab==='patterns'?item.dataset.patternKind===document.querySelector('[data-pattern-category][aria-pressed=true]')?.dataset.patternCategory:state.tab!=='components'||!state.componentCategory||state.componentCategory==='All'||item.dataset.category===state.componentCategory;
-          item.hidden=!active||!categoryMatch||!M.searchScore(item.dataset.search,query);item.dataset.searchScore=M.searchScore(item.dataset.search,query);total++;if(!item.hidden)visible++;
+          const familyMatch=!item.dataset.colorFamilyRow||!state.colorFamily||state.colorFamily==='All'||item.dataset.colorFamilyRow===state.colorFamily;
+          item.hidden=!active||!categoryMatch||!familyMatch||!M.searchScore(item.dataset.search,query);item.dataset.searchScore=M.searchScore(item.dataset.search,query);total++;if(!item.hidden)visible++;
         });
         const parents=new Set([...document.querySelectorAll('.wb-filterable')].map(item=>item.parentElement));
         parents.forEach(parent=>{
@@ -358,6 +378,17 @@
     bindColorBrowser();
     bindComponentGallery();
   }
+  async function loadThemeTokens(){
+    const files=[...new Set([...state.catalog.tokenFiles,...state.catalog.themes.map(theme=>theme.file).filter(Boolean)])];
+    const sources=await Promise.all(files.map(async file=>({file,text:await fetchData(new URL(file,state.base),'text')})));
+    const parsed=new Map(sources.map(({file,text})=>[file,M.parseTokens(text,file)]));
+    const themeFiles=new Set(state.catalog.themes.map(theme=>theme.file));
+    const base=state.catalog.tokenFiles.filter(file=>!themeFiles.has(file)).flatMap(file=>parsed.get(file)||[]);
+    const merge=rows=>rows.filter((row,index)=>!row.isRoot||!rows.slice(index+1).some(next=>next.isRoot&&next.name===row.name));
+    state.baseTokens=merge(base);
+    state.themeTokens=Object.fromEntries(state.catalog.themes.map(theme=>[theme.id,merge([...base,...(parsed.get(theme.file)||[])])]));
+    state.tokens=state.themeTokens[state.theme]||state.baseTokens;
+  }
   function render(){
     if(!state.catalog)return;
     canvasCleanup?.();canvasCleanup=null;
@@ -365,6 +396,7 @@
     state.tab=V.tabs.some(tab=>tab[0]===current.tab)?current.tab:'overview';
     state.foundationSection=current.entry;
     document.body.dataset.view=state.tab;
+    document.body.dataset.previewColorScheme=state.catalog.themes.find(theme=>theme.id===state.theme)?.colorScheme||'light';
     const result=V.render(state);
     $('title').textContent=result.title;$('intro').textContent=result.intro;
     $('content').innerHTML=result.html;$('content').setAttribute('aria-busy','false');
@@ -387,7 +419,9 @@
       if(!['demo','project'].includes(state.profile))state.profile='project';
       state.base=new URL(state.profile==='demo'?'/demo/design-system/':'/design-system/',location.origin).href;
       state.catalog=M.normalize(await fetchData(new URL('registry.json',state.base)));
-      state.theme=state.catalog.themes.some(theme=>theme.id===params.get('theme'))?params.get('theme'):'';
+      let savedTheme='';try{savedTheme=localStorage.getItem('studio-theme:'+state.base)||'';}catch{}
+      const requestedTheme=params.get('theme')||savedTheme;
+      state.theme=state.catalog.themes.some(theme=>theme.id===requestedTheme)?requestedTheme:(state.catalog.themes[0]?.id||'');
       $('brand-name').textContent=state.profile==='demo'?'Studio':config.name;
       document.title=state.catalog.name+' · Design system';
       $('version').textContent='v'+config.version.version;
@@ -398,8 +432,7 @@
       });
       render();
       try {
-        const sources=await Promise.all(state.catalog.tokenFiles.map(async file=>({file,text:await fetchData(new URL(file,state.base),'text')})));
-        state.tokens=sources.flatMap(({file,text})=>M.parseTokens(text,file));
+        await loadThemeTokens();
       }catch(error){state.tokenError=error.message;}
       // Do not destroy live previews/forms when delayed token indexing completes.
       if(state.tab==='foundations')render();
