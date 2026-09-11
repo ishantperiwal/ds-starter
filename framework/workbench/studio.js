@@ -295,12 +295,13 @@
     document.querySelectorAll('[data-pattern-category]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-pattern-category]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));document.querySelectorAll('[data-pattern-kind]').forEach(item=>item.hidden=item.dataset.patternKind!==button.dataset.patternCategory);document.getElementById('catalog-filter')?.dispatchEvent(new Event('input'));}));
     document.querySelectorAll('.wb-pattern').forEach(card=>{
       const entry=state.catalog.patterns.find(e=>'entry-'+e.id===card.id);if(!entry)return;
-      const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Search tags';details.append(summary);card.append(details);
+      const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Search tags';details.className='wb-search-tags';details.append(summary);card.append(details);
       StudioTagEditor.mount(details,entry,'patterns',()=>{card.dataset.search=M.searchMetadata(entry);});
     });
     const filter=$('catalog-filter');
     if(filter){
       const applyFilter=()=>{
+        const keepFocus=document.activeElement===filter,start=filter.selectionStart,end=filter.selectionEnd;
         const query=filter.value.toLowerCase().trim();
         const globalFoundations=state.tab==='foundations';
         if(globalFoundations)state.foundationQuery=filter.value;
@@ -315,7 +316,7 @@
         parents.forEach(parent=>{
           const items=[...parent.children].filter(item=>item.classList.contains('wb-filterable'));
           items.forEach((item,index)=>{if(!item.dataset.searchOrder)item.dataset.searchOrder=String(index+1);});
-          items.sort((a,b)=>query?Number(b.dataset.searchScore)-Number(a.dataset.searchScore)||Number(a.dataset.searchOrder)-Number(b.dataset.searchOrder):Number(a.dataset.searchOrder)-Number(b.dataset.searchOrder)).forEach(item=>parent.append(item));
+          items.sort((a,b)=>query?Number(b.dataset.searchScore)-Number(a.dataset.searchScore)||Number(a.dataset.searchOrder)-Number(b.dataset.searchOrder):Number(a.dataset.searchOrder)-Number(b.dataset.searchOrder)).forEach((item,index)=>{if(parent.children[index]!==item)parent.insertBefore(item,parent.children[index]||null);});
         });
         document.querySelectorAll('.wb-token-group,.wb-component-group,.fd-category').forEach(group=>{
           group.hidden=![...group.querySelectorAll('.wb-filterable')].some(item=>!item.hidden);
@@ -329,6 +330,7 @@
         });
         $('filter-status').textContent=query?(visible?visible+' matches':'No matches'):'';
         document.querySelectorAll('.fd-more').forEach(details=>{if(query)details.open=!!details.querySelector('.wb-filterable:not([hidden])');});
+        if(keepFocus&&filter.isConnected){filter.focus({preventScroll:true});filter.setSelectionRange(start,end);}
       };
       let searchTimer;filter.addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(applyFilter,120);});
       document.querySelectorAll('[data-component-category]').forEach(button=>button.addEventListener('click',()=>{state.componentCategory=button.dataset.componentCategory;document.querySelectorAll('[data-component-category]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));applyFilter();}));

@@ -2,6 +2,35 @@
 
 ## Unreleased
 
+- Preserve search focus when typing closes a focused component view.
+
+- Document shared specimen gallery presentation and concise configuration captions
+  instead of inline implementation commentary.
+
+- Separate configuration preview coverage from API variant classification, including
+  content presence, sizes and explicitly requested combinations.
+
+- Define interaction units, registration invariants and a general decision procedure;
+  examples illustrate the policy rather than defining component-specific exceptions.
+
+- Require registered owners for independently interactive sections across all
+  components, replacing the split-only framing and private-part target allowance.
+
+- Prioritize existing registered components/compositions over new layout assembly;
+  layout guidance does not deprecate action groups or app grids.
+
+- Inset pattern contract accordions and clarify that layout guidance is not a
+  required application utility API.
+
+- Make layout recipes versus component responsibilities an explicit
+  shared extraction rule for attached apps, with app-owned tokenized defaults.
+
+- Remove the variant selection overlay so main previews remain interactive and
+  expanded instances can be inspected without resetting their state.
+
+- Clarify mandatory state-value, control-treatment and action ownership; distinguish
+  unchanged stateful reuse from variants and independent component responsibilities.
+
 - Remove stacked minimum heights from variant specimen wrappers and let fluid
   specimen hosts use the available preview width, reducing excess empty space.
 
@@ -281,6 +310,35 @@
   per-control targets, Escape/outside dismissal and focus return on explicit close.
 
 ### Unreleased
+
+- Preserve search focus when typing closes a focused component view.
+
+- Document shared specimen gallery presentation and concise configuration captions
+  instead of inline implementation commentary.
+
+- Separate configuration preview coverage from API variant classification, including
+  content presence, sizes and explicitly requested combinations.
+
+- Define interaction units, registration invariants and a general decision procedure;
+  examples illustrate the policy rather than defining component-specific exceptions.
+
+- Require registered owners for independently interactive sections across all
+  components, replacing the split-only framing and private-part target allowance.
+
+- Prioritize existing registered components/compositions over new layout assembly;
+  layout guidance does not deprecate action groups or app grids.
+
+- Inset pattern contract accordions and clarify that layout guidance is not a
+  required application utility API.
+
+- Make layout recipes versus component responsibilities an explicit
+  shared extraction rule for attached apps, with app-owned tokenized defaults.
+
+- Remove the variant selection overlay so main previews remain interactive and
+  expanded instances can be inspected without resetting their state.
+
+- Clarify mandatory state-value, control-treatment and action ownership; distinguish
+  unchanged stateful reuse from variants and independent component responsibilities.
 
 - Remove stacked minimum heights from variant specimen wrappers and let fluid
   specimen hosts use the available preview width, reducing excess empty space.

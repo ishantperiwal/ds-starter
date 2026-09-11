@@ -175,3 +175,12 @@ for v0.1 compatibility; it is not the new initialization workflow.
 See [VERIFICATION.md](VERIFICATION.md) for tested behavior and browser QA limits,
 [PROVENANCE.md](PROVENANCE.md) for reference and license boundaries, and
 [framework/CONTRACTS.md](framework/CONTRACTS.md) for the catalog/integration contract.
+
+### Layouts versus components
+
+The shared extraction workflow separates parent-owned layout recipes from reusable
+components. Horizontal rows, vertical lists, grids and footer action arrangements
+use app spacing tokens and configurable defaults; arrangement alone is not a reason
+to register a component. The intended presentation is Layouts & patterns → Layouts. See
+[the mandatory workflow](framework/AGENT-WORKFLOW.md#mandatory-separate-layout-recipes-from-components)
+for ownership, classification and current presentation guidance.

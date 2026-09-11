@@ -192,12 +192,15 @@ Optional interactions metadata enables the component's Interactions sidebar:
 `{preview, targets:[{id,name,states:[]}]}`. The preview is a same-origin URL resolved
 like component previews; the sidebar supplies `target` and `state` query parameters.
 `live` permits normal interaction. Other states are held by the app specimen using
-its actual implementation. Targets list only supported states; split actions may
-have separate targets. This metadata does not create product states or behavior.
+its actual implementation. Targets expose supported variants and meaningful supported configurations; a target
+is not automatically an API variant. Their state lists describe whole-control states. Independently
+interactive sections use registered child owners, not private per-section targets. This metadata does not create product states or behavior.
 
 ## Interaction ownership metadata
 
-`anatomy.interactionOwnership` records parent, internal-part and child ownership.
+`anatomy.interactionOwnership` records parent and registered interactive-child ownership, plus noninteractive
+internal parts. Legacy private interactive targets remain readable for migration,
+but are not the accepted structure for new registrations.
 Optional `dependencies` lists actual reused catalog component IDs. Interaction
 targets may include `owner`; when supplied it must identify the current entry for
 that entry’s state list. Nested child states belong in the child's catalog entry.
@@ -305,3 +308,28 @@ The interaction sidebar must retain an interactive Live preview of the selected
 variant above its state previews. Layout changes must not remove this preview.
 Variant chips above Contract & Anatomy select and focus their preview tile;
 opening a component focuses its first variant. Recenter fits all variants.
+
+Main component variant previews must be interactive in Preview mode. Variant
+selection uses names, chips and tile borders; do not place an input-blocking
+overlay over the live component. Switching Preview, Component and Spacing modes
+must preserve the same rendered instance and its current interaction state,
+including expanded content, without reloading the iframe or remounting the sample.
+Inspection may intercept input while enabled; returning to Preview restores normal
+interaction. Expanded/collapsed remain states, not variants created for inspection.
+
+## Layout recipe classification
+
+Layout recipes belong in Layouts & patterns → Layouts conceptually, not in `components`
+or `compositions` solely because they standardize arrangement. Their defaults and
+spacing-token choices are app-owned; generic studio tooling must not hardcode one
+app's values. Follow AGENT-WORKFLOW.md's layout recipe rule when extracting
+new apps. Recipe configuration controls parent-owned layout only and does not create
+child variants or permit internal overrides.
+
+This policy does not add a catalog v1 schema field or claim a Layout editor exists.
+Implementing recipe storage and studio presentation requires an explicit compatible
+contract and validation coverage; until supported, keep recipes in app guidance.
+
+Layout guidance may consolidate list and grid arrangements into one switchable
+preview. It documents supported scales and relationships, not mandatory application
+CSS utilities. Existing pattern entries can host this guide without a new schema.

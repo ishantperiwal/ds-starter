@@ -25,7 +25,6 @@
   const frameCleanups=[];
   tiles.forEach(tile=>{
    const frame=tile.querySelector('iframe');tile.dataset.requiredWidth=parseFloat(tile.style.getPropertyValue('--variant-preview-width'))||320;
-   const select=document.createElement('button');select.type='button';select.className='vc-select';select.setAttribute('aria-label','Select '+tile.querySelector('.cc-variant-select').textContent+' variant');tile.append(select);
    const connect=()=>{try{const doc=frame.contentDocument;const measure=()=>{const required=Math.max(Number(tile.dataset.requiredWidth),doc.documentElement.scrollWidth);tile.dataset.requiredWidth=required;frame.style.width=required+'px';schedule();};const ro=new ResizeObserver(measure);ro.observe(doc.body);frameCleanups.push(()=>ro.disconnect());measure();}catch{}};on(frame,'load',connect);if(frame.contentDocument?.readyState==='complete')connect();
   });
   const ro=new ResizeObserver(schedule);ro.observe(host);tiles.forEach(tile=>ro.observe(tile.querySelector('iframe')));

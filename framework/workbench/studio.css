@@ -590,7 +590,7 @@ body[data-view=components] #filter-status{position:absolute;right:12px;top:calc(
 .cc-tools{position:absolute;top:88px;left:24px;right:24px;z-index:6;justify-content:flex-start;min-height:0;padding:0;pointer-events:none}
 .cc-tools>*{pointer-events:auto}.cc-tools button,.cc-zoom button{border:0;border-radius:999px;background:#ffffffa6;backdrop-filter:blur(18px);box-shadow:0 2px 10px #2020300a;padding:10px 16px}
 .cc-crumbs{flex:0 1 auto}.cc-crumbs button[aria-current=page]{background:#252730;color:white}
-.cc-zoom{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:7;display:flex;align-items:center;gap:4px;padding:6px;border:1px solid #ffffffb3;border-radius:999px;background:#ffffffbf;backdrop-filter:blur(24px);box-shadow:0 6px 28px #20203012}
+.cc-zoom{position:absolute;bottom:24px;right:24px;left:auto;transform:none;z-index:7;display:flex;align-items:center;gap:4px;padding:6px;border:1px solid #ffffffb3;border-radius:999px;background:#ffffffbf;backdrop-filter:blur(24px);box-shadow:0 6px 28px #20203012}
 .cc-zoom button{background:transparent;box-shadow:none}.cc-zoom button:hover{background:#2527300c}.cc-zoom output{font-size:12px;min-width:42px;text-align:center}
 .cc-explorer.is-focused .cc-viewport{opacity:.045;filter:blur(7px)}
 .cc-focus{inset:140px 368px 0 0;padding:0 16px 100px 28px;overscroll-behavior:contain}
@@ -695,8 +695,6 @@ body[data-view=components]:has(.cc-explorer.is-focused) #component-interactions{
 .vc-world .cc-variant{position:absolute;max-width:none;box-sizing:border-box;padding:0 16px 16px}
 .vc-world .cc-variant>header{width:100%;box-sizing:border-box;padding-inline:0;flex-shrink:0}
 .cc-detail .vc-world .cc-variant .wb-preview{width:var(--variant-preview-width);max-width:none;flex-shrink:0;margin-block:auto}
-.vc-select{position:absolute;inset:52px 0 0;border:0;padding:0;background:transparent;cursor:grab}
-.vc-inspecting .vc-select{display:none}.vc-select:focus-visible{outline:2px solid var(--studio-accent);outline-offset:-4px}
 .vc-world .cc-variant-copy{position:relative;z-index:2}
 .vc-dock{position:absolute;bottom:8px;right:8px;left:auto;transform:none;display:flex;align-items:center;gap:4px;padding:4px 8px;background:#ffffffdc;backdrop-filter:blur(16px);border:1px solid #aaa3;border-radius:999px;z-index:4;cursor:default;white-space:nowrap}
 .vc-dock button{border:0;background:transparent;padding:7px 10px;color:var(--studio-text);font:12px var(--studio-font);border-radius:999px;cursor:pointer}.vc-dock button:hover{background:#2527300c}.vc-dock output{font-size:11px;min-width:36px;text-align:center}
@@ -722,3 +720,10 @@ body[data-view=components]:has(.cc-explorer.is-focused) #component-interactions{
 .cc-variant-chips button{border:1px solid var(--studio-line);background:transparent;color:var(--studio-text);border-radius:999px;padding:8px 12px;font:12px var(--studio-font);cursor:pointer}
 .cc-variant-chips button[aria-pressed=true]{background:#252730;color:white;border-color:#252730}
 .cc-variant-chips button:focus-visible{outline:2px solid var(--studio-accent);outline-offset:2px}
+
+/* Pattern contracts use the same inset containers as component contracts. */
+body[data-view=patterns] .wb-pattern>:is(.wb-contract,.wb-search-tags){margin:0 24px 24px;border:1px solid var(--studio-line);border-radius:12px;overflow:hidden;background:var(--studio-surface)}
+body[data-view=patterns] .wb-pattern>:is(.wb-contract,.wb-search-tags)>summary{padding:14px 16px;background:var(--studio-recessed)}
+@media(max-width:720px){body[data-view=patterns] .wb-pattern>:is(.wb-contract,.wb-search-tags){margin-inline:16px}}
+
+body[data-view=patterns] .wb-search-tags .studio-tag-editor{padding:16px;border-top:1px solid var(--studio-hairline)}

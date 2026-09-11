@@ -22,6 +22,56 @@ remain authoritative for app decisions; the archived Titan guidance is historica
   Existing content is never overwritten. Load the resulting configuration.
 - Use fictional data for examples. Do not submit real app operations during testing.
 
+## Mandatory: separate layout recipes from components
+
+When breaking down any new app, classify each part as content/state, an existing
+control/component, a parent-owned layout, or an uncovered independent responsibility.
+Inspect existing components and spacing tokens before introducing new definitions.
+Inspect and reuse suitable registered components/compositions before assembling
+new arrangements from layout guidance. Existing layout-oriented components remain
+supported defaults; guidance does not deprecate them. Repeated arrangement or
+consistent spacing alone does not justify a NEW duplicate component.
+
+Use app-owned layout guidelines for horizontal rows, vertical stacks/lists, grids and
+footer action rows. Present these recipes under Layouts & patterns → Layouts, not in the
+component catalog. A recipe documents a default arrangement and tokenized spacing
+parameters; it is not a registered control and has no child interaction state gallery.
+Do not invent component entries merely to make layout guidance appear in the studio.
+If the installed studio cannot present recipes yet, document them in the app's
+layout guidance and report the presentation gap rather than inventing schema.
+
+For each recipe, record defaults using the app's existing spacing tokens, supported
+parameter choices and a representative preview composed of unchanged components.
+Do not import the sandbox's spacing scale into an app. Typical parameters are:
+
+- Horizontal row: gap, alignment and wrapping.
+- Vertical stack/list: gap, alignment and outer padding.
+- Grid: row/column gaps, column sizing and responsive arrangement.
+- Footer action row: gap, alignment and distribution.
+
+The parent may select documented spacing tokens for these parameters. Changing a
+layout parameter is configuration, not a new component variant. Keep defaults small
+and evidence-based; use app semantic spacing roles where established, otherwise its
+spacing primitives. Do not create a separate token or density variant for every
+combination. These are guidelines to follow through existing screen layout code, not required
+classes, imports or runtime utilities. Consolidate list/grid arrangements in a
+switchable guide rather than registering each as a separate component. Shared CSS
+utilities are optional only when repetition independently justifies them.
+
+Layout parameters own space between children, outer padding and available space
+within each child's documented sizing contract. They must not alter child hit areas,
+icon sizes, typography, internal padding, colors or state treatment. A List item owns
+its own internal geometry; the containing list owns gaps between items. Avoid double
+spacing from simultaneous child margins and parent gaps.
+
+Existing registered action groups and app grids are valid reuse candidates: consult
+them first and use them unchanged when suitable. Layout guidelines are a fallback
+for uncovered parent-owned arrangements, not a reason to rebuild or deregister an
+existing component. For new registration decisions, inspect the independent contract
+beyond generic arrangement; behavior is not the only possible justification. Do not
+retire or migrate existing registrations merely because they are layout-oriented.
+Follow explicit user direction for any such change.
+
 ## Required component audit
 
 Before adding or changing a component/composition, load the attached content's
@@ -49,8 +99,10 @@ renderers; visual similarity is not proof of reuse. Record this in
   a message may demonstrate expansion; its nested reply Button states belong in Button.
 - Keep nested controls usable in Live, but do not repeat whole parent specimens
   merely to demonstrate a child's state. Reference that dependency in metadata.
-- Internal parts of a single control (split-button segments, tabs, integrated filter
-  triggers) may have independent targets when that control owns their behavior.
+- Independently interactive sections require registered component instances. Parent
+  state targets must not substitute for child registration. Reuse existing controls;
+  repeated instances do not require new IDs. Composition-only variants may declare
+  required preview/usage context. Noninteractive internal parts remain internal.
 - Distinguish variants from dependencies and from grouped layout examples. A group
   does not introduce a new button state. Do not infer states from generic conventions.
 - Annotate interaction targets with `owner` equal to the owning catalog ID. If a
@@ -65,7 +117,8 @@ Record gaps honestly when child reuse or browser verification is incomplete.
 ## First extraction
 
 1. Inventory supplied screens: routes, files, assets, viewports, typography, color,
-   spacing, repeated controls, layout relationships, states and interactions.
+   spacing, repeated controls, layout relationships, states and interactions. Separate
+   layout recipes from controls and independently responsible components.
 2. Write `decisions/initial-extraction.md` in the content folder: evidence, proposed tokens and
    reusable contracts, discrepancies, confidence, unknown behavior and scope.
 3. Infer a concise spacing/type/color system from repeated evidence. Separate raw
@@ -123,3 +176,83 @@ must never regenerate that lock to conceal local framework modifications.
 Working imports, registered real specimens, verified source ownership, preserved
 behavior, proportionate validation and an honest handoff. A populated registry,
 static class count or successful syntax check alone does not establish visual quality.
+
+## Mandatory: distinguish state ownership from component boundaries
+
+For affected stateful controls, identify the owner of the value, the registered
+control that renders its accessible semantics and visual treatment, and the owner
+of the action/update callback. Caller-owned data can drive UI state; it does not
+mean the control has no state. Supplying documented state inputs and handling
+documented outputs is unchanged reuse, not permission to override child internals.
+
+State alone does not justify a new component or variant. Reuse a suitable existing
+control first. A different label/icon/value is an instance. An approved change to
+the same responsibility may be a variant or API extension; an uncovered independent
+responsibility may justify a component that composes existing controls. Multiple
+consumers are evidence, not a registration prerequisite. Respect app-owned rules
+requiring explicit approval for new variants or changes to shared child contracts.
+
+Keep child visual state galleries with their registered owner, while allowing those
+states naturally in parent Live previews and checking parent state propagation,
+keyboard/disabled behavior and domain callbacks. Do not confuse transient active
+interaction with a persistent pressed/toggle value.
+
+### Contextual layout defaults
+
+Choose the enclosing context before selecting a list/grid gap: data rows, dropdown
+menus, sidebar navigation, forms/settings, independent cards and app entries may
+need different relationships. Record item gap, group gap and surface inset separately
+from child internal padding. Source values from the attached app, label observed
+versus provisional recommendations, and never generalize a child’s internal padding
+into an external layout default. Unknown contexts require an explicit parent-owned
+choice and verification, not an invented universal spacing rule.
+
+## Standard: interaction ownership and registration
+
+An interaction unit is a region independently targetable by supported input that
+performs a semantic action or has an independently triggered interaction state.
+Identify units by user-facing behavior, not DOM boundaries or event-listener count.
+Each unit must be implemented by a registered component instance with one control
+owner. An enclosing registration does not cover independent descendant units.
+
+A component's own states apply to its unit as a whole; independent descendant
+states belong to registered children. Multiple simultaneous state dimensions do
+not alone imply multiple units. Noninteractive parts may render their owner's
+state without separate registration. Separate ownership of the state value,
+control semantics/treatment, and action handling in the contract.
+
+Inventory units, search existing definitions/variants, reuse suitable ones unchanged,
+and document uncovered responsibilities before adding definitions or changing shared
+contracts. A repeated use is an instance, not a new definition. Composition-only
+contracts are valid if required context is explicit and real previews inspect the
+unit in that context. Neither standalone product usage nor multiple consumers is
+required. Follow applicable approval rules; classification is not blanket permission
+for new variants or unrelated migrations.
+
+Validate real renderer calls, dependency metadata, owner-level state previews and
+parent integration. Private per-section targets cannot replace child registration.
+Examples elsewhere illustrate these requirements and do not override their scope.
+
+## Required preview coverage
+
+Contract classification and inspectable preview coverage are separate. A target is
+not automatically an API variant. Expose registered variants plus meaningful supported
+configurations affecting structure, geometry, controls, accessibility or usage constraints,
+including content presence, discrete sizes and composition positions. Honor explicitly
+requested configurations; do not use instance classification to omit them. Representative
+content values suffice within each configuration; avoid arbitrary prop Cartesian products.
+Map targets to real renderer inputs and keep Live/inspection reachable. States remain
+states; unsupported configurations must not be presented as supported.
+
+## Required specimen presentation contract
+
+Document the attached app's gallery presentation and reuse one shared specimen-only
+stylesheet/helper instead of copying inline CSS per preview. Studio overview previews
+receive `gallery=1`; the adapter sets `body[data-gallery=true]`. Define concise named
+configurations, consistent compartment borders/padding, centered specimens and
+content-aware column counts. Preserve component dimensions, required context and
+interaction instances; gallery styling must not target component internals.
+
+Captions identify configurations, not implementation details or instructions to
+authors. Put reuse/ownership/renderer notes in contracts or usage documentation.
+Check both compact and wide specimens, standalone behavior and gallery rendering.
