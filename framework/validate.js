@@ -52,6 +52,16 @@ function validate(root=ROOT, configFile) {
     for(const entry of entries) {
       if(ids.has(entry.id)) errors.push(profile+': duplicate entry ID '+entry.id);
       ids.add(entry.id);
+      if(entry.previewConfigurations!==undefined){
+        if(!Array.isArray(entry.previewConfigurations)||!entry.previewConfigurations.length)errors.push(profile+': '+entry.id+' requires nonempty previewConfigurations');
+        else {const configs=new Set();for(const config of entry.previewConfigurations){
+          if(!config.id||!config.name||configs.has(config.id))errors.push(profile+': '+entry.id+' has an unnamed or duplicate preview configuration');
+          configs.add(config.id);
+          if(entry.previewConfigurations.length>1&&!config.selector)errors.push(profile+': '+entry.id+' configuration '+config.id+' requires a source selector');
+          if(config.preview||config.url)errors.push(profile+': '+entry.id+' configurations must use the shared entry.preview source');
+          if(config.interactionTarget&&entry.interactions?.targets?.length&&!entry.interactions.targets.some(t=>t.id===config.interactionTarget))errors.push(profile+': '+entry.id+' has unknown interaction target '+config.interactionTarget);
+        }}
+      }
       for(const field of ['preview','css','module']) if(entry[field]) {
         const file=resolve(entry[field]);
         if(!file) errors.push(profile+': missing/unsafe '+field+' '+entry[field]);

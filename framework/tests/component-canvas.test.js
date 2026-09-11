@@ -15,3 +15,20 @@ test('zoom preserves the world point under the pointer and clamps limits',()=>{
 test('dependency navigation truncates cycles without mutating ancestry',()=>{
  const trail=['parent','child'];assert.deepEqual(canvas.trail(trail,'parent'),['parent']);assert.deepEqual(canvas.trail(trail,'leaf'),['parent','child','leaf']);assert.deepEqual(trail,['parent','child']);
 });
+
+test('modal preview configurations never fall back to interaction fixtures',()=>{
+ const entry={preview:'gallery.html',interactions:{preview:'states.html',targets:[{id:'state-target',name:'State fixture'}]}};
+ assert.deepEqual(canvas.previewConfigurations(entry),[{id:'default',name:'Default'}]);
+ const configs=[{id:'rich',name:'With header',selector:'#rich',interactionTarget:'state-target'}];
+ assert.equal(canvas.previewConfigurations({...entry,previewConfigurations:configs}),configs);
+});
+test('isolating a source keeps its nodes and ancestors while hiding other examples',()=>{
+ const node=(parent,tag='section')=>{const n={parentElement:parent,children:[],excluded:false,matches:s=>['script','style','link'].includes(tag),setAttribute(){this.excluded=true;},querySelectorAll(){return [];}};parent?.children.push(n);return n;};
+ const main=node(null,'main'),group=node(main,'div'),first=node(group),second=node(group),script=node(main,'script');
+ main.querySelectorAll=selector=>selector==='#first'?[first]:[];
+ assert.equal(canvas.isolatePreview(main,'#first'),first);
+ assert.equal(first.parentElement,group);assert.equal(group.parentElement,main);
+ assert.equal(first.excluded,false);assert.equal(second.excluded,true);assert.equal(script.excluded,false);
+ assert.throws(()=>canvas.isolatePreview(main,'#missing'),/exactly one/);
+ main.querySelectorAll=()=>[first,second];assert.throws(()=>canvas.isolatePreview(main,'section'),/exactly one/);
+});

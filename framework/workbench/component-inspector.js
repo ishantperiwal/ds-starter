@@ -4,6 +4,16 @@
 let active=null;
 const ignored='.wb-inline-overlay,.wb-component-toggle,[data-component-inspector]';
 function registered(el,catalog){return catalog.find(entry=>entry.class&&el.classList.contains(entry.class))||null;}
+function variantName(el,entry){
+ if(!entry)return '';
+ const targets=(entry.interactions?.targets||[]).filter(t=>!t.owner||t.owner===entry.id);
+ const value=el.getAttribute('data-inspector-variant');
+ if(value){const target=targets.find(t=>t.id===value||t.name===value);return target?.name||(entry.variants||[]).find(v=>v===value)||'';}
+ const selected=targets.filter(t=>t.inspectorSelector&&el.matches(t.inspectorSelector));
+ if(selected.length===1)return selected[0].name;
+ if(selected.length>1)return '';
+ return '';
+}
 function componentLayers(target,body,entries){
   const result=[];let node=target?.closest('svg')||target;
   // Stop at the outer registered component instance. Specimen captions, mounts
@@ -52,7 +62,7 @@ function mount(frame,entry,catalog,onClose,options={}){
  const listen=(target,type,fn,options)=>{target.addEventListener(type,fn,options);listeners.push(()=>target.removeEventListener(type,fn,options));};
  const entries=[...catalog].sort((a,b)=>(a.id===entry.id?1:0)-(b.id===entry.id?1:0));
  const isLayout=el=>!registered(el,entries)&&['Vertical layout','Horizontal layout','Grid layout','Container'].includes(generic(el,win));
- const variant=el=>registered(el,entries)?el.getAttribute('data-inspector-variant')||'':'';
+ const variant=el=>variantName(el,registered(el,entries));
  const label=el=>{const reg=registered(el,entries);return reg?reg.name+(variant(el)?' · '+variant(el):''):generic(el,win);};
  const layers=target=>componentLayers(target,body,entries);
  function info(el){const reg=registered(el,entries),parents=layers(el),owner=parents.map(e=>registered(e,entries)).find(Boolean);return {name:label(el),kind:reg?'Component':isLayout(el)?'Layout container':'Basic element',variant:variant(el),id:reg?.id,selector:selector(el,body),hierarchy:parents.slice().reverse().map(label).join(' → '),owner:owner?owner.name+' ('+owner.id+')':'Specimen layout for '+entry.name,css:owner?.css,module:owner?.module,preview:frame.src};}
@@ -106,5 +116,5 @@ function mount(frame,entry,catalog,onClose,options={}){
  const api={setActive,exit(){setActive(false);onClose?.();},destroy(){setActive(false);listeners.forEach(fn=>fn());observer.disconnect();if(raf)win.cancelAnimationFrame(raf);}};
  return api;
 }
-const api={mount,registered,reference,componentLayers};if(typeof module==='object'&&module.exports)module.exports=api;else root.wbComponentInspector=api;
+const api={mount,registered,reference,componentLayers,variantName};if(typeof module==='object'&&module.exports)module.exports=api;else root.wbComponentInspector=api;
 })(globalThis);

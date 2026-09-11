@@ -26,3 +26,19 @@ test('registered references include stable catalog identity and sources',()=>{
   assert.deepEqual(componentLayers(text,body,catalog),[text,child,container,component]);
   assert.deepEqual(componentLayers(component,body,catalog),[component]);
  });
+
+test('variant labels resolve registered names without guessing from content or state',()=>{
+ const {variantName}=require('../workbench/component-inspector.js');
+ const entry={id:'item',class:'item',variants:['Default'],interactions:{targets:[{id:'default',name:'Default'},{id:'trailing',name:'With trailing action',inspectorSelector:'.row > .item'},{id:'child',name:'Child variant',owner:'child'}]}};
+ const el=(value,selectors=[],classes=[])=>({getAttribute:()=>value,matches:s=>selectors.includes(s),classList:{contains:c=>classes.includes(c)}});
+ assert.equal(variantName(el('trailing'),entry),'With trailing action');
+ assert.equal(variantName(el(null,['.row > .item']),entry),'With trailing action');
+ assert.equal(variantName(el(null,[],['item--trailing']),entry),'');
+ assert.equal(variantName(el('unknown'),entry),'');
+ assert.equal(variantName(el('child'),entry),'');
+ assert.equal(variantName(el(null,[],['selected']),entry),'');
+ assert.equal(variantName(el(null),entry),'');
+ assert.equal(variantName(el(null),null),'');
+ const ambiguous={...entry,interactions:{targets:[{name:'A',inspectorSelector:'.a'},{name:'B',inspectorSelector:'.b'}]}};
+ assert.equal(variantName(el(null,['.a','.b']),ambiguous),'');
+});

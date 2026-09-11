@@ -333,3 +333,39 @@ contract and validation coverage; until supported, keep recipes in app guidance.
 Layout guidance may consolidate list and grid arrangements into one switchable
 preview. It documents supported scales and relationships, not mandatory application
 CSS utilities. Existing pattern entries can host this guide without a new schema.
+
+### Inspector variant labels
+
+Page and specimen inspectors display `Component name · Variant name` when a
+registered configuration can be identified. A renderer may set
+`data-inspector-variant` to its own interaction target ID or registered name.
+Alternatively, a target may declare `inspectorSelector`: a CSS selector matching
+that component's element in the actual rendered page, not a specimen-only wrapper.
+Exactly one matching target is required. CSS modifier classes alone never establish configuration identity. Child-owned targets are excluded. Missing,
+unknown or ambiguous identity displays only the component name; never infer a
+variant from text content, current interaction state, or the first catalog target.
+
+### One canonical component preview source
+
+`entry.preview` is the source for both the outside canvas card and the main
+variant canvas in its expanded modal. `interactions.preview` belongs exclusively
+to the right-hand interaction card; never use it to rebuild the main variant gallery.
+
+Optional `previewConfigurations` lists `{id, name, selector, interactionTarget}`.
+Each selector identifies exactly one example in `entry.preview` within `main`.
+It selects existing rendered content, never a second renderer, fixture or URL.
+The modal hides other example branches while retaining original nodes, ancestors
+and event handlers. An absent list displays the entire canonical source as one
+Default preview; it must not silently substitute interaction targets. The optional
+interactionTarget connects selection to the separate right-hand state controls.
+
+A multi-example source must enumerate its configurations. Validate selector matches
+in the actual browser, keep names/order aligned with the outside gallery, and verify
+content and child components agree in both views. CSS sizing, centering and zoom are
+presentation differences; columns, data, assets and mounted children are shared.
+
+The modal must preserve each gallery example's measured content width, independently
+of the surrounding modal tile width and canvas zoom. Reuse the outside specimen
+wrapper's layout dimensions; do not stretch every example to the largest variant.
+Keep live content height free to respond to interactions. Measure unscaled iframe
+layout pixels and never override component-owned CSS to match preview dimensions.

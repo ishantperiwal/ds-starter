@@ -3,6 +3,22 @@
 (function () {
   'use strict';
 
+  // A registered class may identify an inner control. Include only ancestors
+  // explicitly owned by its anatomy, bounded by the current preview container.
+  function inspectionRoots(container, anatomy) {
+    const selectors=[...(anatomy.parts||[]),...(anatomy.spacing||[]),...(anatomy.geometry||[])]
+      .map(part=>part.selector).filter(Boolean);
+    const roots=Array.from(container.querySelectorAll(anatomy.specimen)).map(seed=>{
+      let root=seed;
+      for(let node=seed.parentElement;node&&node!==container;node=node.parentElement){
+        if(selectors.some(selector=>node.matches(selector)))root=node;
+      }
+      return root;
+    });
+    return [...new Set(roots)].filter(root=>!roots.some(other=>other!==root&&other.contains(root)));
+  }
+  if(typeof module!=='undefined'&&module.exports){module.exports={inspectionRoots};return;}
+
   const copyNotice=message=>import('/framework/workbench/toast.js').then(()=>globalThis.StudioToast.show(message));
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const instances = new Map();
@@ -68,8 +84,7 @@
   }
   function discover(state) {
     state.groups=state.groups.filter(g=>g.host.isConnected);
-    const roots=Array.from(state.body.querySelectorAll(state.spec.anatomy.specimen));
-    const outer=roots.filter(el=>!roots.some(other=>other!==el && other.contains(el)));
+    const outer=inspectionRoots(state.body,state.spec.anatomy);
     const hosts=new Set(outer.map(root=>root.closest('.wb-composition-example, .wb-row, .wb-viz-variant-list > div') || state.body));
     hosts.forEach(host=> {
       if(state.groups.some(g=>g.host===host)) return;
@@ -187,8 +202,7 @@
     // Measure their own viewport to keep SVG units aligned with CSS pixels.
     const origin=group.overlay.getBoundingClientRect();
     if (!origin.width || !origin.height) return;
-    const roots=Array.from(group.host.querySelectorAll(spec.anatomy.specimen)).filter(visible);
-    const outer=roots.filter(el=>!roots.some(other=>other!==el && other.contains(el)));
+    const outer=inspectionRoots(group.host,spec.anatomy).filter(visible);
     let drawing='';const measurements=new Set(), labelledTokens=new Set();
     outer.forEach(root=>{
       spec.anatomy.parts.forEach(part=>matches(root,part.selector).forEach(el=>{

@@ -3,7 +3,9 @@
 (() => {
   'use strict';
 
-  const copyNotice=message=>import('/framework/workbench/toast.js').then(()=>globalThis.StudioToast.show(message));
+  // Screens can load the inspector from a nested studio on another server root.
+  const toastURL=new URL('workbench/toast.js',document.currentScript.src).href;
+  const copyNotice=message=>import(toastURL).then(()=>globalThis.StudioToast.show(message));
   const config=window.dsInspectorConfig||{};
   const registryURL=config.registryUrl||'/design-system/registry.json';
   const sourceBase=new URL('.',new URL(registryURL,location.href)).href;
@@ -25,8 +27,36 @@
       .band{position:fixed;pointer-events:auto;padding:0;border:1px solid #bd852c70;border-radius:0;background:#ffc96b55;min-width:0;min-height:0}
       .band.hard{background:#ef85854a;border-color:#c5595966}.band.unknown{background:#969ba533;border:1px dashed #69717c}
       .band.selected{outline:2px solid #246bff;outline-offset:-2px}.band:hover{filter:brightness(.93)}
-      .tip{position:fixed;width:max-content;max-width:min(380px,calc(100vw - 24px));overflow-wrap:anywhere}
-      .tip p{margin:0 0 7px}.tip code{white-space:normal}.tip button{margin-right:6px}.tip[hidden]{display:none}
+      .tip{position:fixed;width:320px;max-width:min(340px,calc(100vw - 24px));padding:0;overflow:hidden;overflow-wrap:anywhere}
+      .tip[hidden]{display:none}
+      .tip button{margin:0}
+      .tip-head{display:grid;gap:6px;padding:10px 12px;border-bottom:1px solid #ececf0}
+      .tip-head-top{display:flex;align-items:center;gap:8px}
+      .tip-title{display:flex;align-items:baseline;gap:8px;margin:0;min-width:0}
+      .tip-title strong{font-weight:650;white-space:nowrap}
+      .tip-px{font-weight:650;color:#185ac5}
+      .tip-kind{font-size:10px;font-weight:650;letter-spacing:.03em;text-transform:uppercase;border-radius:999px;padding:2px 7px;white-space:nowrap;background:#ffc96b66;color:#7a5612}
+      .tip-kind.hard{background:#ef85854a;color:#963b3b}.tip-kind.unknown{background:#969ba533;color:#595962}
+      .tip .tip-close{margin-left:auto;border:0;background:transparent;font-size:16px;line-height:1;padding:2px 7px;border-radius:6px;color:#686873}
+      .tip .tip-close:hover{background:#f1f1f4;color:#242424}
+      .tip-body{display:grid;gap:8px;padding:10px 12px}
+      .seg{display:flex;border-radius:9px;background:#ececf0;padding:3px;gap:2px}
+      .seg button{flex:1;border:0;border-radius:6px;background:transparent;padding:5px 10px;font-weight:550;color:#5b5b66}
+      .seg button[aria-pressed=true]{background:#fff;color:#185ac5;box-shadow:0 1px 3px #0000001f}
+      .seg button:disabled{opacity:.45}
+      .stepper{display:flex;align-items:center;justify-content:space-between;gap:6px;border:1px solid #d9d9df;border-radius:8px;background:#fbfbfc;padding:2px}
+      .stepper button{border:0;background:transparent;padding:3px 11px;font-size:15px;line-height:1.2;border-radius:6px}
+      .stepper button:hover:not(:disabled){background:#f1f1f4}
+      .stepper output{flex:1;text-align:center;font-weight:650}
+      .tip-status{margin:0;font-size:11.5px;line-height:1.45;color:#686873}
+      .tip-actions{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px}
+      .tip-actions button{font-size:12px;padding:4px 9px}
+      .tip-ref{border-top:1px solid #ececf0;padding:0 12px 6px}
+      .tip-ref summary{cursor:pointer;padding:8px 0;font-size:11.5px;color:#686873}
+      .tip-row{display:grid;grid-template-columns:62px 1fr;gap:8px;margin:0 0 6px}
+      .tip-row>span{color:#8a8a95;font-size:11px}
+      .tip-row code{font-size:11px;color:#3c3c46;overflow-wrap:anywhere}
+      .tip code{white-space:normal}
       .swatch{display:inline-block;width:10px;height:10px;background:#ffc96b;margin-right:4px}.swatch.red{background:#efaaaa}.swatch.gray{background:#aeb3ba}
       .component-outline{position:fixed;border:2px solid #246bff;background:#246bff08;pointer-events:none}
       .component-name{position:fixed;max-width:calc(100vw - 8px);overflow:hidden;text-overflow:ellipsis;top:0;left:0;background:#246bff;color:white;padding:3px 7px;white-space:nowrap}
@@ -192,8 +222,7 @@
       for(const edit of Array.from(edits.values()).reverse())edit.style.cssText=edit.before;
       edits.clear();updatePending();dismiss();render();
     };
-    function spacingEditor(item){
-      const owning=owner(item),box=document.createElement('div');box.style.cssText='margin:12px 0;display:grid;gap:8px';
+    function spacingEditor(item,owning,body){
       const scope=document.createElement('select');scope.setAttribute('aria-label','Spacing change scope');
       scope.add(new Option('This instance only','instance'));
       if(owning)scope.add(new Option(owning.property.startsWith('--')?'Shared token owner (all consumers)':'Same CSS rule and property','owner'));
@@ -203,23 +232,22 @@
         const value=getComputedStyle(item.element).getPropertyValue(name).trim();
         if(value)scale.add(new Option(value+' · '+name,'var('+name+')'));
       }
-      const status=document.createElement('p');
-      status.textContent=owning?'Owner: '+owning.selector+' · '+owning.source:'Owner unresolved or compound value: only an explicit instance override is available.';
-      const toggle=document.createElement('div');toggle.setAttribute('role','group');toggle.setAttribute('aria-label','Spacing scope');
+      const status=document.createElement('p');status.className='tip-status';
+      status.textContent=owning?'Shared owner resolved; previewing a shared change affects every consumer.':'Owner unresolved; only a local instance preview is available.';
+      const toggle=document.createElement('div');toggle.className='seg';toggle.setAttribute('role','group');toggle.setAttribute('aria-label','Spacing scope');
       const sharedButton=document.createElement('button'),localButton=document.createElement('button');
       sharedButton.textContent='Shared';localButton.textContent='Local';sharedButton.disabled=!owning;
       sharedButton.title=owning?'Change this shared owner':'Shared ownership could not be resolved';
       toggle.append(sharedButton,localButton);
-      const stepper=document.createElement('div');stepper.style.cssText='display:flex;align-items:center;gap:12px';
+      const stepper=document.createElement('div');stepper.className='stepper';
       const less=document.createElement('button'),more=document.createElement('button'),valueLabel=document.createElement('output');
       less.textContent='−';more.textContent='+';less.setAttribute('aria-label','Less spacing');more.setAttribute('aria-label','More spacing');
-      valueLabel.setAttribute('aria-live','polite');valueLabel.style.cssText='flex:1;text-align:center';
+      valueLabel.setAttribute('aria-live','polite');
       stepper.append(less,valueLabel,more);
       const steps=Array.from(scale.options).slice(1).map(option=>({value:option.value,px:parseFloat(option.textContent),label:option.textContent})).filter(step=>Number.isFinite(step.px)).sort((a,b)=>a.px-b.px);
       let current=parseFloat(getComputedStyle(item.element).getPropertyValue(item.prop))||item.px,busy=false;
       function syncControls(){
         sharedButton.setAttribute('aria-pressed',String(scope.value==='owner'));localButton.setAttribute('aria-pressed',String(scope.value==='instance'));
-        for(const button of [sharedButton,localButton])button.style.background=button.getAttribute('aria-pressed')==='true'?'#e7efff':'';
         valueLabel.textContent=current+'px';
         less.disabled=busy||!steps.some(step=>step.px<current);more.disabled=busy||!steps.some(step=>step.px>current);
       }
@@ -275,7 +303,7 @@
         if(next){scale.value=next.value;apply.onclick();}
       }
       less.onclick=()=>step(-1);more.onclick=()=>step(1);syncControls();
-      box.append(toggle,stepper,status);tip.append(box);
+      body.append(toggle,stepper,status);
     }
     updatePending();
     function dismiss(){
@@ -286,24 +314,42 @@
     function show(item,button){
       dismiss();selected=item;
       const group=button.dataset.group;bands.querySelectorAll('.band').forEach(b=>{if(b===button || (group && b.dataset.group===group))b.classList.add('selected');});tip.replaceChildren();tip.hidden=false;
-      const line=text=>{const p=document.createElement('p');p.textContent=text;tip.append(p);};
-      line(`${item.prop}: ${item.px}px · ${item.kind==='token'?'Design-system token':item.kind==='hard'?'Hardcoded spacing':'Unresolved ownership'}`);
-      line(item.tokens?.length?item.tokens.join(', '):item.value);
-      line(`${item.selector||''} · ${item.source}`);
-      if(item.declaration)line(`${item.declaration}: ${item.value}`);
-      if(item.kind==='unknown')line('Cascade, token alias or browser-default ownership could not be proven.');
-      if(item.kind==='hard')line('Page-specific spacing can be intentional.');
-      spacingEditor(item);
+      const kindLabel=item.kind==='token'?'Token':item.kind==='hard'?'Hardcoded':'Unresolved';
+      const head=document.createElement('div');head.className='tip-head';
+      const top=document.createElement('div');top.className='tip-head-top';
+      const badge=document.createElement('span');badge.className='tip-kind '+item.kind;badge.textContent=kindLabel;
+      const close=document.createElement('button');close.className='tip-close';close.setAttribute('aria-label','Close spacing details');close.textContent='×';close.onclick=dismiss;
+      top.append(badge,close);
+      const title=document.createElement('p');title.className='tip-title';
+      const prop=document.createElement('strong');prop.textContent=item.prop;
+      const px=document.createElement('span');px.className='tip-px';px.textContent=item.px+'px';
+      title.append(prop,px);
+      head.append(top,title);tip.append(head);
+      const body=document.createElement('div');body.className='tip-body';
+      const owning=owner(item);
+      spacingEditor(item,owning,body);
+      tip.append(body);
+      const actions=document.createElement('div');actions.className='tip-actions';
       if(item.tokens?.length){
         const variable=document.createElement('button');
         variable.textContent=item.tokens.length===1?'Copy variable':'Copy variables';
         variable.onclick=async()=>{try{await navigator.clipboard.writeText(item.tokens.join('\n'));copyNotice('Copied '+item.tokens.join(', '));}catch{copyNotice('Could not copy tokens');}};
-        tip.append(variable);
+        actions.append(variable);
       }
       const copy=document.createElement('button');copy.textContent='Copy spacing context';
-      copy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item));copyNotice('Copied element context');}catch{copyNotice('Could not copy element context');}};tip.append(copy);
-      const detailedCopy=document.createElement('button');detailedCopy.textContent='Copy detailed context';detailedCopy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item,true));copyNotice('Copied detailed element context');}catch{copyNotice('Could not copy detailed element context');}};tip.append(detailedCopy);
-      const close=document.createElement('button');close.textContent='Close';close.onclick=dismiss;tip.append(close);
+      copy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item));copyNotice('Copied spacing context');}catch{copyNotice('Could not copy spacing context');}};actions.append(copy);
+      const detailedCopy=document.createElement('button');detailedCopy.textContent='Copy detailed context';detailedCopy.onclick=async()=>{try{await navigator.clipboard.writeText(contextText(item,true));copyNotice('Copied detailed element context');}catch{copyNotice('Could not copy detailed element context');}};actions.append(detailedCopy);
+      tip.append(actions);
+      const ref=document.createElement('details');ref.className='tip-ref';
+      const summary=document.createElement('summary');summary.textContent='Reference';ref.append(summary);
+      const rows=[];
+      if(item.tokens?.length)rows.push(['Token',item.tokens.join(', ')]);else rows.push(['Value',item.value]);
+      if(item.declaration)rows.push(['Declaration',item.declaration+': '+item.value]);
+      if(item.selector)rows.push(['Selector',item.selector]);
+      if(item.source)rows.push(['Source',item.source]);
+      rows.push(['Owner',owning?owning.selector+' · '+owning.source:item.kind==='unknown'?'Unresolved; cascade, token alias or browser default could not be proven.':item.kind==='hard'?'Page-specific spacing; may be intentional.':'This instance only.']);
+      for(const [name,value] of rows){const row=document.createElement('p');row.className='tip-row';const key=document.createElement('span');key.textContent=name;const val=document.createElement('code');val.textContent=value;row.append(key,val);ref.append(row);}
+      tip.append(ref);
       const rect=button.getBoundingClientRect();const size=tip.getBoundingClientRect();
       tip.style.left=Math.max(12,Math.min(rect.left,innerWidth-size.width-12))+'px';tip.style.top=Math.max(12,Math.min(rect.bottom+6,innerHeight-size.height-12))+'px';
     }
@@ -475,7 +521,8 @@
       const r=item.el.getBoundingClientRect();outline.hidden=false;
       outline.style.cssText=`left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`;
       outline.replaceChildren();const name=document.createElement('span');name.className='component-name';
-      name.textContent=item.entry?.name||'Page-owned · '+item.el.localName;outline.append(name);
+      const variant=window.wbComponentInspector?.variantName(item.el,item.entry);
+      name.textContent=item.entry?item.entry.name+(variant?' · '+variant:''):'Page-owned · '+item.el.localName;outline.append(name);
       const box=name.getBoundingClientRect();const position=window.DSLabelPlacement?.place(r,box.width,box.height,innerWidth,innerHeight);
       if(position){name.style.left=position.left+'px';name.style.top=position.top+'px';}else name.hidden=true;
     }
@@ -677,7 +724,8 @@
   };
   const helperURL=new URL('typography-trace.js',document.currentScript.src).href;
   const placementURL=new URL('label-placement.js',document.currentScript.src).href;
-  const launch=()=>{if(!window.DSLabelPlacement){const script=document.createElement('script');script.src=placementURL;script.onload=launch;script.onerror=()=>console.error('Inspector label placement unavailable');document.head.append(script);return;}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();};
+  const variantURL=new URL('workbench/component-inspector.js',document.currentScript.src).href;
+  const launch=()=>{if(!window.wbComponentInspector){const script=document.createElement('script');script.src=variantURL;script.onload=launch;script.onerror=()=>console.error('Inspector variant resolver unavailable');document.head.append(script);return;}if(!window.DSLabelPlacement){const script=document.createElement('script');script.src=placementURL;script.onload=launch;script.onerror=()=>console.error('Inspector label placement unavailable');document.head.append(script);return;}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();};
   if(window.DSTypography)launch();else {
     const helper=document.createElement('script');helper.src=helperURL;helper.onload=launch;
     helper.onerror=()=>{console.error('Typography tracing unavailable');launch();};document.head.append(helper);

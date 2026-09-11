@@ -88,31 +88,7 @@ This audit is part of authorized implementation work, not a separate approval ga
 
 ## Interaction ownership — required before registration
 
-For every component, classify each interaction as owned behavior, an internal part,
-a nested registered component, or caller-owned behavior. Inspect actual imports and
-renderers; visual similarity is not proof of reuse. Record this in
-`anatomy.interactionOwnership` and list actual nested component IDs in `dependencies`.
-
-- Reuse registered child renderers. A parent may compose components without owning
-  their hover, focus, pressed or disabled state demonstrations.
-- Show only owner-level states in the parent's Interactions sidebar. For example,
-  a message may demonstrate expansion; its nested reply Button states belong in Button.
-- Keep nested controls usable in Live, but do not repeat whole parent specimens
-  merely to demonstrate a child's state. Reference that dependency in metadata.
-- Independently interactive sections require registered component instances. Parent
-  state targets must not substitute for child registration. Reuse existing controls;
-  repeated instances do not require new IDs. Composition-only variants may declare
-  required preview/usage context. Noninteractive internal parts remain internal.
-- Distinguish variants from dependencies and from grouped layout examples. A group
-  does not introduce a new button state. Do not infer states from generic conventions.
-- Annotate interaction targets with `owner` equal to the owning catalog ID. If a
-  target belongs to another registered component, document it there instead.
-- If the parent owns no interactions but reuses registered children, show Live and
-  links to child interaction owners. If neither exists, show “No interactions defined.” Do not invent
-  states to populate the sidebar. Audit source behavior, not just available CSS.
-
-Apply this on extraction, composition, variant additions and every interaction edit.
-Record gaps honestly when child reuse or browser verification is incomplete.
+See [Interaction ownership — required before registration](COMPONENT-REGISTRATION.md#interaction-ownership--required-before-registration) in the mandatory registration contract.
 
 ## First extraction
 
@@ -179,80 +155,20 @@ static class count or successful syntax check alone does not establish visual qu
 
 ## Mandatory: distinguish state ownership from component boundaries
 
-For affected stateful controls, identify the owner of the value, the registered
-control that renders its accessible semantics and visual treatment, and the owner
-of the action/update callback. Caller-owned data can drive UI state; it does not
-mean the control has no state. Supplying documented state inputs and handling
-documented outputs is unchanged reuse, not permission to override child internals.
-
-State alone does not justify a new component or variant. Reuse a suitable existing
-control first. A different label/icon/value is an instance. An approved change to
-the same responsibility may be a variant or API extension; an uncovered independent
-responsibility may justify a component that composes existing controls. Multiple
-consumers are evidence, not a registration prerequisite. Respect app-owned rules
-requiring explicit approval for new variants or changes to shared child contracts.
-
-Keep child visual state galleries with their registered owner, while allowing those
-states naturally in parent Live previews and checking parent state propagation,
-keyboard/disabled behavior and domain callbacks. Do not confuse transient active
-interaction with a persistent pressed/toggle value.
-
-### Contextual layout defaults
-
-Choose the enclosing context before selecting a list/grid gap: data rows, dropdown
-menus, sidebar navigation, forms/settings, independent cards and app entries may
-need different relationships. Record item gap, group gap and surface inset separately
-from child internal padding. Source values from the attached app, label observed
-versus provisional recommendations, and never generalize a child’s internal padding
-into an external layout default. Unknown contexts require an explicit parent-owned
-choice and verification, not an invented universal spacing rule.
+See [distinguish state ownership from component boundaries](COMPONENT-REGISTRATION.md#mandatory-distinguish-state-ownership-from-component-boundaries) in the mandatory registration contract.
 
 ## Standard: interaction ownership and registration
 
-An interaction unit is a region independently targetable by supported input that
-performs a semantic action or has an independently triggered interaction state.
-Identify units by user-facing behavior, not DOM boundaries or event-listener count.
-Each unit must be implemented by a registered component instance with one control
-owner. An enclosing registration does not cover independent descendant units.
-
-A component's own states apply to its unit as a whole; independent descendant
-states belong to registered children. Multiple simultaneous state dimensions do
-not alone imply multiple units. Noninteractive parts may render their owner's
-state without separate registration. Separate ownership of the state value,
-control semantics/treatment, and action handling in the contract.
-
-Inventory units, search existing definitions/variants, reuse suitable ones unchanged,
-and document uncovered responsibilities before adding definitions or changing shared
-contracts. A repeated use is an instance, not a new definition. Composition-only
-contracts are valid if required context is explicit and real previews inspect the
-unit in that context. Neither standalone product usage nor multiple consumers is
-required. Follow applicable approval rules; classification is not blanket permission
-for new variants or unrelated migrations.
-
-Validate real renderer calls, dependency metadata, owner-level state previews and
-parent integration. Private per-section targets cannot replace child registration.
-Examples elsewhere illustrate these requirements and do not override their scope.
+See [Standard: interaction ownership and registration](COMPONENT-REGISTRATION.md#standard-interaction-ownership-and-registration) in the mandatory registration contract.
 
 ## Required preview coverage
 
-Contract classification and inspectable preview coverage are separate. A target is
-not automatically an API variant. Expose registered variants plus meaningful supported
-configurations affecting structure, geometry, controls, accessibility or usage constraints,
-including content presence, discrete sizes and composition positions. Honor explicitly
-requested configurations; do not use instance classification to omit them. Representative
-content values suffice within each configuration; avoid arbitrary prop Cartesian products.
-Map targets to real renderer inputs and keep Live/inspection reachable. States remain
-states; unsupported configurations must not be presented as supported.
+See [Required preview coverage](COMPONENT-REGISTRATION.md#required-preview-coverage) in the mandatory registration contract.
 
 ## Required specimen presentation contract
 
-Document the attached app's gallery presentation and reuse one shared specimen-only
-stylesheet/helper instead of copying inline CSS per preview. Studio overview previews
-receive `gallery=1`; the adapter sets `body[data-gallery=true]`. Define concise named
-configurations, consistent compartment borders/padding, centered specimens and
-content-aware column counts. Preserve component dimensions, required context and
-interaction instances; gallery styling must not target component internals.
+See [Required specimen presentation contract](COMPONENT-REGISTRATION.md#required-specimen-presentation-contract) in the mandatory registration contract.
 
-Captions identify configurations, not implementation details or instructions to
-authors. Put reuse/ownership/renderer notes in contracts or usage documentation.
-Check both compact and wide specimens, standalone behavior and gallery rendering.
+## Mandatory: state categories and preview contracts
+
+See [state categories and preview contracts](COMPONENT-REGISTRATION.md#mandatory-state-categories-and-preview-contracts) in the mandatory registration contract.
