@@ -189,6 +189,7 @@
     const panel=document.getElementById('component-interactions');if(!panel)return;
     let trigger,cleanups=[];
     const close=(restore=true)=>{panel.hidden=true;cleanups.forEach(fn=>fn());cleanups=[];panel.replaceChildren();document.querySelectorAll('[data-interactions]').forEach(button=>button.setAttribute('aria-expanded','false'));if(restore)trigger?.focus();};
+    const escapePreview=event=>{if(event.key!=='Escape'||event.defaultPrevented||document.querySelector('dialog[open],:popover-open'))return;const preview=document.querySelector('.cc-explorer.is-focused [data-preview-mode=preview]');event.preventDefault();if(preview)preview.click();else close();};
     const open=(entry,button,focusPanel=true,targetId)=>{
       close(false);if(!entry)return;
       trigger=button;
@@ -200,14 +201,14 @@
       panel.hidden=false;
       const body=panel.querySelector('.ci-body');
       const targets=entry.interactions?.targets||[];
-      if(!targets.length){const name=document.createElement('p');name.className='ci-selected-variant';name.textContent='Default';body.append(name);}
       const dependencies=(entry.dependencies||[]).map(id=>M.blocks(state.catalog).find(item=>item.id===id)).filter(Boolean);
       if(!targets.length&&!dependencies.length){const empty=document.createElement('p');empty.className='ci-empty';empty.textContent='No interactions defined.';body.append(empty);}
       const labels={live:'Live',collapsed:'Collapsed',expanded:'Expanded',default:'Default',hover:'Hover',active:'Pressing',pressed:'Pressed',checked:'Checked',focus:'Focus',disabled:'Disabled',selected:'Selected',muted:'Muted','read-only':'Read only'};
       const stateList=document.createElement('div');stateList.className='ci-state-list';
       const addPreview=(mode,target)=>{
         const section=document.createElement('section');section.className='ci-state-preview'+(mode==='live'?' ci-live-preview':'');
-        const heading=document.createElement('h3');heading.textContent=labels[mode]||mode;
+        const heading=document.createElement('h3');heading.textContent=mode==='live'?(target.name?.trim()||'Default'):(labels[mode]||mode);
+        if(mode==='live'){const glyph=document.createElementNS('http://www.w3.org/2000/svg','svg');glyph.classList.add('cc-chip-icon');glyph.setAttribute('viewBox','0 0 16 16');glyph.setAttribute('fill','none');glyph.setAttribute('stroke','currentColor');glyph.setAttribute('stroke-width','1.25');glyph.setAttribute('stroke-linecap','round');glyph.setAttribute('stroke-linejoin','round');glyph.setAttribute('aria-hidden','true');glyph.innerHTML='<path d="m8 2 6 3.5L8 9 2 5.5 8 2Zm-6 8.5L8 14l6-3.5M2 8l6 3.5L14 8"/>';heading.prepend(glyph);}
         const frame=document.createElement('iframe');frame.title=entry.name+' — '+heading.textContent;frame.style.width=requiredWidth+'px';frame.style.minWidth=requiredWidth+'px';
         const url=new URL(M.previewURL({...entry,preview:entry.interactions?.preview||entry.preview},state.base,state.theme));url.searchParams.set('state',mode);url.searchParams.set('target',target.id);
         section.append(heading,frame);if(mode==='live')body.insertBefore(section,stateList);else stateList.append(section);
@@ -216,7 +217,7 @@
           const doc=frame.contentDocument;
           const fit=()=>{frame.style.height=Math.max(48,Math.ceil(doc.body.getBoundingClientRect().height))+'px';const needed=doc.documentElement.scrollWidth;if(needed>frame.clientWidth+2){requiredWidth=Math.max(requiredWidth,needed);setWidth();}frame.style.width=requiredWidth+'px';frame.style.minWidth=requiredWidth+'px';};
           const observer=new ResizeObserver(fit);observer.observe(doc.body);fit();cleanups.push(()=>observer.disconnect());
-          doc.addEventListener('keydown',event=>{if(event.key==='Escape')close();});
+          doc.addEventListener('keydown',escapePreview);
         }catch{}});
         frame.src=url.href;
       };
@@ -224,7 +225,6 @@
         body.append(stateList);
         const target=targets.find(t=>t.id===targetId)||targets[0];
         if(target){
-          const name=document.createElement('p');name.className='ci-selected-variant';name.textContent=target.name?.trim()||'Default';body.prepend(name);
           addPreview('live',target);
           if(target.states.length)target.states.filter(mode=>mode!=='live').forEach(mode=>addPreview(mode,target));
           else{const note=document.createElement('p');note.className='ci-empty';note.textContent='No interaction states defined for this variant.';stateList.append(note);}
@@ -260,7 +260,7 @@
       }
       if(!panel.hidden&&!panel.contains(event.target)&&!event.target.closest('.cg-dialog'))close(false);
     },{capture:true,signal:interactionEvents.signal});
-    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden){event.preventDefault();close();}},{signal:interactionEvents.signal});
+    document.addEventListener('keydown',event=>{if(!panel.hidden)escapePreview(event);},{signal:interactionEvents.signal});
     return {open,close};
   }
   function bindComponentGallery(){

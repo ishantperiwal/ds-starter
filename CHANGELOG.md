@@ -2,6 +2,36 @@
 
 ## Unreleased
 
+- Replace the component-detail more button's `⋯` text glyph with a centered SVG so
+  it stays optically centered in its 34px control across studio typefaces.
+
+- Use self-hosted Space Grotesk (OFL, variable 300–700, latin/latin-ext/vietnamese
+  subsets) as the studio UI typeface via `--studio-font`; preview frames keep the
+  app's own font tokens.
+
+- Inset the spacing inspector's component panel content (heading, registered
+  preview, actions) from the panel edges; it previously inherited the tip's
+  zero padding and ran edge-to-edge.
+
+- Lift the black chrome one step lighter after review (rail #17181d, sidebar
+  #1e1f25, selected category #363843).
+
+- Set the Components view page background to the rail black so the floating
+  navigation panels' insets and gaps no longer show the light page behind them.
+
+- Darken the studio rail and Components sidebar surfaces (rail #101114, sidebar
+  #16171c, selected category #2c2e36) for a deeper black chrome.
+
+- Dim the canvas backdrop while a component is focused so the white detail cards
+  and their controls separate from the page.
+
+- Hide the Fit all control while a component is focused; the focused detail view is
+  a scrolling context, not the pan canvas.
+
+- Swap gallery-card surfaces: preview stages use the white studio surface and the
+  component naming footer uses the former preview off-white (#f5f5f2). The expanded
+  dialog's preview body keeps its off-white canvas.
+
 - Preserve search focus when typing closes a focused component view.
 
 - Document shared specimen gallery presentation and concise configuration captions

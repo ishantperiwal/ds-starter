@@ -15,7 +15,7 @@
     list:'M8 6h12M8 12h12M8 18h12M3 6h1M3 12h1M3 18h1',
     tag:'M3 3h8l10 10-8 8L3 11Z M7 7h.01',
     shapes:'M3 3h7v7H3ZM17 3l4 7h-8ZM7 15a4 4 0 1 0 0 8 4 4 0 0 0 0-8M15 15h6v6h-6Z',
-    box:'M4 5h16v16H4ZM8 5V3h8v2M8 11h8M12 8v6',
+    box:'M12 2.25 21 7.125v9.75L12 21.75 3 16.875v-9.75L12 2.25ZM3 7.125 12 12l9-4.875M12 12v9.75',
     layout:'M3 4h18v16H3ZM3 9h18M9 9v11',
     chart:'M3 3v18h18M6 15l5-5 4 3 5-7',
     flask:'M9 3h6M10 3v7l-6 10h16l-6-10V3M8 14h8',
@@ -24,7 +24,7 @@
   const icon=name=>'<svg class="wb-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+paths[name]+'"/></svg>';
   function navigation(catalog,tokens,current){
     const counts=M.counts(catalog,tokens);
-    return tabs.filter(([key])=>!catalog.presentation?.hiddenSections?.includes(key)).map(([key,label,glyph])=>'<a href="#'+key+'"'+(key===current?' aria-current="page"':'')+'>'+icon(glyph)+'<span>'+label+'</span><i'+(key==='icons'?' title="Registered icon providers"':'')+'>'+(counts[key]===null?'':counts[key])+'</i></a>').join('');
+    return tabs.filter(([key])=>!catalog.presentation?.hiddenSections?.includes(key)).map(([key,label,glyph])=>'<a href="#'+key+'" aria-label="'+esc(label)+'" title="'+esc(label)+'"'+(key===current?' aria-current="page"':'')+'>'+icon(glyph)+'<span>'+label+'</span><i'+(key==='icons'?' title="Registered icon providers"':'')+'>'+(counts[key]===null?'':counts[key])+'</i></a>').join('');
   }
   const empty=(title,note='')=>'<div class="wb-empty"><h2>'+esc(title)+'</h2>'+(note?'<p>'+esc(note)+'</p>':'')+'</div>';
   function source(file,state){
@@ -233,7 +233,7 @@
 
   function components(state){
     const entries=M.blocks(state.catalog),categories=['All',...new Set(entries.map(entry=>entry.category||'Components'))];
-    return {title:'Components',intro:'',html:entries.length?'<div class="fd-toolbar"><nav class="fd-tabs cg-tabs" aria-label="Component categories">'+categories.map(category=>'<button type="button" data-component-category="'+esc(category)+'" aria-pressed="'+(category===(state.componentCategory||'All'))+'">'+esc(category)+'</button>').join('')+'</nav>'+search('Filter components','Search components…')+'</div>'+
+    return {title:'Components',intro:'',html:entries.length?'<aside class="fd-toolbar component-sidebar" aria-label="Component browser"><h2>Components</h2>'+search('Filter components','Search components…')+'<nav class="fd-tabs cg-tabs" aria-label="Component categories">'+categories.map(category=>'<button type="button" data-component-category="'+esc(category)+'" aria-pressed="'+(category===(state.componentCategory||'All'))+'">'+esc(category)+'</button>').join('')+'</nav></aside>'+
       M.groups(entries,entry=>entry.category||'Components').map(([category,group])=>'<section class="wb-component-group cg-category"><h2>'+esc(category)+'</h2><div class="cg-grid">'+group.map(entry=>{
         const preview={...entry,preview:entry.preview+(entry.preview.includes('?')?'&':'?')+'gallery=1',previewHeight:200};
         return '<article class="cg-card wb-filterable" style="--gallery-width:'+(Number.isFinite(entry.galleryWidth)?Math.max(280,Math.min(960,entry.galleryWidth)):360)+'px" id="entry-'+esc(entry.id)+'" data-category="'+esc(category)+'" data-search="'+esc(M.searchMetadata(entry))+'"><div class="cg-preview-stage">'+('<button type="button" class="cg-select-preview" data-interactions="'+esc(entry.id)+'" aria-label="Show '+esc(entry.name)+' interactions" aria-controls="component-interactions" aria-expanded="false"></button>')+componentTools()+'<button type="button" class="cg-expand" data-component="'+esc(entry.id)+'" aria-haspopup="dialog" aria-label="Expand '+esc(entry.name)+'" title="Expand '+esc(entry.name)+'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 2h4v4M14 2 9 7M6 14H2v-4M2 14l5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="cg-preview" inert>'+frame(preview,state)+'</div></div><footer class="cg-card-footer"><div class="cg-card-identity"><div class="cg-name-row"><h3>'+esc(entry.name)+'</h3><button type="button" class="cg-copy-reference" data-copy-component="'+esc(entry.id)+'" aria-label="Copy '+esc(entry.name)+' reference" title="Copy component reference"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor"/><path d="M10 3V2H2v8h1" stroke="currentColor" stroke-linejoin="round"/></svg></button></div>'+(entry.class?'<code>'+esc('.'+entry.class)+'</code>':'')+'</div>'+'</footer></article>';

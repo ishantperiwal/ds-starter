@@ -369,3 +369,10 @@ of the surrounding modal tile width and canvas zoom. Reuse the outside specimen
 wrapper's layout dimensions; do not stretch every example to the largest variant.
 Keep live content height free to respond to interactions. Measure unscaled iframe
 layout pixels and never override component-owned CSS to match preview dimensions.
+
+### Explicit preview arrangement
+
+Optional `previewLayout.columns` is a positive column count for the expanded variant
+canvas. Omitted values retain automatic layout. App gallery adapters may consume
+the same metadata and `previewConfigurations` order for consistent comparisons.
+This changes specimen arrangement only, never component internals or state ownership.
