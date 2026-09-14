@@ -55,6 +55,28 @@
     }
     return rows;
   }
+  function mixColor(value) {
+    const match=value.match(/^color-mix\(\s*in\s+srgb\s*,([\s\S]+)\)$/i);
+    if(!match)return value;
+    const parts=match[1].split(',').map(part=>part.trim()).filter(Boolean);
+    if(parts.length!==2)return value;
+    const parse=part=>{
+      const parsed=part.match(/^(.*?)(?:\s+([\d.]+)%)?$/),color=parsed[1].trim();
+      const hex=color.match(/^#([\da-f]{3}|[\da-f]{6})$/i);
+      if(!hex)return null;
+      let h=hex[1];if(h.length===3)h=h.split('').map(c=>c+c).join('');
+      return {r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16),pct:parsed[2]===undefined?null:parseFloat(parsed[2])};
+    };
+    const a=parse(parts[0]),b=parse(parts[1]);
+    if(!a||!b)return value;
+    let pa=a.pct,pb=b.pct;
+    if(pa===null&&pb===null){pa=50;pb=50;}
+    else if(pa===null)pa=100-pb;
+    else if(pb===null)pb=100-pa;
+    if(pa+pb===0)return value;
+    const mix=(x,y)=>Math.round((x*pa+y*pb)/(pa+pb));
+    return '#'+[mix(a.r,b.r),mix(a.g,b.g),mix(a.b,b.b)].map(channel=>channel.toString(16).padStart(2,'0')).join('');
+  }
   function resolveLiteral(row, rows, seen=new Set()) {
     if(!row.isRoot || seen.has(row.name) || /!important/.test(row.value))return null;
     seen=new Set(seen);seen.add(row.name);
@@ -64,7 +86,8 @@
       const value=candidates.length ? resolveLiteral(candidates[candidates.length-1],rows,seen) : null;
       if(value===null){unresolved=true;return '';}return value;
     });
-    return unresolved || /var\(/.test(result) ? null : result;
+    if(unresolved || /var\(/.test(result))return null;
+    return mixColor(result.trim());
   }
   function family(row, rows=[]) {
     const name=row.name;
@@ -91,6 +114,7 @@
     const aliases={dataviz:'visualizations','data-viz':'visualizations',mood:'moodboard'};
     let id;
     try{id=entry?decodeURIComponent(entry):null;}catch{id=null;}
+    if(id==='app-switcher'&&(aliases[tab]||tab)==='patterns')id='anchored-popover';
     return {tab:aliases[tab]||tab||'overview',entry:id};
   }
   function previewURL(entry, base, theme='', inspect=false) {

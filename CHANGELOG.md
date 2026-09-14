@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+- Tokenize the interaction panel's surfaces and buttons (dependency buttons, variant
+  chips, state chips, panel/body) so they follow the studio dark scheme instead of
+  staying white.
+
+- Tokenize the component detail's floating surfaces (Uses N components popover,
+  ⋯ menu, info dialog, dependency-count pill) for the dark scheme.
+
+- Resolve simple `color-mix(in srgb, …)` token values in the studio model so theme
+  surfaces can layer computed shades and still be inspected and contrast-checked.
+
+- Keep old `#patterns/app-switcher` links working via a route alias to the generalized
+  Anchored popover disclosure pattern.
+
+- Fix search/category sorting moving filterable cards above non-filterable siblings
+  (it pushed the Layouts & patterns tab row thousands of pixels down). Sorting now
+  reorders only the filterable block, anchored in place.
+
+- Overview: drop the studio version line and the Registered screens heading rule,
+  and give every catalog stat its own bordered card in a wrapping grid.
+
+- Hide the rail's Working catalog picker and playground link; the studio stays on
+  the configured default profile (use `?profile=demo` to reach the tool sandbox).
+
+- Move catalog counts and the studio version from the persistent rail footer into
+  the Overview stats.
+
 - Replace the component-detail more button's `⋯` text glyph with a centered SVG so
   it stays optically centered in its 34px control across studio typefaces.
 

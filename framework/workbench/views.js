@@ -55,8 +55,12 @@
   }
   const search=(label,placeholder)=>'<div class="wb-toolbar"><input class="wb-search" type="search" id="catalog-filter" aria-label="'+esc(label)+'" placeholder="'+esc(placeholder)+'"><span id="filter-status" role="status"></span></div>';
   function overview(state){
-    const {catalog,tokens}=state,blocks=M.blocks(catalog),count=M.counts(catalog,tokens);
-    const html='<div class="wb-stats"><div class="wb-stat"><b>'+blocks.length+'</b><span>components &amp; compositions</span></div>'+
+    const {catalog,tokens}=state,count=M.counts(catalog,tokens);
+    const html='<div class="wb-stats">'+
+      '<div class="wb-stat"><b>'+catalog.components.length+'</b><span>components</span></div>'+
+      '<div class="wb-stat"><b>'+catalog.patterns.length+'</b><span>patterns</span></div>'+
+      '<div class="wb-stat"><b>'+catalog.compositions.length+'</b><span>compositions</span></div>'+
+      '<div class="wb-stat"><b>'+catalog.icons.length+'</b><span>icon providers</span></div>'+
       '<div class="wb-stat"><b id="foundation-count">'+(count.foundations===null?'—':count.foundations)+'</b><span>foundation tokens</span></div>'+
       '</div>'+
       (catalog.screens.length?'<section class="wb-section"><h2>Registered screens <span>'+catalog.screens.length+'</span></h2>'+

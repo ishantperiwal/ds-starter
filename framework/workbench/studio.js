@@ -23,8 +23,6 @@
       try{await loadThemeTokens();render();}catch(error){showError(error);}finally{toggle.disabled=false;}
     };
     $('navigation').innerHTML=V.navigation(state.catalog,state.tokens,state.tab);
-    $('catalog-summary').innerHTML='<p><b>'+state.catalog.components.length+'</b> components · <b>'+state.catalog.patterns.length+'</b> patterns</p><p><b>'+
-      state.catalog.compositions.length+'</b> compositions · <b>'+state.catalog.icons.length+'</b> icon providers</p>';
   }
   function paintSamples(){
     const fontRow=state.tokens?.find(row=>state.catalog.foundationPresentation?.tokens?.[row.name]?.kind==='family')||state.tokens?.find(row=>/font.*(?:family|system)/.test(row.name));
@@ -335,8 +333,14 @@
         const parents=new Set([...document.querySelectorAll('.wb-filterable')].map(item=>item.parentElement));
         parents.forEach(parent=>{
           const items=[...parent.children].filter(item=>item.classList.contains('wb-filterable'));
+          if(!items.length)return;
+          const anchor=items[0];
           items.forEach((item,index)=>{if(!item.dataset.searchOrder)item.dataset.searchOrder=String(index+1);});
-          items.sort((a,b)=>query?Number(b.dataset.searchScore)-Number(a.dataset.searchScore)||Number(a.dataset.searchOrder)-Number(b.dataset.searchOrder):Number(a.dataset.searchOrder)-Number(b.dataset.searchOrder)).forEach((item,index)=>{if(parent.children[index]!==item)parent.insertBefore(item,parent.children[index]||null);});
+          items.sort((a,b)=>query?Number(b.dataset.searchScore)-Number(a.dataset.searchScore)||Number(a.dataset.searchOrder)-Number(b.dataset.searchOrder):Number(a.dataset.searchOrder)-Number(b.dataset.searchOrder));
+          const marker=document.createComment('search-sort');
+          anchor.before(marker);
+          items.forEach(item=>parent.insertBefore(item,marker));
+          marker.remove();
         });
         document.querySelectorAll('.wb-token-group,.wb-component-group,.fd-category').forEach(group=>{
           group.hidden=![...group.querySelectorAll('.wb-filterable')].some(item=>!item.hidden);
@@ -424,12 +428,6 @@
       state.theme=state.catalog.themes.some(theme=>theme.id===requestedTheme)?requestedTheme:(state.catalog.themes[0]?.id||'');
       $('brand-name').textContent=state.profile==='demo'?'Studio':config.name;
       document.title=state.catalog.name+' · Design system';
-      $('version').textContent='v'+config.version.version;
-      $('profile').value=state.profile;
-      $('profile').addEventListener('change',()=>{
-        const url=new URL(location.href);url.searchParams.set('profile',$('profile').value);
-        url.searchParams.delete('theme');url.hash='overview';location.href=url.href;
-      });
       render();
       try {
         await loadThemeTokens();

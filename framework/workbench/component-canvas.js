@@ -76,6 +76,7 @@ if(typeof window!=='undefined')window.StudioComponentCanvas={mount({state,intera
      frame.addEventListener('load',connect);connect();cleanups.push(()=>{frame.removeEventListener('load',connect);removeFrameClick();});
    };
    const selectVariant=target=>{
+     card.querySelector('.vc-world')?.dispatchEvent(new CustomEvent('focus-variant',{detail:target.id}));
      card.querySelectorAll('[data-variant-chip]').forEach(chip=>chip.setAttribute('aria-pressed',String(chip.dataset.variantChip===target.id)));
      card.querySelectorAll('.cc-variant').forEach(tile=>{const active=tile.dataset.variant===target.id;tile.classList.toggle('is-selected',active);tile.querySelector('.cc-variant-select').setAttribute('aria-pressed',String(active));});
      if(chosenVariants.get(item.id)===(target.interactionTarget||target.id)&&activeInteraction===item.id&&!document.querySelector('#component-interactions')?.hidden)return;
@@ -96,7 +97,7 @@ if(typeof window!=='undefined')window.StudioComponentCanvas={mount({state,intera
      });
      cleanups.push(StudioVariantCanvas.mount(grid,controls));
      const chips=document.createElement('nav');chips.className='cc-variant-chips';chips.setAttribute('aria-label',item.name+' variants');
-     targets.forEach((target,index)=>{const chip=document.createElement('button');chip.type='button';chip.dataset.variantChip=target.id;const glyph=document.createElementNS('http://www.w3.org/2000/svg','svg');glyph.classList.add('cc-chip-icon');glyph.setAttribute('viewBox','0 0 16 16');glyph.setAttribute('fill','none');glyph.setAttribute('stroke','currentColor');glyph.setAttribute('stroke-width','1.25');glyph.setAttribute('stroke-linecap','round');glyph.setAttribute('stroke-linejoin','round');glyph.setAttribute('aria-hidden','true');glyph.innerHTML='<path d="m8 2 6 3.5L8 9 2 5.5 8 2Zm-6 8.5L8 14l6-3.5M2 8l6 3.5L14 8"/>';const label=document.createElement('span');label.textContent=target.name;chip.append(glyph,label);chip.setAttribute('aria-pressed',String(index===0));chip.addEventListener('click',event=>{event.stopPropagation();selectVariant(target);grid.dispatchEvent(new CustomEvent('focus-variant',{detail:target.id}));});chips.append(chip);});
+     targets.forEach((target,index)=>{const chip=document.createElement('button');chip.type='button';chip.dataset.variantChip=target.id;const glyph=document.createElementNS('http://www.w3.org/2000/svg','svg');glyph.classList.add('cc-chip-icon');glyph.setAttribute('viewBox','0 0 16 16');glyph.setAttribute('fill','none');glyph.setAttribute('stroke','currentColor');glyph.setAttribute('stroke-width','1.25');glyph.setAttribute('stroke-linecap','round');glyph.setAttribute('stroke-linejoin','round');glyph.setAttribute('aria-hidden','true');glyph.innerHTML='<path d="m8 2 6 3.5L8 9 2 5.5 8 2Zm-6 8.5L8 14l6-3.5M2 8l6 3.5L14 8"/>';const label=document.createElement('span');label.textContent=target.name;chip.append(glyph,label);chip.setAttribute('aria-pressed',String(index===0));chip.addEventListener('click',event=>{event.stopPropagation();selectVariant(target);});chips.append(chip);});
      const contract=card.querySelector('.wb-contract');if(contract)contract.before(chips);else grid.closest('.wb-spec-body').after(chips);
 
    }else if(original)bindFrame(original);

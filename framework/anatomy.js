@@ -71,10 +71,11 @@
     discover(state);
     schedule();
   }
+  function popoverDocument(){try{if(window.top.document.querySelector('.cc-focus'))return window.top.document;}catch{}return document;}
   function setMode(host,mode){
     const state=instances.get(host);if(!state)return false;
     state.spacing=mode==='spacing';
-    document.querySelector('.wb-spacing-popover')?.remove();
+    popoverDocument().querySelector('.wb-spacing-popover')?.remove();
     state.groups.forEach(group=>{group.selectedToken=null;});
     state.toolbar.querySelectorAll('.wb-inline-toggle button').forEach((button,index)=>button.setAttribute('aria-pressed',String(index===(state.spacing?1:0))));
     state.toolbar.querySelector('output').textContent='';
@@ -101,13 +102,26 @@
             item.selectedToken=hit.dataset.token;
             item.overlay.querySelectorAll('[data-token]').forEach(el=>el.classList.toggle('is-selected',el.dataset.token===hit.dataset.token));
           });
-          document.querySelector('.wb-spacing-popover')?.remove();
+          popoverDocument().querySelector('.wb-spacing-popover')?.remove();
           const output=document.createElement('div');output.className='wb-spacing-popover';output.setAttribute('role','dialog');output.setAttribute('aria-label','Spacing measurement');
           output.innerHTML='<button type="button" class="wb-spacing-close" aria-label="Close measurement">×</button><div>'+esc(hit.dataset.measure)+'</div><code>'+esc(hit.dataset.token)+'</code><button type="button" class="wb-copy-token">Copy reference</button>';
-          document.body.append(output);
-          const r=hit.getBoundingClientRect(),box=output.getBoundingClientRect();
-          output.style.left=Math.max(8,Math.min(r.left,innerWidth-box.width-8))+'px';
-          output.style.top=Math.max(8,Math.min(r.bottom+8,innerHeight-box.height-8))+'px';
+          const destination=popoverDocument();
+          const dark=destination.body.dataset.previewColorScheme==='dark'||document.documentElement.dataset.theme==='dark';
+          output.style.cssText='position:fixed;z-index:10000;box-sizing:border-box;width:260px;max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);overflow:auto;padding:14px;border:1px solid '+(dark?'#50535e':'#dedee5')+';border-radius:10px;background:'+(dark?'#30323a':'#fff')+';color:'+(dark?'#e0e3ea':'#333')+';font:12px/1.5 system-ui;box-shadow:0 6px 24px #0003;overflow-wrap:anywhere;right:24px;bottom:24px;';
+          output.querySelector('code').style.cssText='display:block;margin:8px 0;font-size:11px';
+          output.querySelector('.wb-spacing-close').style.cssText='float:right;border:0;background:transparent;color:inherit;font-size:18px;cursor:pointer';
+          output.querySelector('.wb-copy-token').style.cssText='padding:7px 12px;border:1px solid '+(dark?'#50535e':'#d5d9e0')+';border-radius:5px;background:'+(dark?'#454852':'#f5f5f2')+';color:inherit;font:inherit;cursor:pointer';
+          destination.body.append(output);
+          // Map the specimen rectangle through scaled iframe viewports into Studio.
+          const mapRect=node=>{let r=node.getBoundingClientRect(),rect={left:r.left,top:r.top,right:r.right,bottom:r.bottom};let view=window;while(view.document!==destination&&view.frameElement){const frame=view.frameElement,f=frame.getBoundingClientRect(),sx=f.width/frame.offsetWidth,sy=f.height/frame.offsetHeight;rect={left:f.left+(frame.clientLeft+rect.left)*sx,right:f.left+(frame.clientLeft+rect.right)*sx,top:f.top+(frame.clientTop+rect.top)*sy,bottom:f.top+(frame.clientTop+rect.bottom)*sy};view=view.parent;}return rect;};
+          const anchor=mapRect(hit),subject=mapRect(group.host),box=output.getBoundingClientRect(),viewport=destination.documentElement,gap=12,pad=12;
+          const clamp=(v,min,max)=>Math.max(min,Math.min(v,max));
+          const candidates=[{x:subject.right+gap,y:anchor.top},{x:subject.left-box.width-gap,y:anchor.top},{x:anchor.left,y:subject.bottom+gap},{x:anchor.left,y:subject.top-box.height-gap}].map(p=>({x:clamp(p.x,pad,viewport.clientWidth-box.width-pad),y:clamp(p.y,pad,viewport.clientHeight-box.height-pad)}));
+          const overlap=p=>Math.max(0,Math.min(p.x+box.width,subject.right)-Math.max(p.x,subject.left))*Math.max(0,Math.min(p.y+box.height,subject.bottom)-Math.max(p.y,subject.top));
+          candidates.sort((a,b)=>overlap(a)-overlap(b)||Math.hypot(a.x-anchor.left,a.y-anchor.top)-Math.hypot(b.x-anchor.left,b.y-anchor.top));
+          output.style.right='auto';output.style.bottom='auto';output.style.left=candidates[0].x+'px';output.style.top=candidates[0].y+'px';
+
+          if(destination!==document){const owner=window.frameElement;const observer=new MutationObserver(()=>{if(!owner?.isConnected||!output.isConnected){output.remove();observer.disconnect();}});observer.observe(destination.body,{childList:true,subtree:true});window.addEventListener('pagehide',()=>{output.remove();observer.disconnect();},{once:true});}
           output.querySelector('.wb-spacing-close').addEventListener('click',()=>output.remove());
           output.querySelector('.wb-copy-token').addEventListener('click',async event=>{
             const button=event.currentTarget;
