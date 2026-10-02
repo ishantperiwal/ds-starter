@@ -61,7 +61,7 @@ body[data-view="overview"] .wb-top { display:none; }
 .wb-width-tools button { background:var(--studio-surface); border:1px solid var(--studio-line); border-radius:var(--studio-small-radius); color:var(--studio-muted); font-size:10px; padding:3px 7px; }
 .wb-width-tools button[aria-pressed=true] { color:var(--studio-text); background:var(--studio-hover); border-color:#c7c7cd; }
 .wb-preview { display:block; width:100%; max-width:100%; height:360px; border:1px solid var(--studio-hairline); border-radius:var(--studio-small-radius); background:var(--studio-surface); }
-.wb-preview--icons { height:560px; }
+.wb-preview--icons { height:100%; }
 .wb-preview--screen,.wb-preview--direction { height:600px; }
 .wb-preview--pattern { height:380px; }
 .wb-source-links { display:flex; flex-wrap:wrap; gap:var(--studio-space-lg); margin-top:var(--studio-space-md); font-size:11px; }
@@ -423,6 +423,19 @@ body[data-view="components"] .cg-dialog .wb-spec-body{padding:20px 24px 0}
 
 .wb-icon-gallery, .wb-icon-gallery .wb-preview { background:transparent; border:0; border-radius:0; box-shadow:none; }
 body[data-view="icons"] .wb-lede{display:none}
+/* Icon providers occupy the full workspace, rather than a 560px specimen window. */
+body[data-view="icons"] { height:100vh; height:100dvh; overflow:hidden; }
+body[data-view="icons"] .wb-main { height:100%; min-height:0; }
+body[data-view="icons"] .wb-view { width:100%; height:100%; display:flex; flex-direction:column; padding-bottom:var(--studio-space-2xl); }
+body[data-view="icons"] #content { flex:1; min-height:0; display:flex; flex-direction:column; gap:var(--studio-space-lg); }
+body[data-view="icons"] .wb-icon-gallery { flex:1; min-height:0; }
+body[data-view="icons"] .wb-icon-gallery .wb-preview { height:100%; }
+@media (max-width:720px) {
+  body[data-view="icons"] { display:flex; flex-direction:column; }
+  body[data-view="icons"] .wb-rail { flex:0 0 auto; }
+  body[data-view="icons"] .wb-main { flex:1; height:auto; overflow:hidden; }
+  body[data-view="icons"] .wb-view { padding-bottom:var(--studio-space-lg); }
+}
 
 /* Shared component preview toolbar: generous inset and a visible section rule. */
 .cg-preview-stage{--cg-toolbar-height:64px;padding-top:var(--cg-toolbar-height)}

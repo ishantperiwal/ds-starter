@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Full-page previews can opt into `dsInspectorConfig.keyboardActivation`: S/C opens
+  spacing/component inspection without URL flags; Escape hides inspection and restores
+  page interactions. Existing URL-only activation remains supported.
+
+- Full-page component inspection selects native disabled controls on pointer-down,
+  so their suppressed click events no longer prevent opening copyable context.
+
+- Iconography fills the available workspace height on desktop and mobile instead
+  of clipping providers to a 560px preview. Shared icon gallery tooling adds a
+  dedicated Copy SVG action beside code copying, exporting standalone SVG with
+  the currently displayed weight. Both the sandbox and attached app adapters use
+  the same helper; provider definitions and semantic names remain app-owned.
+
 - Tokenize the interaction panel's surfaces and buttons (dependency buttons, variant
   chips, state chips, panel/body) so they follow the studio dark scheme instead of
   staying white.

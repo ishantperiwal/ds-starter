@@ -55,6 +55,14 @@ Icon catalogs use a preview/provider rather than assuming a library. The sandbox
 demonstrates dsIcon, names, weights and copying calls. Projects can register another
 provider or symbols from their own licensed assets without editing the workbench.
 
+Iconography gives its provider frames the available workspace height. Providers own
+internal scrolling. Shared `/framework/icon-gallery.js` and `icon-gallery.css` are
+optional specimen tooling: `StudioIconGallery.mount({names, render, code, weights,
+currentWeight, setWeight, searchText})` supplies search, supported weights, code
+copying and a separate Copy SVG button. SVG export serializes the displayed geometry
+with its viewBox and namespace, replacing inherited currentColor with portable black
+ink. These tooling buttons are not app components; product renderers remain app-owned.
+
 Visualizations register renderer-backed previews. Data, labels and accessible
 summaries belong to the fixture/app; chart geometry and language belong to the renderer.
 The original reference includes seven contracts; the portable sandbox demonstrates
@@ -104,6 +112,12 @@ scope. Visual samples resolve simple unconditional :root/html aliases only.
 Conditional/local declarations and alias cycles are not guessed as computed values.
 
 ## Current inspector boundaries
+
+Standalone preview adapters may set `window.dsInspectorConfig.keyboardActivation = true`
+before loading spacing-inspector.js. Without `ds=true`, inspection starts hidden and
+inactive. S opens spacing, C opens components, and Escape hides the inspector and
+restores product interaction. Input/editable targets and modifier shortcuts retain
+normal behavior. Other pages remain URL-opt-in; `ds=true` still opens immediately.
 
 Spacing recognition currently expects token CSS under a URL containing
 `/design-system/`. Registry URL and workbench URL are configurable. Framework

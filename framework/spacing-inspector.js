@@ -1,4 +1,4 @@
-/* Opt-in CRM spacing inspection. No DOM/style work without ?ds=true.
+/* Opt-in spacing inspection via ?ds=true or explicit keyboardActivation config.
    Intentionally conservative: unsupported cascade/geometry is unknown, not hardcoded. */
 (() => {
   'use strict';
@@ -10,11 +10,14 @@
   const registryURL=config.registryUrl||'/design-system/registry.json';
   const sourceBase=new URL('.',new URL(registryURL,location.href)).href;
   const workbenchURL=config.workbenchUrl||'/design-system/#components';
-  if (new URLSearchParams(location.search).get('ds') !== 'true' || window.__DS_EXAMPLE_KEY || window.dsSpacingInspector) return;
+  const explicitInspection = new URLSearchParams(location.search).get('ds') === 'true';
+  const keyboardActivation = config.keyboardActivation === true;
+  if ((!explicitInspection && !keyboardActivation) || window.__DS_EXAMPLE_KEY || window.dsSpacingInspector) return;
   window.dsSpacingInspector = true;
   const start = () => {
     const host = document.createElement('div');
     host.id = 'ds-spacing-inspector';
+    host.hidden = keyboardActivation && !explicitInspection;
     host.style.cssText = 'position:fixed;inset:0;z-index:2147483647;pointer-events:none';
     document.body.append(host);
     const root = host.attachShadow({mode:'open'});
@@ -77,7 +80,7 @@
       <button data-toggle aria-keyshortcuts="H" title="Toggle spacing highlights (H)">Pause · H</button><span class="count" aria-live="polite"></span></div>
       <div class="tip" role="dialog" aria-label="Spacing details" hidden></div>`;
     const bands = root.querySelector('.bands'), tip = root.querySelector('.tip');
-    let enabled = true, timer, selected, refreshPending = false, rules = [], known = new Set(), opaque = false;
+    let enabled = !host.hidden, timer, selected, refreshPending = false, rules = [], known = new Set(), opaque = false;
     let mode='spacing', catalog=[], catalogStatus='idle', componentSelection=null, hovered=null;
     const outline=document.createElement('div');outline.className='component-outline';outline.hidden=true;root.append(outline);
     const componentPanel=document.createElement('div');componentPanel.className='tip component-panel';componentPanel.hidden=true;
@@ -668,6 +671,10 @@
       const mode = shortcuts[event.key.toLowerCase()];
       if (!mode) return;
       event.preventDefault();
+      if (keyboardActivation) {
+        host.hidden=false;enabled=true;
+        root.querySelector('[data-toggle]').textContent='Pause · H';
+      }
       root.querySelector(`[data-mode="${mode}"]`).click();
     });
     let lastComponentTarget=null;
@@ -696,6 +703,8 @@
     document.addEventListener('pointerdown',event=>{
       if(mode==='components'&&enabled&&!event.composedPath().includes(host)&&catalogStatus==='ready'){
         event.preventDefault();event.stopImmediatePropagation();
+        // Native disabled controls suppress click; inspect them on pointerdown.
+        if(event.target instanceof Element&&event.target.closest(':disabled')){const item=pickComponent(event.target,event.ctrlKey||event.metaKey);if(item)inspectComponent(item);}
       }
     },true);
     function toggleHighlights(){
@@ -709,8 +718,12 @@
     root.querySelectorAll('input').forEach(input=>input.onchange=()=>{filters[input.dataset.kind]=input.checked;render();});
     document.addEventListener('pointerdown',event=>{if(!event.composedPath().includes(host))dismiss();},true);
     document.addEventListener('keydown',event=>{
-      if(event.key==='Escape'){dismiss();closeComponent();}
+      if(event.key==='Escape'){
+        dismiss();closeComponent();
+        if(keyboardActivation){enabled=false;host.hidden=true;bands.replaceChildren();}
+      }
       if(event.key.toLowerCase()!=='h'||event.repeat||event.isComposing||event.ctrlKey||event.metaKey||event.altKey||event.defaultPrevented)return;
+      if(host.hidden)return;
       const typing=event.composedPath().some(node=>node instanceof Element && (node.matches('input,textarea,select,[role="textbox"],[role="combobox"]')||node.isContentEditable));
       if(typing)return;
       event.preventDefault();toggleHighlights();

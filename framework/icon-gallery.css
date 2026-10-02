@@ -1,0 +1,22 @@
+/* Provider tools share studio chrome; icon geometry comes from the provider. */
+* { box-sizing: border-box; }
+body { margin: 0; padding: var(--studio-space-2xl); background: var(--studio-page); color: var(--studio-ink); font: 14px/1.5 var(--studio-font); }
+main { max-width: 1040px; margin: auto; }
+.studio-icon-toolbar { display: flex; gap: var(--studio-space-md); align-items: center; }
+#search, #weight { height: 40px; min-width: 0; border: 1px solid var(--studio-line); border-radius: var(--studio-small-radius); background: var(--studio-surface); color: var(--studio-ink); font: inherit; padding: 0 var(--studio-space-md); }
+#search { flex: 1; }
+#weight { width: 132px; }
+#icon-status { display: block; min-height: 21px; margin: var(--studio-space-md) 0 var(--studio-space-lg); color: var(--studio-muted); font-size: 12px; }
+.studio-icon-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(110px,1fr)); gap: var(--studio-space-sm); }
+.studio-icon-card { min-width: 0; border: 1px solid var(--studio-line); border-radius: var(--studio-radius); background: var(--studio-surface); overflow: hidden; }
+.studio-icon-preview, .studio-icon-copy { width: 100%; border: 0; background: transparent; color: var(--studio-ink); font: inherit; cursor: pointer; }
+.studio-icon-preview { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--studio-space-sm); min-height: 100px; padding: var(--studio-space-lg) var(--studio-space-sm); }
+.studio-icon-preview span { font-size: 12px; overflow-wrap: anywhere; }
+.studio-icon-preview .ds-icon { display: block; flex: none; }
+.studio-icon-copy { min-height: 36px; padding: 8px; border-top: 1px solid var(--studio-line); font-size: 11px; color: var(--studio-text); }
+.studio-icon-preview:hover, .studio-icon-copy:hover { background: var(--studio-hover); }
+.studio-icon-preview:active, .studio-icon-copy:active { background: var(--studio-line); }
+.studio-icon-preview:focus-visible, .studio-icon-copy:focus-visible { outline: 2px solid var(--studio-accent); outline-offset: -3px; }
+#search:focus-visible, #weight:focus-visible { outline: 2px solid var(--studio-accent); outline-offset: 2px; }
+.studio-icon-empty { grid-column: 1/-1; margin: 0; padding: var(--studio-space-xl) 0; color: var(--studio-muted); }
+@media (max-width: 480px) { body { padding: var(--studio-space-lg); } #weight { width: 112px; } .studio-icon-grid { grid-template-columns: repeat(auto-fill,minmax(96px,1fr)); } }
