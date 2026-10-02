@@ -62,6 +62,8 @@
       .tip code{white-space:normal}
       .swatch{display:inline-block;width:10px;height:10px;background:#ffc96b;margin-right:4px}.swatch.red{background:#efaaaa}.swatch.gray{background:#aeb3ba}
       .component-outline{position:fixed;border:2px solid #246bff;background:#246bff08;pointer-events:none}
+      .component-outline[data-kind="page-owned"]{border-color:#7b818c;background:#7b818c08}
+      .component-outline[data-kind="page-owned"] .component-name{background:#666d78}
       .component-name{position:fixed;max-width:calc(100vw - 8px);overflow:hidden;text-overflow:ellipsis;top:0;left:0;background:#246bff;color:white;padding:3px 7px;white-space:nowrap}
       .component-panel{right:16px;top:16px;max-height:calc(100vh - 110px);overflow:auto;width:460px;max-width:calc(100vw - 32px);padding:12px}
       .component-panel button,.component-panel a{margin:3px}.component-panel a{color:#185ac5;display:inline-block}
@@ -411,6 +413,20 @@
         'Review this instance first; decide whether the fix belongs locally, to a variant, or to the shared token. Do not assume a global change.'
       ].filter(Boolean).join('\n');
     }
+    // Compose axis-aligned ancestor scales; reject rotation/skew rather than guessing.
+    function spacingScale(el,styleOf=getComputedStyle){
+      let x=1,y=1;
+      for(let node=el;node;node=node.parentElement){
+        const transform=styleOf(node).transform;
+        if(!transform||transform==='none')continue;
+        const match=transform.match(/^matrix\(([^)]+)\)$/);
+        if(!match)return null;
+        const [a,b,c,d]=match[1].split(',').map(Number);
+        if(![a,b,c,d].every(Number.isFinite)||Math.abs(b)>1e-7||Math.abs(c)>1e-7||a<=0||d<=0)return null;
+        x*=a;y*=d;
+      }
+      return {x,y};
+    }
     function render() {
       if(!enabled)return;
       if(mode==='components'){
@@ -451,11 +467,12 @@
         const cs=getComputedStyle(el);if(cs.visibility==='hidden'||cs.display==='contents')continue;
         // Transforms and fragmented inline boxes cannot be measured as simple CSS boxes.
         if((cs.transform!=='none' && !/^matrix\(1, 0, 0, 1, [^,]+, [^)]+\)$/.test(cs.transform))||el.getClientRects().length>1)continue;
-        const bt=parseFloat(cs.borderTopWidth)||0,br=parseFloat(cs.borderRightWidth)||0,bb=parseFloat(cs.borderBottomWidth)||0,bl=parseFloat(cs.borderLeftWidth)||0;
+        const scale=spacingScale(el);if(!scale)continue;
+        const bt=(parseFloat(cs.borderTopWidth)||0)*scale.y,br=(parseFloat(cs.borderRightWidth)||0)*scale.x,bb=(parseFloat(cs.borderBottomWidth)||0)*scale.y,bl=(parseFloat(cs.borderLeftWidth)||0)*scale.x;
         for(const prop of properties.slice(0,8)){
           const px=parseFloat(cs.getPropertyValue(prop));if(!Number.isFinite(px)||px<=0)continue;
-          const side=prop.split('-')[1],padding=prop.startsWith('padding');let rect;
-          if(padding){const x=r.left+bl,y=r.top+bt,w=r.width-bl-br,h=r.height-bt-bb;rect=side==='top'?{x,y,w,h:px}:side==='bottom'?{x,y:y+h-px,w,h:px}:side==='left'?{x,y,w:px,h}:{x:x+w-px,y,w:px,h};}
+          const side=prop.split('-')[1],padding=prop.startsWith('padding'),visualPx=px*((side==='top'||side==='bottom')?scale.y:scale.x);let rect;
+          if(padding){const x=r.left+bl,y=r.top+bt,w=r.width-bl-br,h=r.height-bt-bb;rect=side==='top'?{x,y,w,h:visualPx}:side==='bottom'?{x,y:y+h-visualPx,w,h:visualPx}:side==='left'?{x,y,w:visualPx,h}:{x:x+w-visualPx,y,w:visualPx,h};}
           else {
             // Ordinary sibling margins are measurable when only one sibling owns the
             // space and the actual distance matches it. Keep ambiguous collapse hidden.
@@ -467,9 +484,9 @@
               const siblingStyle=getComputedStyle(sibling),other=sibling.getBoundingClientRect();
               const distance=next?other.top-r.bottom:r.top-other.bottom;
               const opposite=parseFloat(siblingStyle.getPropertyValue(next?'margin-top':'margin-bottom'))||0;
-              if(cs.position==='absolute'||cs.position==='fixed'||cs.float!=='none'||siblingStyle.position==='absolute'||siblingStyle.position==='fixed'||siblingStyle.float!=='none'||Math.abs(opposite)>.1||Math.abs(distance-px)>.75||Math.min(r.right,other.right)<=Math.max(r.left,other.left))continue;
+              if(cs.position==='absolute'||cs.position==='fixed'||cs.float!=='none'||siblingStyle.position==='absolute'||siblingStyle.position==='fixed'||siblingStyle.float!=='none'||Math.abs(opposite)>.1||Math.abs(distance-visualPx)>.75||Math.min(r.right,other.right)<=Math.max(r.left,other.left))continue;
             }
-            rect=side==='top'?{x:r.left,y:r.top-px,w:r.width,h:px}:side==='bottom'?{x:r.left,y:r.bottom,w:r.width,h:px}:side==='left'?{x:r.left-px,y:r.top,w:px,h:r.height}:{x:r.right,y:r.top,w:px,h:r.height};
+            rect=side==='top'?{x:r.left,y:r.top-visualPx,w:r.width,h:visualPx}:side==='bottom'?{x:r.left,y:r.bottom,w:r.width,h:visualPx}:side==='left'?{x:r.left-visualPx,y:r.top,w:visualPx,h:r.height}:{x:r.right,y:r.top,w:visualPx,h:r.height};
           }
           add(el,prop,rect,px,cs);
         }
@@ -477,13 +494,13 @@
           const children=Array.from(el.children).filter(c=>{const s=getComputedStyle(c);return c.getClientRects().length&&s.position!=='absolute'&&s.position!=='fixed';}).map(c=>Object.assign(c.getBoundingClientRect(),{element:c}));
           for(const prop of ['row-gap','column-gap']){
             const px=parseFloat(cs.getPropertyValue(prop));if(!px)continue;
-            const row=prop==='row-gap';const ordered=children.slice().sort((a,b)=>row?a.top-b.top:a.left-b.left);
+            const row=prop==='row-gap',visualPx=px*(row?scale.y:scale.x);const ordered=children.slice().sort((a,b)=>row?a.top-b.top:a.left-b.left);
             const seen=new Set();
             for(let i=0;i<ordered.length;i++)for(let j=i+1;j<ordered.length;j++){
               const a=ordered[i],b=ordered[j],distance=row?b.top-a.bottom:b.left-a.right;
               const from=row?Math.max(a.left,b.left):Math.max(a.top,b.top),to=row?Math.min(a.right,b.right):Math.min(a.bottom,b.bottom);
-              if(to<=from||Math.abs(distance-px)>.75)continue;
-              const rect=row?{x:from,y:a.bottom,w:to-from,h:px}:{x:a.right,y:from,w:px,h:to-from};
+              if(to<=from||Math.abs(distance-visualPx)>.75)continue;
+              const rect=row?{x:from,y:a.bottom,w:to-from,h:visualPx}:{x:a.right,y:from,w:visualPx,h:to-from};
               const key=JSON.stringify(rect);if(seen.has(key))continue;seen.add(key);add(el,prop,rect,px,cs,[a.element,b.element]);
             }
           }
@@ -515,13 +532,14 @@
       return chain;
     }
     function pickComponent(target,exact=false){
-      if(!(target instanceof Element))return null;
-      if(exact)return {el:target,entry:matchesComponent(target).at(-1)||null};
-      const chain=componentChain(target);
-      return chain[0]||{el:target,entry:null};
+      if(!(target instanceof Element)||target.closest('script,style,iframe'))return null;
+      // SVG paths are geometry; expose their containing SVG as the inspectable element.
+      const element=target.closest('svg')||target;
+      if(!exact){const chain=componentChain(element);if(chain.length)return chain[0];}
+      return {el:element,entry:matchesComponent(element).at(-1)||null};
     }
     function drawComponent(item){
-      const r=item.el.getBoundingClientRect();outline.hidden=false;
+      const r=item.el.getBoundingClientRect();outline.hidden=false;outline.dataset.kind=item.entry?'registered':'page-owned';
       outline.style.cssText=`left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`;
       outline.replaceChildren();const name=document.createElement('span');name.className='component-name';
       const variant=window.wbComponentInspector?.variantName(item.el,item.entry);
@@ -683,7 +701,6 @@
       lastComponentTarget=event.target;
       if(mode!=='components'||!enabled||catalogStatus!=='ready')return;
       const exact=event.ctrlKey||event.metaKey;
-      if(componentSelection&&!exact)return;
       hovered=pickComponent(event.target,exact);if(hovered)drawComponent(hovered);
     },true);
     document.addEventListener('click',event=>{
@@ -695,7 +712,6 @@
       if(!['Control','Meta'].includes(event.key)||mode!=='components'||!enabled||catalogStatus!=='ready')return;
       if(event.composedPath().some(node=>node instanceof Element&&(node.matches('input,textarea,select')||node.isContentEditable)))return;
       const exact=event.ctrlKey||event.metaKey;
-      if(!exact&&componentSelection){drawComponent(componentSelection);return;}
       if(lastComponentTarget?.isConnected){hovered=pickComponent(lastComponentTarget,exact);if(hovered)drawComponent(hovered);}
     }
     document.addEventListener('keydown',refreshModifierTarget,true);

@@ -308,6 +308,12 @@
   and attachment details and removing the canvas frame and outer spacing.
 - Preserve sidebar navigation and canvas controls; constrain scrolling to the canvas.
 
+## 0.3.1 — 2026-10-03
+
+- Spacing inspection composes axis-aligned ancestor scale transforms when measuring margin, padding, borders and gaps. Highlight geometry uses viewport pixels while references retain CSS pixel values. Rotated/skewed transforms remain unsupported.
+
+- Full-page component inspection prefers the nearest registered owner for internal parts, while page-owned elements outside components remain directly selectable. Registered roots use blue outlines; unregistered elements use gray outlines and tag names. Command/Control selects the exact pointed element. SVG geometry resolves to its SVG element.
+
 ## 0.3.0 — consistent Titan-style workbench presentation
 
 - Restore the compact dark sidebar, centered workspace and ledger-style overview.
